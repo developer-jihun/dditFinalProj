@@ -1,0 +1,15 @@
+package com.web.ddentist.emp.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/hospital")
+public class EmpController {
+
+	@GetMapping("/login")
+	public String login() {
+		return "emp/login";
+	}
+}

@@ -1,0 +1,143 @@
+/***************************************
+****************************************
+***********DESK 오른쪽 상단 캘린더************
+****************************************
+****************************************/
+
+//--------------------------------- 시간 달력 생성 끝----------------------------------------	
+var currentTime = moment(new Date()).format('HH:mm:ss'); // 현재 시간
+var deskCal = document.getElementById('deskCalendar');
+var deskCalendar = new FullCalendar.Calendar(deskCal, {
+	locale				: 'ko',				// 한글 설정
+	timeZone			: 'local',			// 시간 설정
+	initialView			: 'timeGridDay',	// 일자 달력 표시  , 'dayGridWeek', 'timeGridDay', 'listWeek'
+	allDaySlot			: false,			// 상단에 AllDay 출력여부
+	nowIndicator		: true,				// 현재 시간 줄 표시
+	eventMinHeight		: '100px',			// 이벤트 최소 높이 설정	default : 15
+	//eventShortHeight	: '40px',			// 길이가 짧은 이벤트가 있을 경우, 높이 조절 default : 30
+    //businessHours		: true,				// 비즈니스 시간(토요일 일요일 배경색 회색으로 변함) default 09:00 ~ 17:00
+	slotEventOverlap	: false,			// 이벤트 겹침 여부 , default : true
+	hiddenDays			: [],				// 달력 보기에 주말을 포함할 지 여부를 설정 default : [] (월 : 1, 일 : 0, 금 : 5)
+	dayHeaders			: true,				// headr에 월 표시 여부 default : true
+	height				: '390px',			// 높이 크기 조절
+	slotMinTime			: '07:00:00',		// 슬롯 최소 시간 default : '00:00:00'
+	slotMaxTime			: '19:30:00',		// 슬롯 최대 시간 default : '24:00:00'
+	scrollTime			: currentTime,		// 날짜 변경시 보여지는 시간 설정	 default : 06:00:00 (오전 6시)
+	scrollTimeReset		: false,			// 날짜 변경시 시간 초기화(scrollTime 시간으로 초기화) default : true
+	slotDuration		: '00:15:00',		// 슬롯의 시간 설정 default : '00:30:00'
+	slotLabelInterval	: '00:30',			// {hours:1} : "01:00"
+  	selectable			: true,				// 테이블 선택 가능
+	selectMirror		: true,				// 테이블 선택 영역 이벤트 발생
+	slotLabelFormat 	: 					// 라벨에 보여지는 시간 설정
+		{					
+		  	hour		: '2-digit',
+		  	minute		: '2-digit',
+		  	omitZeroMinute: false,
+		  	hour12		: false,
+		  	meridiem	: false
+		},
+	customButtons		: 					// 사용자 커스텀 버튼 추가
+		{					
+		    addEvent : {
+		      	text : '예약',
+		      	click : function() {
+		      		newEvent();
+	      		}
+	      	}
+  		},
+	headerToolbar 		: 
+	{					// 캘린더 위 header 지정
+		start	: 'prev,today', 
+		center	: 'title',
+	 	end		: 'addEvent,next' 
+	},
+	buttonText 			:					// header버튼 이름 지정
+	{
+		today	: '오늘',
+		month	: 'month',
+		week	: 'week',
+		day		: 'day',
+		list	: 'list'
+	},
+	buttonIcons			:
+	{
+	  	prev: 'chevron-left',
+	  	next: 'chevron-right'
+	},
+	eventTimeFormat 	:
+	{
+		hour	: '2-digit',
+	    minute	: '2-digit',
+	    hour12	: false
+	},
+	datesSet: function(info) {				// 날짜가 변경 될 때마다 이벤트
+		breakTime();
+	},
+	eventMouseEnter: function(info){
+		var popLocation = 'bottom';
+		//popoverEvent(info, popLocation);
+	},
+	/* ****************
+   	*  예약 현황 불러오기       *
+   	* ************** */
+    eventSources: [
+        {
+          url: '/hospital/resv/list',
+          method: 'get',
+          failure: function() {
+            	simpleJustErrorAlert('이벤트 로딩 오류!!!...다시 시도해주세요');
+          }
+	    }
+      ],
+ 	eventClick: function(info) {
+ 		eventDetailInfo(info);
+  	}
+});
+
+
+
+// 캘린더 이벤트 재 로딩
+function resvEventReLoding(){
+	deskCalendar.refetchEvents();
+}
+
+function breakTime(){
+	// 오픈시간 초기화
+	$('#deskCalendar').find('tr').each(function(){
+		var fcTd = $(this).find('td').eq(1);
+		fcTd.removeClass('fc-businesshour');		
+	});
+
+	if(new Date(deskCalendar.getDate()).getDay() == 6){	// 토요일은 점심시간 전까지
+		$('#deskCalendar').find('tr').each(function(){
+			var fcTd = $(this).find('td').eq(1);
+			if($(this).hasClass('fc-scrollgrid-section')){
+				return true;	
+			}
+			
+			var dataTime = fcTd.attr('data-time');
+			if(dataTime < openTime || dataTime >= sbreak){
+				fcTd.addClass('fc-businesshour');		
+			}
+		});
+	} else if(new Date(deskCalendar.getDate()).getDay() == 0){	// 일요일은 영업 안함
+		$('#deskCalendar').find('tr').each(function(){
+			var fcTd = $(this).find('td').eq(1);
+			if($(this).hasClass('fc-scrollgrid-section')){
+				return true;	
+			}
+			fcTd.addClass('fc-businesshour');		
+		});
+	} else {
+		$('#deskCalendar').find('tr').each(function(){
+			var fcTd = $(this).find('td').eq(1);
+			if($(this).hasClass('fc-scrollgrid-section')){
+				return true;	
+			}
+			var dataTime = fcTd.attr('data-time');
+			if(dataTime < openTime || (dataTime >= sbreak && dataTime < ebreak) || dataTime >= closeTime){
+				fcTd.addClass('fc-businesshour');	
+			}
+		});
+	}
+}

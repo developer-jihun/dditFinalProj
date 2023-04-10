@@ -1,0 +1,96 @@
+package com.web.ddentist.hospital.crm.board.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.emp.service.EmpDetails;
+import com.web.ddentist.mapper.BoardMapper;
+import com.web.ddentist.vo.AnswerVO;
+import com.web.ddentist.vo.InquiryVO;
+import com.web.ddentist.vo.NoticeVO;
+
+@Service
+public class BoardServiceImpl implements IBoardService {
+	
+	@Autowired
+	private BoardMapper boardMapper;
+	
+	@Override
+	public List<NoticeVO> listNotice(Map<String, String> searchMap) {
+		return boardMapper.listNotice(searchMap);
+	}
+	
+	@Override
+	public NoticeVO selectNotice(String noNum) {
+		return boardMapper.selectNotice(noNum);
+	}
+	
+	@Override
+	public String insertNotice(NoticeVO noVO) {
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+		noVO.setEmpNum(empNum);
+		int result = boardMapper.insertNotice(noVO);
+		if(result == 0) return "FAILED";
+		return "INSERT";
+	}
+	
+	@Override
+	public String updateNotice(NoticeVO noVO) {
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+		noVO.setEmpNum(empNum);
+		int result = boardMapper.updateNotice(noVO);
+		if(result == 0) return "FAILED";
+		return "UPDATE";
+	}
+	
+	@Override
+	public String deleteNotice(NoticeVO noVO) {
+		int result = boardMapper.deleteNotice(noVO);
+		if(result == 0) return "FAILED";
+		return "SUCCESS";
+	}
+	
+	@Override
+	public List<InquiryVO> listInquiry(Map<String, String> searchMap) {
+		return boardMapper.listInquiry(searchMap);
+	}
+	
+	@Override
+	public InquiryVO selectInquiry(String inqNum) {
+		return boardMapper.selectInquiry(inqNum);
+	}
+	
+	@Override
+	public String insertAnswer(AnswerVO ansVO) {
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+		ansVO.setEmpNum(empNum);
+		int result = boardMapper.insertAnswer(ansVO);
+		if(result == 0) return "FAILED";
+		return "INSERT";
+	}
+	
+	@Override
+	public String updateAnswer(AnswerVO ansVO) {
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+		ansVO.setEmpNum(empNum);
+		int result = boardMapper.updateAnswer(ansVO);
+		if(result == 0) return "FAILED";
+		return "UPDATE";
+	}
+	
+	@Override
+	public String deleteInquiryAnswer(InquiryVO inqVO) {
+		int result = boardMapper.deleteInquiryAnswer(inqVO);
+		if(result == 0) return "FAILED";
+		return "SUCCESS";
+	}
+	
+}

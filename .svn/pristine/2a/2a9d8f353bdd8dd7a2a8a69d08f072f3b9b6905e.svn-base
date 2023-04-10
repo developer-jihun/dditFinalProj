@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.SmsMapper">
+	
+	<select id="listCrm" parameterType="List" resultType="crmVO">
+		SELECT C.CRM_NUM, C.CRM_REASON, P.PT_NUM, P.PT_NM, P.PT_PHONE,
+		       TO_CHAR(C.CRM_NX_RESV_DT, 'MM-DD-HH24-MI') NX_RESV_DT
+		  FROM CRM C INNER JOIN PATIENT P ON (C.PT_NUM = P.PT_NUM)
+		 WHERE C.CRM_NUM IN
+		 <foreach collection="list" item="crmNum" open="(" close=")" separator=",">
+		 		#{crmNum}
+		 </foreach>
+	</select>
+	
+	<select id="searchPtOnCrmList" parameterType="Map" resultType="crmVO">
+		SELECT C.CRM_NUM, C.PT_NUM, C.CRM_REASON, P.PT_NM, P.PT_PHONE,
+			   C.CRM_ETH, C.CRM_PRCS_CMPTN_DT, C.CRM_NX_RESV_DT,
+			   TO_CHAR(C.CRM_ETH, 'YY.MM.DD') ETH,
+   			   TO_CHAR(C.CRM_PRCS_CMPTN_DT, 'YY.MM.DD') PRCS_CMPTN_DT,
+   			   TO_CHAR(C.CRM_NX_RESV_DT, 'YY.MM.DD HH24:MI') NX_RESV_DT,
+		       (SELECT COMM_CD_CNT
+		          FROM COMMON_CODE
+		         WHERE COMM_CD_NM = C.CRM_PRCS_STATUS) CRM_PRCS_STATUS
+		  FROM CRM C INNER JOIN PATIENT P ON (C.PT_NUM = P.PT_NUM)
+		 WHERE 1 = 1
+		<if test="crmSDate != null and crmSDate != ''">
+		<![CDATA[
+			AND C.CRM_ETH >= TO_DATE(#{crmSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="crmEDate != null and crmEDate != ''">
+		<![CDATA[
+			AND C.CRM_ETH <= TO_DATE(#{crmEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		<if test="keyword != null and keyword != ''">
+		   AND (
+		        C.PT_NUM LIKE '%' || #{keyword} || '%'
+		        OR P.PT_NM LIKE '%' || #{keyword} || '%'
+		        OR P.PT_RRNO LIKE '%' || #{keyword} || '%'
+		   )
+		</if>
+		ORDER BY C.CRM_ETH
+	</select>
+	
+	<select id="searchPtOnTargetList" parameterType="String" resultType="ptVO">
+		SELECT P.PT_NUM, P.PT_NM, PT_PHONE, SMS_RCPTN_AGRE_YN,
+		       (SELECT TO_CHAR(MAX(CHK_DT), 'YY.MM.DD')
+		          FROM CHECKUP
+		         WHERE PT_NUM = P.PT_NUM) RECENT_CHECKUP_DT,
+		       (SELECT TO_CHAR(MIN(RESV_SDT), 'YY.MM.DD HH24:MI')
+		          FROM RESERVATION
+		         WHERE PT_NUM = P.PT_NUM
+		           AND RESV_SDT > SYSDATE) NX_RESV_DT
+		  FROM PATIENT P
+		 WHERE 1 = 1
+		   AND SMS_RCPTN_AGRE_YN = 'Y'
+		   AND (
+		   		PT_NUM LIKE '%' || #{keyword} || '%'
+		   		OR PT_NM LIKE '%' || #{keyword} || '%'
+		   		OR PT_RRNO LIKE '%' || #{keyword} || '%'
+		   )
+		ORDER BY PT_NM
+	</select>
+	
+	<select id="listPtPhone" parameterType="List" resultType="ptVO">
+		SELECT P.PT_NUM, P.PT_NM, P.PT_PHONE,
+			   (SELECT TO_CHAR(MIN(RESV_SDT), 'MM-DD-HH24-MI')
+		          FROM RESERVATION
+		         WHERE PT_NUM = P.PT_NUM
+		           AND RESV_SDT > SYSDATE) RECENT_CHECKUP_DT
+		  FROM PATIENT P
+		 WHERE P.PT_NUM IN
+		 <foreach collection="list" item="ptNum" open="(" close=")" separator=",">
+		 		#{ptNum}
+		 </foreach>
+	</select>
+	
+	<insert id="insertSms" parameterType="smsVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="smsSndngNum">
+			SELECT COUNT(*) + 1
+			  FROM SMS
+		</selectKey>
+		INSERT INTO SMS (SMS_SNDNG_NUM, CRM_NUM, PT_NUM, PT_NM, PT_PHONE, SMS_DT, SMS_CONTENT)
+				 VALUES (#{smsSndngNum}
+				 		,#{crmNum}
+				 		,#{ptNum}
+				 		,#{ptNm}
+				 		,#{ptPhone}
+				 		,SYSDATE
+				 		,#{smsContent})
+	</insert>
+	
+	<update id="updateCrmStatus" parameterType="int">
+		UPDATE CRM SET CRM_PRCS_STATUS = 'COMPLETE',
+					   CRM_PRCS_CMPTN_DT = SYSDATE
+				 WHERE CRM_NUM = #{crmNum}
+	</update>
+	
+	<update id="uncompleteCrm" parameterType="List">
+		UPDATE CRM SET CRM_PRCS_STATUS = 'IN_COMPLETE',
+					   CRM_PRCS_CMPTN_DT = ''
+				 WHERE CRM_NUM IN 
+				<foreach collection="list" item="crmNum" open="(" close=")" separator=",">
+					#{crmNum}
+				</foreach>
+	</update>
+	
+	<update id="completeCrm" parameterType="List">
+		UPDATE CRM SET CRM_PRCS_STATUS = 'COMPLETE',
+					   CRM_PRCS_CMPTN_DT = SYSDATE
+				 WHERE CRM_NUM IN 
+				<foreach collection="list" item="crmNum" open="(" close=")" separator=",">
+					#{crmNum}
+				</foreach>
+	</update>
+	
+	<delete id="deleteCrm" parameterType="List">
+		DELETE
+		  FROM CRM
+		 WHERE CRM_NUM IN
+		<foreach collection="list" item="crmNum" open="(" close=")" separator=",">
+			#{crmNum}
+		</foreach>
+	</delete>
+	
+	<select id="searchSmsHist" parameterType="Map" resultType="smsVO">
+		SELECT SMS_SNDNG_NUM, CRM_NUM, PT_NUM, PT_NM, PT_PHONE, SMS_DT, SMS_CONTENT
+		  FROM SMS
+		WHERE 1 = 1
+		<if test="smsHistSDate != null and smsHistSDate != ''">
+		<![CDATA[
+			AND SMS_DT >= TO_DATE(#{smsHistSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="smsHistEDate != null and smsHistEDate != ''">
+		<![CDATA[
+			AND SMS_DT <= TO_DATE(#{smsHistEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		<if test="keyword != null and keyword != ''">
+		   AND (
+		        C.PT_NUM LIKE '%' || #{keyword} || '%'
+		        OR P.PT_NM LIKE '%' || #{keyword} || '%'
+		        OR P.PT_RRNO LIKE '%' || #{keyword} || '%'
+		   )
+		</if>
+		ORDER BY SMS_DT DESC
+	</select>
+	
+	<select id="listSmsTemplate" parameterType="smsTplVO" resultType="smsTplVO">
+		SELECT TPL_NUM, TPL_SMS_CONTENT, TPL_TYPE
+		  FROM SMS_TEMPLATE
+		 WHERE 1 = 1
+		<if test="tplType != null and tplType != ''">
+			AND TPL_TYPE = #{tplType}
+		</if>
+		ORDER BY TPL_NUM DESC
+	</select>
+	
+</mapper>

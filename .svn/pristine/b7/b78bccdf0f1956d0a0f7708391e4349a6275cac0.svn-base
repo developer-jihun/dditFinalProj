@@ -1,0 +1,473 @@
+<%@ page language="java" contentType="text/html; charset=utf-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<style>
+.btn-upload {
+  width: 150px;
+  height: 30px;
+  background: #fff;
+  border: 1px solid rgb(77,77,77);
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background: rgb(77,77,77);
+    color: #fff;
+  }
+}
+
+#file {
+  display: none;
+}
+
+</style>
+
+<script type="text/javascript">
+
+//mode : 전역 변수
+var mode = "";
+
+$(function(){
+		
+		$.ajax({
+			url : '/hospital/manage/empInfo/empList',
+			type : 'get',
+			dataType: 'json',
+			success: function(data){
+				
+				let str = "";
+				
+				var parsedData = JSON.stringify(data);
+				
+					$.each(data, function(i, empVO){
+						
+						console.log("empVO.empNum : " +empVO.empNum);
+						console.log("empVO.empNm : " + empVO.empNm);
+						
+						$("#empNm").val(data[0].empNm);
+						$("#empNum").val(data[0].empNum);
+						$("#jbgdCd").val(data[0].jbgdCd);
+						$("#deptCd").val(data[0].deptCd);
+						$("#doctLn").val(data[0].doctLn);
+						$("#empStatus").val(data[0].empStatus);
+						$("#empPhone").val(data[0].empPhone);
+						$("#empBrdt").val(data[0].empBrdt);
+						$("#empZip").val(data[0].empZip);
+						$("#empAddr").val(data[0].empAddr);
+						$("#empDaddr").val(data[0].empDaddr);
+						$("#empJncmpYmd").val(data[0].empJncmpYmd);
+						$("#empRtrmYmd").val(data[0].empRtrmYmd);
+						$("#empId").val(data[0].empId);
+						$("#empPw").val(data[0].empPw);
+						
+						
+						str += "<tr class= 'trSelect'><td><input type='checkbox' /></td><td class= 'empNum'>" + empVO.empNum +  "</td><td>" + empVO.empNm + "</td></tr>";
+						
+					});
+					
+				
+					$("#getInfo .form-control").attr("readonly", false); 
+					$("#trAdd").html(str);
+			}
+		});
+		
+		
+		
+		$("#save").on("click", function(){
+// 			const jobSelected = $("#jbgdCd option:selected").val();
+			
+			//폼데이터 가져오기(파일까지 포함하여 가져올 수 있음.)
+			let empFrm = document.querySelector("#Empfrm");
+			let formData = new FormData(empFrm);  //enctype : multipart일때 FormData객체를 생성
+			
+			console.log(empFrm); 
+			console.log(formData);
+			
+// 			fetch('/emp/updateEmp', {
+// 				method: 'post',
+// 				header: {
+// 					'${_csrf.parameterName}' : '${_csrf.token}'
+// 				},
+// 				body: formData
+// 			})
+// 				.then(res => res.text())
+// 				.then(text => console.log(text));
+			
+//---------------------------------------------------
+			console.log("mode", mode);
+			let url = '/emp/updateEmp';
+			if(mode=="create"){
+				url = '/emp/createEmp'; 
+			}
+//----------------------------------------------------
+			
+			
+			//enctype : multipart를쓸때 쿼리스트링으로 formData를 보내기때문에,
+			//contentType과 processData를 false처리해주어야한다.
+			$.ajax({
+				url : url,
+				type: 'post',
+				contentType: false,
+				processData: false,
+				beforeSend: function(xhr){
+					xhr.setRequestHeader('X-CSRF-TOKEN', '${_csrf.token}');
+				},
+				data : formData,
+				success : function(result){
+					console.log("result : " + result);
+				}
+			});
+		});
+
+		
+		//동적으로 생성된 요소의 이벤트 처리
+		$(document).on("click", ".trSelect", function(){
+			//td가 여러개 인데 그 중 클릭한 바로 그 td
+			//클릭하면 그 직원의 사번을 가져와, 그 사번을 넘겨서 그직원의 정보를 가져온다.
+			console.log("tdSelect 눌렸다!");
+			
+			mode = "update";
+			
+			let empNum = $('.empNum', this).text();
+			empNum = empNum.trim();
+			
+			console.log("empNum : " + empNum);
+			
+				$.ajax({
+					url : "/hospital/manage/empInfo/getEmpInfo?empNum=" + empNum,
+					type : "get",
+					dataType : 'json',
+					success: function(data){
+						console.log(data);
+						
+						$("#empNm").val(data.empNm);
+						$("#empNum").val(data.empNum);
+						$("#jbgdCd").val(data.jbgdCd);
+						$("#deptCd").val(data.deptCd);
+						$("#doctLn").val(data.doctLn);
+						$("#empStatus").val(data.empStatus);
+						$("#empPhone").val(data.empPhone);
+						$("#empBrdt").val(data.empBrdt);
+						$("#empZip").val(data.empZip);
+						$("#empAddr").val(data.empAddr);
+						$("#empDaddr").val(data.empDaddr);
+						$("#empJncmpYmd").val(data.empJncmpYmd);
+						$("#empRtrmYmd").val(data.empRtrmYmd);
+						$("#empId").val(data.empId);
+						$("#empPw").val(data.empPw);
+						
+					}
+				});
+		});
+		
+		//새로입력버튼을 누르면 모든 입력버튼이 초기화 
+		$("#reset").on("click", function(){
+			
+			mode = "create";
+			
+			$("#Empfrm").attr("action", "/hospital/manage/empInfo/createEmp?${_csrf.parameterName}=${_csrf.token}");
+			$("#Empfrm").submit;
+		});
+		
+		
+		$("#deptCd").on("click", function(){
+			let deptCd = $("#deptCd");
+			console.log($("#deptCd option:selected").val());
+			
+		});
+
+		
+		//  저장버튼 클릭시
+// 		$("#Empfrm").on("submit", function(){
+// 			if(mode=="update"){
+// 				$("#Empfrm").attr("action", "/emp/updateEmp?${_csrf.parameterName}=${_csrf.token}");
+				
+// 			}else if(mode=="create"){
+// 				$("#Empfrm").attr("action", "/emp/createEmp?${_csrf.parameterName}=${_csrf.token}");
+// 			}
+// // 			$("#Empfrm").submit;
+// 		});
+		
+		
+		//이미지 미리보기 시작/////////////////////////////////
+		$("#file").on("change", handleImgFileSelect);
+		
+		function handleImgFileSelect(event){  //change된 event가 따라온다.
+			let files = event.target.files; //파일이 1개든 여러개든 파일을 가져온다.
+			let fileArr = Array.prototype.slice.call(files); //배열형태로 저장한다.
+			fileArr.forEach(function(f){
+				if(!f.type.match("image.*")){
+					alert("이미지만 가능합니다.");
+					return;
+				}
+				
+				let reader = new FileReader();
+				reader.onload = function(event){
+					//읽은 결과
+					//<img src = "SFHEHFDG.jpg>"
+					let img_html = "<img src=\"" + event.target.result + "\" style='width:140px;' />";
+					
+					$(".bg-register-image").html(img_html);
+				}
+				
+				reader.readAsDataURL(f);
+			});
+		}
+		//이미지 미리보기 끝/////////////////////////////////
+	});
+
+</script>
+
+
+<div class="content-wrapper" style="background-color: rgb(101, 125, 150); min-height: 873px;">
+	<!-- main 검색창을 포함한 navbar 시작-->
+	<nav class="navbar navbar-expand navbar-white navbar-light" style="background-color: #404b57;">
+		<div class="dropdown">
+			<input type="text" class="form-control" id="ptSearch"
+				placeholder="직원 검색" onkeyup="searchPatient(this);"
+				style="width: 400px;">
+			<ul id="ptSearchDropdown" class="dropdown-menu">
+			</ul>
+		</div>
+		<img src="/resources/images/memo_icon.png" alt="병원 로고" id="memo"
+			class="brand-image elevation-1" style="margin-left: 15px;">
+
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+				aria-controls="navbarTogglerDemo03" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item"><a class="nav-link active"
+						aria-current="page" href="#" data-toggle="tab">직원관리</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">약품 관리</a></li>
+					<li class="nav-item"><a class="nav-link disabled">처치 관리</a></li>
+					<li class="nav-item"><a class="nav-link disabled">병원 기초 정보</a>
+					</li>
+				</ul>
+
+			</div>
+		</div>
+	</nav>
+	
+	<!-- main 검색창을 포함한 navbar 끝 -->
+	<section class="content" style="margin-top: 1%;">
+	<div class="row">
+	<div class="col-md-3">
+		<div class="card card-info">
+	
+			<div class="card-header"
+				style="background-color: #404b57; border: none;">
+				<div class="d-flex justify-content-between align-items-center">
+					<h2 class="card-title">직원 목록</h2>
+				</div>
+			</div>
+					
+			<form>
+			<div class="card-body">
+				<div class="card">
+							<div class="card-header">
+								<label>직원 검색</label> <select class="form-select form-select-sm" aria-label=".form-select-sm example">
+									<option selected="">전체</option>
+									<option value="1">재직자</option>
+									<option value="2">퇴사자</option>
+									<option value="3">Three</option>
+								</select><br> <label>직급</label> <select class="form-select form-select-sm" aria-label=".form-select-sm example">
+									<option selected="">전체</option>
+									<option value="1">재직자</option>
+									<option value="2">퇴사자</option>
+									<option value="3">Three</option>
+								</select><br> 
+								<label>이름/사번</label>
+								<input type="text" placeholder="이름/사번">
+								<input type="button" id="search" value="검색">
+							</div>
+
+							<div class="card-body">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th style="width: 10px">✔
+											</th><th>사번</th>
+											<th>이름</th>
+										</tr>
+									</thead>
+									<tbody id="trAdd">
+										<!-- 직원 목록 뿌리는 곳 -->
+									</tbody>
+								</table>
+							</div>
+
+							<div class="card-footer clearfix">
+								<ul class="pagination pagination-sm m-0 float-right">
+									<li class="page-item"><a class="page-link" href="#">«</a></li>
+									<li class="page-item"><a class="page-link" href="#">1</a></li>
+									<li class="page-item"><a class="page-link" href="#">2</a></li>
+									<li class="page-item"><a class="page-link" href="#">3</a></li>
+									<li class="page-item"><a class="page-link" href="#">»</a></li>
+								</ul>
+							</div>
+						</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	
+	
+	
+			<!-- 좌측 상단 -->
+			<div class="col-md-4">
+				<div class="card card-info">
+
+					<div class="card-header" style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">직원 정보</h2>
+						</div>
+					</div>
+
+					<form id="Empfrm" action="/hospital/manage/empInfo/updatePost?${_csrf.parameterName}=${_csrf.token}" method="post" >
+							
+						<div class="card-body">
+							<table border="1px;" >
+								<tr height="120px;">
+									<td width="120px;">
+										<div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+									</td>
+								</tr>
+							</table>
+							<label for="file">
+								<div class="btn-upload" id="input_imgs">사진 선택</div>
+							</label> <input type="file" name="file" id="file"><br />
+							<!-- 이미지 미리보기 시작-->
+							<div class="imgs_wrap"></div>
+<!-- 							<form action="/lprod/uploadFormAction" method="post" enctype="multipart/form-data"> -->
+								<input type="file" id="input_imgs" name="uploadFile" />
+<!-- 								<button type="submit">업로드</button> -->
+<!-- 							</form> -->
+							<hr />
+							<!-- 이미지 미리보기 끝-->
+							<label for="productId">직원명</label>
+								<input type="text" name="empNm" class="form-control" id="empNm"
+									 placeholder="직원이름을 입력해주세요" value="" required />
+	
+								<label for=empNum>사번</label>
+								<input type="text" name="empNum" class="form-control" id="empNum"
+									placeholder="사번을 입력해주세요" value=""  required />
+	
+								<label for="unitPrice">면허 번호</label>
+								<input type="text" name="doctLn" class="form-control" id="doctLn"
+									placeholder="면허번호를 입력해주세요" value=""  />
+						</div>
+				
+				
+				
+				<!-- 좌측 하단 -->
+				<div class="" >
+					<div class="card card-info">
+						<div class="card-header" style="background-color: #404b57; border: none;">
+							<div class="d-flex justify-content-between align-items-center">
+								<h2 class="card-title">부서/근무 정보</h2>
+							</div>
+						</div>
+	
+								
+							<div class="card-body">
+								<label for="deptCd">부서</label>
+										<select id="deptCd" name="deptCd">
+											<option value="">---------</option>
+											
+											<c:forEach var="code" items="${deptList}" varStatus="status">
+												<option value="${code.commCdNm}">
+													<c:out value="${code.commCdCnt}" />
+												</option>
+											</c:forEach>
+										</select><br />
+								
+										<label for="jbgdCd">직급</label> 
+										<select id="jbgdCd" name="jbgdCd"  >
+											<option value="">---------</option>
+											
+											<c:forEach var="code" items="${jbgdList}" varStatus="status">
+												<option value="${code.commCdNm}">
+													<c:out value="${code.commCdCnt}" />
+												</option>
+											</c:forEach>
+										</select><br />
+										
+										<label for="empSdate">입사일</label>
+										<input type="date" name="empJncmpYmd" class="form-control" id="empJncmpYmd" value=""  />
+			
+										<label for="empEdate">퇴사일</label>
+										<input type="date" name="empRtrsmYmd" class="form-control"	id="empRtrmYmd" value="" />
+								
+							</div>
+				</div>
+				</div>
+				</div>		
+			</div>
+			
+			<!-- 오른쪽 상단 -->
+			<div class="col-md-4">
+				<div class="card card-info">
+
+					<div class="card-header" style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">부가 정보</h2>
+						</div>
+					</div>
+
+							
+						<div class="card-body">
+							<label for="pname">휴대전화</label>
+									<input type="text" name="empPhone" class="form-control"
+									id="empPhone" placeholder="연락처를 입력해주세요" value=""  required /> 
+									<label	for="pname">생년월일</label>
+									<input type="date" name="empBrdt"	class="form-control" id="empBrdt" value=""  required />
+									<!--  우편번호 --> 
+									<label	for=empAddrDet>주소</label>
+									<input type="text" name="empZip" class="form-control" id="empZip" value=""  required />
+									<input type="text" name="empAddr" class="form-control" id="empAddr"
+										placeholder="주소를 입력해주세요" value="" required />
+									<input type="text"	name="empDaddr" class="form-control" id="empDaddr"
+										placeholder="상세 주소를 입력해주세요" value=""  required />
+						</div>
+				</div>
+				
+				<!-- 우측 하단 -->
+				<div class="card card-info">
+
+					<div class="card-header" style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">직원 정보</h2>
+						</div>
+					</div>
+
+							
+						<div class="card-body">
+								<label for="empId">사용자 ID</label>
+									<input type="text" name="empId" class="form-control" id="empId"
+										placeholder="ID를 입력해주세요" value=""   required />
+		
+									<label for="empPw">사용자 PW</label>
+									<input type="text" name="empPw" class="form-control" id="empPw"
+										placeholder="PW를 입력해주세요" value=""  required />
+		
+		
+									<input type="button" id="save" value="저장(S)" />
+									<input type="reset" id="reset" value="초기화" />
+		
+									<!-- Cross Site Request Forgery -->
+						</div>
+				</div>
+				<sec:csrfInput />
+			</form>
+			</div>
+		</div>
+		</section>
+</div>

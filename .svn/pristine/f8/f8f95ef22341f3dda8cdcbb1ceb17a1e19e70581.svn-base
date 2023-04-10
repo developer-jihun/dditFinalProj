@@ -1,0 +1,108 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+
+<!-- kakaoMap API script  -->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=ac008d6ab083926192ccc8d6bee59167"></script>
+<script type="text/javascript">
+// KakaoMap API
+	window.onload = function(){
+		var container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
+		
+		var options = { //지도를 생성할 때 필요한 기본 옵션
+			center: new kakao.maps.LatLng(36.325059279000115, 127.40891523554417), //지도의 중심좌표.
+			level: 2 //지도의 레벨(확대, 축소 정도)
+		};
+		
+		var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴	
+		
+		// 지도를 클릭한 위치에 표출할 마커입니다
+		var marker = new kakao.maps.Marker({ 
+		// 지도 중심좌표에 마커를 생성합니다 
+			position: map.getCenter() 
+		});
+		
+		// 지도에 마커를 표시합니다
+		marker.setMap(map);
+	};
+</script>
+
+
+<style>
+h6 {
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+	font-size: 14px;
+	margin-left: 50px;
+}
+</style>
+<!-- Head Image 시작 -->
+<div class="boardHeadImage">
+	<div class="wrapper">
+		<div class="slide">
+			<img src="/resources/images/layout/ddit/infoHeadImg.png" />
+		</div>
+	</div>
+</div>
+<!-- Head Image 끝 -->
+<!-- main section 시작 -->
+<section class="container">
+	<!-- 이용안내 nav 시작 -->
+	<div class="row" style="margin-left: 7%; margin-top: 50px; width: 85%; height: 100px; border-top: 1px solid gray; border-bottom: 1px solid gray;">
+		<div class="col-12">
+			<h4 style="margin-left: 50px; margin-top: 20px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">이용안내</h4>
+		</div>
+		<div class="col-6">
+			<h6 style="opacity: 0.5;">home > 고객의 소리 > 이용안내</h6>
+		</div>
+	</div>
+	<!-- 이용안내 nav 끝 -->
+
+	<!-- 오시는 길 시작 -->
+	<div style="width: 85%; margin-left: 15%; margin-top: 50px;">
+		<h5 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700; margin: 20px;">오시는 길</h5>
+		<div id="map" style="width: 900px; height: 350px;"></div>
+		<div style="width: 900px; height: 120px; background-color: #3D3D3D; padding: 20px;">
+			<h6 style="color: white; display: inline-block; font-family: 'Noto Sans KR', sans-serif; font-weight: 500; line-height: 32px;">
+				- 주소: 대전광역시 오류동 계룡로234 대덕인재개발원 4층<br /> - 대표전화: 1111-2222
+			</h6>
+			<button class="btn btn-primary btn-lg" type="button" id="findWayBtn" style="width: 120px; height: 80px; background-color: #904aff; border: none; float: right;" onclick="btnClick()">
+				<i class="fa-sharp fa-solid fa-location-dot"></i><span style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700; margin-left: 10px;">길찾기</span>
+			</button>
+		</div>
+	</div>
+	<!-- 오시는 길 끝 -->
+	<!-- 원내배치도 시작 -->
+	<div style="margin-left: 7%; width: 85%; margin-left: 15%; margin-top: 50px; margin-bottom: 100px;">
+		<h5 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700; margin: 20px;">원내배치도</h5>
+		<img src="/resources/images/layout/ddit/facility.png" style="margin-bottom: 35px;" />
+
+		<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700; line-height: 32px;">
+			* 대전광역시 오류동 계룡로234 대덕인재개발원4층 <br /> 후문이 아닌 정문이용을 부탁드리며, 자차이용 고객께서는 지하의 엘리베이터를 이용해주십시오.
+		</h6>
+
+		<img src="/resources/images/layout/ddit/facilityDetail.png" />
+
+		<div>
+			<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700; margin: 20px; line-height: 32px;">
+				병원을 찾아주시는 모든 고객님들께 감사인사드리며, <br /> 저희 병원의 오시는 길, 원내배치도가 잘못되어있다면 아래의 방법을 통해 수정신청을 해주시기바랍니다.
+			</h6>
+			<hr style="width: 80%;" />
+
+			<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500; margin: 20px;">
+				<span style="color: red">*</span> 병원 홍보담당부서 : 042)222-8201
+			</h6>
+			<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500; margin: 20px;">
+				<span style="color: red">*</span> 문의게시판 : <a href="/ddit/inquiry">여기를 클릭하시면 문의게시판으로 이동합니다.</a>
+			</h6>
+		</div>
+	</div>
+	<!-- 원내배치도 끝 -->
+</section>
+<!-- main section 끝 -->
+<script>
+	function btnClick() {
+		location.href = "https://map.kakao.com/link/map/대덕인재개발원,36.325059279000115,127.40891523554417";
+	}
+</script>

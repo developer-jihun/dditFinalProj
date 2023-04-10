@@ -1,0 +1,21 @@
+package com.web.ddentist.ddit.inquiry.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/ddit/inquiry")
+public class InquiryController {
+	
+	@GetMapping("")
+	public String home() {
+		return "ddit/inquiry";
+	}
+	
+	@GetMapping("/detail")
+	public String detail() {
+		return "ddit/inquiryDetail";
+	}
+	
+}

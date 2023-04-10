@@ -1,0 +1,135 @@
+package com.web.ddentist.chat.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.web.ddentist.emp.service.EmpDetails;
+import com.web.ddentist.mapper.ChatMapper;
+import com.web.ddentist.vo.ChatMemberVO;
+import com.web.ddentist.vo.ChatVO;
+import com.web.ddentist.vo.ChatgroupVO;
+import com.web.ddentist.vo.EmployeeVO;
+
+@Service
+public class ChatServiceImpl implements IChatService {
+	
+	@Autowired
+	private ChatMapper chatMapper;
+	
+	@Override
+	public List<ChatgroupVO> chatgrpList(String empNum) {
+		return chatMapper.chatgrpList(empNum);
+	}
+	
+	@Override
+	public List<ChatVO> chatList(String chatgrpNum) {
+		return chatMapper.chatList(chatgrpNum);
+	}
+	
+	@Override
+	public EmployeeVO empInfo(String empId) {
+		return chatMapper.empInfo(empId);
+	}
+	
+	@Override
+	public List<Integer> chatgrpNum(String empNum) {
+		return chatMapper.chatgrpNum(empNum);
+	}
+	
+	@Override
+	public int chat(WebSocketSession sender, int chatgrpNum, String chatContent) {
+		
+		String empId = sender.getPrincipal().getName();
+		EmployeeVO empInfo = (EmployeeVO) sender.getAttributes().get("empInfo");
+		String empNum = empInfo.getEmpNum();
+		String empNm = empInfo.getEmpNm();
+		
+		ChatVO chatVO = new ChatVO();
+		chatVO.setEmpId(empId);
+		chatVO.setEmpNm(empNm);
+		chatVO.setEmpNum(empNum);
+		chatVO.setChatgrpNum(chatgrpNum);
+		chatVO.setChatContent(chatContent);
+		
+		return chatMapper.chat(chatVO);
+	}
+	
+	@Override
+	public int updateLastReadDate(ChatMemberVO chatMemVO) {
+		return chatMapper.updateLastReadDate(chatMemVO);
+	}
+	
+	@Override
+	public List<EmployeeVO> empList(String chatgrpNum) {
+		
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+		
+		Map<String, String> param = new HashMap<>();
+		param.put("empNum", empNum);
+		param.put("chatgrpNum", chatgrpNum);
+		
+		return chatMapper.empList(param);
+	}
+	
+	@Transactional
+	@Override
+	public List<ChatMemberVO> createNewChat(ChatgroupVO chatgrpVO, String[] empNum) {
+		
+		int result = chatMapper.createNewChat(chatgrpVO);
+		if(result == 0) return null;
+		
+		List<ChatMemberVO> chatMemList = new ArrayList<>();
+		
+		EmpDetails empInfo = (EmpDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String createrEmpNum = empInfo.getEmpVO().getEmpNum();
+		
+		ChatMemberVO chatCreator = new ChatMemberVO();
+		chatCreator.setChatgrpNum(chatgrpVO.getChatgrpNum());
+		chatCreator.setEmpNum(createrEmpNum);
+		chatMemList.add(chatCreator);
+		
+		for(String num : empNum) {
+			ChatMemberVO chatMemVO = new ChatMemberVO();
+			chatMemVO.setChatgrpNum(chatgrpVO.getChatgrpNum());
+			chatMemVO.setEmpNum(num);
+			
+			chatMemList.add(chatMemVO);
+		}
+		result = chatMapper.insertChatMem(chatMemList);
+		if(result == 0) return null;
+		
+		return chatMemList;
+	}
+	
+	@Override
+	public List<ChatMemberVO> inviteNewMem(ChatgroupVO chatgrpVO, String[] empNum) {
+		
+		List<ChatMemberVO> invitedMemList = new ArrayList<>();
+		for(String num : empNum) {
+			ChatMemberVO chatMemVO = new ChatMemberVO();
+			chatMemVO.setChatgrpNum(chatgrpVO.getChatgrpNum());
+			chatMemVO.setEmpNum(num);
+			
+			invitedMemList.add(chatMemVO);
+		}
+		int result = chatMapper.insertChatMem(invitedMemList);
+		if(result == 0) return null;
+		
+		return invitedMemList;
+	}
+	
+	@Override
+	public int exitChatgrp(ChatMemberVO chatMemVO) {
+		return chatMapper.exitChatgrp(chatMemVO);
+	}
+	
+}

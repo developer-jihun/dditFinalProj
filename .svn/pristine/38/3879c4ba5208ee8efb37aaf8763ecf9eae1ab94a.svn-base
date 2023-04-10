@@ -1,0 +1,139 @@
+package com.web.ddentist.hospital.manage.empInfo.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.EmpInfoMapper;
+import com.web.ddentist.vo.CommonCodeVO;
+import com.web.ddentist.vo.DepartmentVO;
+import com.web.ddentist.vo.EmployeeVO;
+import com.web.ddentist.vo.JbgdVO;
+
+@Service
+public class EmpInfoServiceImpl implements IEmpInfoService {
+	
+	@Autowired
+	EmpInfoMapper empInfoMapper;
+	
+		// 직원 등록
+		@Override
+		public int createEmp(EmployeeVO employeeVO) {
+			
+			String empBrdt = employeeVO.getEmpBrdt();
+			empBrdt = empBrdt.replace("-", "");
+			employeeVO.setEmpBrdt(empBrdt);
+			
+			String empJncmpYmd = employeeVO.getEmpJncmpYmd();
+			empJncmpYmd = empJncmpYmd.replace("-", "");
+			employeeVO.setEmpJncmpYmd(empJncmpYmd);
+			
+			String empRtrmYmd = employeeVO.getEmpJncmpYmd();
+			if(empRtrmYmd != null && empRtrmYmd != "") {
+				empRtrmYmd = empRtrmYmd.replace("-", "");
+				employeeVO.setEmpRtrmYmd(empRtrmYmd);
+			}
+			
+			int result = this.empInfoMapper.createEmp(employeeVO);
+			System.out.println("삽입 result : " + result);
+			return result;
+		}
+		
+		// 사번 자동생성
+		public String getEmpNum() {
+			
+			String empNum = this.empInfoMapper.getEmpNum();
+			System.out.println("사번 자동생성 getEmpNum() {} : " + empNum);
+			
+			return empNum;
+		}
+		
+		
+		// 직원 목록 조회
+//		@Override
+//		public List<EmployeeVO> getList() {
+//			
+//			List<EmployeeVO> list = this.empInfoMapper.getList();
+//			System.out.println("직원 list : " + list);
+//			return list;
+//		}
+
+		// 직원 정보 조회
+		@Override
+		public EmployeeVO getEmpInfo(EmployeeVO empVO) {
+			EmployeeVO vo = this.empInfoMapper.getEmpInfo(empVO);
+			
+			System.out.println("직원 vo : " + vo);
+			
+			return vo;
+		}
+		
+		// 직원 정보 수정
+		@Override
+		public int updateEmp(EmployeeVO employeeVO) {
+			
+			String empBrdt = employeeVO.getEmpBrdt();
+			empBrdt = empBrdt.replace("-", "");
+			employeeVO.setEmpBrdt(empBrdt);
+			
+			String empJncmpYmd = employeeVO.getEmpJncmpYmd();
+			empJncmpYmd = empJncmpYmd.replace("-", "");
+			employeeVO.setEmpJncmpYmd(empJncmpYmd);
+			
+			String empRtrmYmd = employeeVO.getEmpJncmpYmd();
+			if(empRtrmYmd != null && empRtrmYmd != "") {
+				empRtrmYmd = empRtrmYmd.replace("-", "");
+				employeeVO.setEmpRtrmYmd(empRtrmYmd);
+			}
+			
+			int result = this.empInfoMapper.updateEmp(employeeVO);
+			
+			return result;
+		}
+		
+		// 직원 정보 삭제
+		@Override
+		public int deleteEmp(EmployeeVO employeeVO) {
+			int result = this.empInfoMapper.deleteEmp(employeeVO);
+			
+			return result;
+		}
+		
+		// 직급 리스트
+		public List<JbgdVO> getJbgd(){
+			List<JbgdVO> getJbgd = this.empInfoMapper.getJbgd();
+			
+			return getJbgd;
+		}
+		
+		// 부서 리스트
+		public List<DepartmentVO> getDept(){
+			List<DepartmentVO> getDept = this.empInfoMapper.getDept();
+			
+			return getDept;
+		}
+		
+		// 공통 코드 
+		@Override
+		public List<CommonCodeVO> getCommon(String commGrCd) {
+			List<CommonCodeVO> hdpfYnList =  this.empInfoMapper.getCommon(commGrCd);
+			System.out.println("hdpfYnList 직원 재직여부 : {} " + hdpfYnList);
+			return hdpfYnList;
+		}
+		
+		// 검색키워드와 페이징처리 결과 직원목록 가져오기
+		@Override
+		public List<EmployeeVO> getList(Map<String, String> param) {
+			
+			return this.empInfoMapper.getList(param);
+		}
+
+		// 직원 사진 삭제
+		@Override
+		public int deleteFile(EmployeeVO employeeVO) {
+			
+			return this.empInfoMapper.deleteFile(employeeVO);
+		}
+}

@@ -1,0 +1,20 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class TxCodeVO {
+	
+	private String txcCd;
+	private String txcNm;
+	private int txcPrice;
+	private String dataDrugNum;//197500185,197500272,197900574
+	private String drugNum;
+	
+	//처치코드:처치약품 = 1:N
+	private List<TxDrugVO> TxDrugList;
+	
+	private String color; // 전자차트에서 색상을 지정하는데 사용
+}

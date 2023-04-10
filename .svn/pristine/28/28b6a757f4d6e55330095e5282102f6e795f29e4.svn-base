@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.CommunityMapper">
+	<!-- 커뮤니티 게시글 목록 가져오기 -->
+	<select id="selectList" resultType="commVO">
+		SELECT A.COM_NUM, A.PT_NUM, B.PT_ID, A.COM_TITLE, A.COM_CONTENT, A.COM_DT, A.COM_INQ_CNT
+		  FROM COMMUNITY A, PATIENT B
+		 WHERE A.PT_NUM = B.PT_NUM
+	  ORDER BY COM_NUM DESC
+	</select>
+
+
+	<!--  커뮤니티 게시글 상세보기 -->
+	<select id="detail" parameterType="commVO" resultType="commVO">
+		SELECT A.COM_NUM, A.PT_NUM, B.PT_NM, B.PT_ID, A.COM_TITLE, A.COM_CONTENT, A.COM_DT, A.COM_INQ_CNT
+		  FROM COMMUNITY A, PATIENT B
+		  WHERE A.PT_NUM = B.PT_NUM
+		    AND A.COM_NUM = #{comNum}
+	</select>
+	
+	<!--  조회수 증가시키기 -->
+	<update id="viewCount" parameterType="commVO">
+		UPDATE COMMUNITY
+		   SET COM_INQ_CNT  = COM_INQ_CNT + 1
+		 WHERE COM_NUM = #{comNum}
+	</update>
+	
+	<update id="updatePost" parameterType="commVO">
+		UPDATE COMMUNITY
+		   SET COM_TITLE = #{comTitle}, COM_CONTENT = #{comContent} 
+		 WHERE COM_NUM = #{comNum}
+	</update>
+</mapper>

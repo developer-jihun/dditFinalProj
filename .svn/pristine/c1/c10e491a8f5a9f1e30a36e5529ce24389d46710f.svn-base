@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.StatisticsMapper">
+
+	<select id="listHdofYn" resultType="commCdVO">
+		SELECT COMM_CD_NM, COMM_CD_CNT
+		  FROM COMMON_CODE
+		 WHERE COMM_GR_CD = 'HDOF_YN_CD'
+	</select>
+	
+	<select id="listJbgd" resultType="jbgdVO">
+		SELECT JBGD_CD, JBGD_NM
+		  FROM JBGD
+		 WHERE JBGD_CD IN (1, 2)
+	</select>
+	
+	<select id="listDept" resultType="deptVO">
+		SELECT DEPT_CD, DEPT_NM
+		  FROM DEPARTMENT
+	</select>
+	
+	<sql id="empSearchWhere">
+		<if test="hdofYn != null and hdofYn != ''">
+			AND HDOF_YN = #{hdofYn}
+		</if>
+		<if test="jbgdCd != null and jbgdCd != ''">
+			AND JBGD_CD = #{jbgdCd}
+		</if>
+		<if test="deptCd != null and deptCd != ''">
+			AND DEPT_CD = #{deptCd}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND (
+				EMP_NUM LIKE '%' || #{keyword} || '%'
+				OR EMP_NM LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+	</sql>
+	
+	<select id="totalRow" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM EMPLOYEE
+		 WHERE 1 = 1
+		<include refid="empSearchWhere" />
+	</select>
+	
+	<select id="listEmp" parameterType="Map" resultType="empVO">
+		WITH T AS (
+			SELECT ROW_NUMBER() OVER(ORDER BY EMP_NUM) ROW_NUM, E.EMP_NUM, E.EMP_NM, 
+				   (SELECT JBGD_NM
+				      FROM JBGD
+				     WHERE JBGD_CD = E.JBGD_CD) JBGD_CD,
+				   (SELECT DEPT_NM
+				      FROM DEPARTMENT
+				     WHERE DEPT_CD = E.DEPT_CD) DEPT_CD
+			  FROM EMPLOYEE E
+			 WHERE 1 = 1
+			<include refid="empSearchWhere" />
+		)
+		SELECT T.EMP_NUM, T.EMP_NM, T.JBGD_CD, T.DEPT_CD
+		  FROM T
+		 WHERE T.ROW_NUM BETWEEN (#{page} - 1) * 5 + 1 AND #{page} * 5
+		
+	</select>
+	
+	<select id="selectMonthlyPtCount" parameterType="String" resultType="String">
+	<![CDATA[
+		WITH MONTHS AS (
+		    SELECT TO_CHAR(SYSDATE, 'YYYY') || '01' + LEVEL - 1 MONTH
+		      FROM DUAL
+		     CONNECT BY LEVEL <= 12
+		)
+		SELECT COUNT(C.PT_NUM)
+		  FROM MONTHS M LEFT OUTER JOIN CHECKUP C ON (M.MONTH = TO_CHAR(C.CHK_DT, 'YYYYMM')
+		  											  AND C.EMP_NUM = #{empNum})
+		 GROUP BY M.MONTH
+		 ORDER BY M.MONTH
+	]]>
+	</select>
+	
+	<select id="selectMonthlyGramt" parameterType="String" resultType="String">
+	<![CDATA[
+		WITH MONTHS AS (
+		    SELECT TO_CHAR(SYSDATE, 'YYYY') || '01' + LEVEL - 1 MONTH
+		      FROM DUAL
+		   CONNECT BY LEVEL <= 12
+		)
+		SELECT NVL(SUM(RCVMT_GRAMT), 0)
+		  FROM MONTHS M LEFT OUTER JOIN RCVMT R ON (M.MONTH = TO_CHAR(R.RCVMT_DT, 'YYYYMM')
+		                                            AND R.CHK_NUM IN (SELECT CHK_NUM
+		                                                                FROM CHECKUP
+		                                                               WHERE EMP_NUM = #{empNum}))
+		 GROUP BY M.MONTH
+		 ORDER BY M.MONTH
+	]]>
+	</select>
+	
+	<select id="selectQuarterlyPtCount" parameterType="String" resultType="String">
+		SELECT NVL(C.PT_COUNT, 0)
+		  FROM (
+		        SELECT 1 QUARTER FROM DUAL
+		        UNION ALL SELECT 2 FROM DUAL
+		        UNION ALL SELECT 3 FROM DUAL
+		        UNION ALL SELECT 4 FROM DUAL) Q
+		            LEFT OUTER JOIN
+		        (SELECT TO_CHAR(CHK_DT, 'Q') QUARTER, COUNT(PT_NUM) PT_COUNT
+		           FROM CHECKUP
+		          WHERE CHK_DT >= TRUNC(SYSDATE, 'YEAR')
+		            AND EMP_NUM = #{empNum}
+		          GROUP BY TO_CHAR(CHK_DT, 'Q')) C ON (Q.QUARTER =  C.QUARTER)
+		 ORDER BY Q.QUARTER
+	</select>
+	
+	<select id="selectQuarterlyGramt" parameterType="String" resultType="String">
+		SELECT NVL(R.RCVMT_GRAMT, 0)
+		  FROM (
+		        SELECT 1 QUARTER FROM DUAL
+		        UNION ALL SELECT 2 FROM DUAL
+		        UNION ALL SELECT 3 FROM DUAL
+		        UNION ALL SELECT 4 FROM DUAL) Q
+		            LEFT OUTER JOIN
+		        (SELECT TO_CHAR(RCVMT_DT, 'Q') QUARTER, SUM(RCVMT_GRAMT) RCVMT_GRAMT
+		           FROM RCVMT
+		          WHERE RCVMT_DT >= TRUNC(SYSDATE, 'YEAR')
+		            AND CHK_NUM IN (SELECT CHK_NUM
+		                              FROM CHECKUP
+		                             WHERE EMP_NUM = #{empNum})
+		          GROUP BY TO_CHAR(RCVMT_DT, 'Q')) R ON (Q.QUARTER =  R.QUARTER)
+		 ORDER BY Q.QUARTER
+	</select>
+	
+	<select id="selectYearlyPtCount" parameterType="String" resultType="Map">
+		SELECT C1.YEAR, TO_CHAR(COUNT(PT_NUM)) PT_COUNT
+		  FROM (
+		        SELECT DISTINCT EXTRACT(YEAR FROM CHK_DT) YEAR
+		          FROM CHECKUP
+		    ) C1
+		    LEFT OUTER JOIN (
+		        SELECT EXTRACT(YEAR FROM CHK_DT) YEAR, PT_NUM
+		          FROM CHECKUP
+		         WHERE EMP_NUM = #{empNum}
+		    ) C2
+		    ON (C1.YEAR = C2.YEAR)
+		 GROUP BY C1.YEAR
+		 ORDER BY C1.YEAR
+	</select>
+	
+	<select id="selectYearlyGramt" parameterType="String" resultType="Map">
+		SELECT R1.YEAR, TO_CHAR(SUM(RCVMT_GRAMT)) RCVMT_GRAMT
+		  FROM (
+		        SELECT DISTINCT EXTRACT(YEAR FROM RCVMT_DT) YEAR
+		          FROM RCVMT
+		    ) R1
+		    LEFT OUTER JOIN (
+		        SELECT EXTRACT(YEAR FROM RCVMT_DT) YEAR, RCVMT_GRAMT
+		          FROM RCVMT
+		         WHERE CHK_NUM IN (SELECT CHK_NUM
+		                             FROM CHECKUP
+		                            WHERE EMP_NUM = #{empNum})
+		    ) R2
+		    ON (R1.YEAR = R2.YEAR)
+		 GROUP BY R1.YEAR
+		 ORDER BY R1.YEAR
+	</select>
+	
+</mapper>

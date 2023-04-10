@@ -1,0 +1,46 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+public class ChatgroupVO {
+	
+	private int chatgrpNum;
+	private String chatgrpNm;
+	
+	private int noReadCount;
+	
+	private List<ChatMemberVO> chatMemList;
+	
+	
+	public int getChatgrpNum() {
+		return chatgrpNum;
+	}
+	public void setChatgrpNum(int chatgrpNum) {
+		this.chatgrpNum = chatgrpNum;
+	}
+	public String getChatgrpNm() {
+		return chatgrpNm;
+	}
+	public void setChatgrpNm(String chatgrpNm) {
+		this.chatgrpNm = chatgrpNm;
+	}
+	public int getNoReadCount() {
+		return noReadCount;
+	}
+	public void setNoReadCount(int noReadCount) {
+		this.noReadCount = noReadCount;
+	}
+	public List<ChatMemberVO> getChatMemList() {
+		return chatMemList;
+	}
+	public void setChatMemList(List<ChatMemberVO> chatMemList) {
+		this.chatMemList = chatMemList;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "ChatgroupVO [chatgrpNum=" + chatgrpNum + ", chatgrpNm=" + chatgrpNm + ", noReadCount=" + noReadCount
+				+ ", chatMemList=" + chatMemList + "]";
+	}
+}

@@ -1,0 +1,28 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class CheckupVO {
+	
+	private String chkNum;
+	private String regNum;
+	private String ptNum;
+	private String empNum;
+	private Date chkDt;
+	private String ptNm;
+	
+	private String totalCheckupCost;
+	private String chkDtStr;
+	
+	List<PiVO> piList;
+	List<TxPlanVO> txpList;
+	List<TxVO> txList;
+	List<TxNextVO> txnList;
+	
+	//직원 이름
+	private String empNm;
+}

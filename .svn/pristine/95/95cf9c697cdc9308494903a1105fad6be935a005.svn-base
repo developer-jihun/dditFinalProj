@@ -1,0 +1,727 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri = "http://java.sun.com/jsp/jstl/core" prefix = "c" %>
+
+<script src='/resources/fullcalendar-6.1.5/packages/core/index.global.js'></script>
+<script src='/resources/fullcalendar-6.1.5/packages/daygrid/index.global.js'></script>
+<script src='/resources/fullcalendar-6.1.5/packages/timegrid/index.global.js'></script>
+<script src='/resources/fullcalendar-6.1.5/packages/list/index.global.js'></script>
+<script src='/resources/fullcalendar-6.1.5/packages/moment/moment.js'></script>
+
+<script src="/resources/fullcalendar/js/setting2.js"></script> 
+<script src="/resources/js/alertModule.js"></script>
+
+<style>
+/* 일요일 날짜 빨간색 */
+.fc-day-sun a {
+  color: red;
+  text-decoration: none;
+}
+
+/* 토요일 날짜 파란색 */
+.fc-day-sat a {
+  color: blue;
+  text-decoration: none;
+}
+
+/* 커스텀 버튼 css !important 사용보다 정확한 경로 설정  */
+.fc-header-toolbar .fc-addEvent-button {
+	background-color: #6a6a6a;   
+}
+
+</style>
+
+<!-- 상단 시작 -->
+<div class="content-wrapper" style="background-color: rgb(101, 125, 150); min-height: 1033px;">
+	<!-- main 검색창을 포함한 navbar 시작-->
+	<nav class="navbar navbar-expand navbar-white navbar-light" style="background-color: #404b57;">
+		<div class="dropdown">
+			<input type="text" class="form-control" id="ptSearch" placeholder="환자 검색" onkeyup="searchPatient(this);" style="width: 400px;">
+			<ul id="ptSearchDropdown" class="dropdown-menu"></ul>
+		</div>
+<!-- 		<img src="/resources/images/layout/memo_icon.png" alt="메모" id="memo" class="brand-image elevation-1" style="margin-left: 15px;"> -->
+		<ul class="navbar-nav ml-auto"></ul>
+	</nav>
+	<!-- main 검색창을 포함한 navbar 끝 -->
+	<section class="content" style="margin-top: 1%;">
+<!-- 상단 끝 -->
+
+		<div class="row" >
+			<div class="col-md-7">
+	        	<div class="card card-primary">
+			        <div class="card-body" >
+			        	<button type="button" data-toggle="modal" data-target="#modalTest" >modalTest</button>
+			        	<div class="calendar" id="calendarDay">
+			            </div>
+	                </div>
+        		</div>
+        	</div>
+<!-- 			 height !important -->
+			<!-- 일자 -->
+			<div class="col-md-5">
+	          <div class="card card-primary">
+				<div class="card-body">
+		            <div class="calendar" id='calendarMonth'>
+	                </div>
+            	</div>
+	          </div>
+	        </div>
+        </div>
+	</section>
+</div>
+<!-- body 끝 -->	
+
+<!-- TestModal -->
+<div class="modal fade" id="modalTest" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="content">
+        	<div class="d-flex justify-content-around">
+        		<div class="col-md-5 card card-outline card-info">
+        			<label>이름</label>
+        			<div class="input-group">
+						<div class="input-group-text"><i class="fa-solid fa-person fa-xl"></i></div>
+        				<input type="text" class="form-control" placeholder="성명을 입력해주세요"/>
+        			</div>
+        			<br />
+        			<label>휴대전화</label>
+        			<div class="input-group">
+						<div class="input-group-text"><i class="fa-solid fa-phone"></i></div>
+	        			<input type="text" class="form-control" placeholder="- 제외"/>
+        			</div>
+        			<br />
+        			<label>호소 증상(c.c)</label>
+        			<div class="input-group">
+						<div class="input-group-text"><i class="fa-regular fa-circle-question"></i></div>
+	        			<textarea class="form-control" rows="5" placeholder="증상을 입력해주세요"></textarea>
+        			</div>
+        		</div>
+        		<div class="col-xl-5 card card-outline card-info">
+        			<label>진료 날짜</label>
+        			<div class="input-group date">
+						<div class="input-group-text"><i class="fa fa-calendar"></i></div>
+						<input type="date" class="form-control datetimepicker-input">
+					</div>
+					<br />
+        			<label>진료 시작 시간</label>
+        			<div class="input-group date" id="reservationdatetime" data-target-input="nearest">
+						<div class="input-group-text"><i class="fa-regular fa-clock"></i></div>
+						<select class="slier form-control">
+							<option>option 1</option>
+							<option>option 2</option>
+							<option>option 3</option>
+							<option>option 4</option>
+							<option>option 5</option>
+						</select>
+					</div>
+					<br />
+        			<label>진료 종료 시간</label>
+        			<div class="input-group date" id="reservationdatetime" data-target-input="nearest">
+						<div class="input-group-text"><i class="fa-regular fa-clock"></i></div>
+						<select class="slier form-control">
+							<option>option 1</option>
+							<option>option 2</option>
+							<option>option 3</option>
+							<option>option 4</option>
+							<option>option 5</option>
+						</select>
+					</div>
+					<br />
+        			<label>의사 선택</label>
+        			<div class="input-group date" id="reservationdatetime" data-target-input="nearest">
+						<div class="input-group-text"><i class="fa-solid fa-user-doctor"></i></div>
+						<select class="slier form-control">
+							<option>option 1</option>
+							<option>option 2</option>
+							<option>option 3</option>
+							<option>option 4</option>
+							<option>option 5</option>
+						</select>
+					</div>
+        		</div>
+        	</div>
+        	<input type="hidden" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Understood</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- TestModal -->
+
+<!-- 일정 추가 MODAL -->
+	<div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" id="resvAddModal">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h1 class="modal-title"></h1>
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                	<span aria-hidden="true">&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="row" style="display:none;">
+	                    <div class="col-xs-12" >
+	                        <input class='inputModal' id="resvNum" type="hidden" name="resvNum" />
+	                    </div>
+	                </div>
+	
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="ptNm">환자명</label>
+	                        <input class="inputModal" type="text" name="ptNm" id="ptNm"
+	                            placeholder="이름을 입력하세요" required="required" />
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="ptPhone">전화번호</label>
+	                        <input class="inputModal" type="text" name="ptPhone" id="ptPhone"
+	                            required="required" />
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="resvDate">진료 날짜</label>
+	                        <input class="inputModal" type="date" name="resvDate" id="resvDate" />
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="resvStartTime">진료 시작 시간</label>
+							<select class="inputModal" name="resvStartTime" id="resvStartTime">
+								<option value="09:00">09:00</option>
+								<option value="09:30">09:30</option>
+							</select> 
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="resvEndTime">진료 종료 시간</label>
+							<select class="inputModal" name="resvEndTime" id="resvEndTime" >
+								<option value="09:30">09:30</option>
+								<option value="10:00">10:00</option>
+							</select> 
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="empNum">의사</label>
+	                        <select class="inputModal" name="empNum" id="empNum" >
+	                            <option value="" style="display:none;">의사를 선택하세요</option>
+	                        </select>
+	                    </div>
+	                </div>
+	                <div class="row">
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="resvCc">호소 증상(C.C)</label>
+	                        <textarea rows="4" cols="50" class="inputModal" name="resvCc"
+	                            id="resvCc"></textarea>
+	                    </div>
+	                </div>
+	                <div class="row" id='status_div'>
+	                    <div class="col-xs-12">
+	                        <label class="col-xs-4" for="resvStatus">예약 상태</label>
+	                        <input class='inputModal' id="resvStatus" type="text" name="resvStatus" readonly />
+	                    </div>
+	                </div>
+	            </div>
+	            <div class="modal-footer modalBtnContainer-addEvent">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+	                <button type="button" class="btn btn-primary" id="save-event">저장</button>
+	            </div>
+	            
+	            <div class="modal-footer modalBtnContainer-resvEvent">
+	                <button type="button" class="btn btn-default" data-dismiss="modal" id='modalClose'>닫기</button>
+	                <!-- 예약중일경우  -->
+	                <button type="button" class="btn btn-primary" id="implResv" value="IMPL_RESV">예약 이행</button>
+	                <button type="button" class="btn btn-danger" id="cancelResv" value='CANCEL_RESV'>예약 취소</button>
+	            	<!-- 예약 이행중일 경우  -->
+	                <button type="button" class="btn btn-warning" id="inResv" value='IN_RESV'>예약 이행 취소</button>
+	            </div>
+	            
+	        </div><!-- /.modal-content -->
+	    </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+<script>
+var resvInfoEvent = '';
+	//--------------------------------- 시간 달력 생성 끝----------------------------------------	
+	var calendarDay = document.getElementById('calendarDay');
+    var Dcalendar = new FullCalendar.Calendar(calendarDay, {
+		locale				: 'ko',				// 한글 설정
+		timeZone			: 'local',			// 시간 설정
+		initialView			: 'timeGridDay',	// 일자 달력 표시  , 'dayGridWeek', 'timeGridDay', 'listWeek'
+		allDaySlot			: false,			// 상단에 AllDay 출력여부
+		nowIndicator		: true,				// 현재 시간 줄 표시
+		eventMinHeight		: '100px',			// 이벤트 최소 높이 설정	default : 15
+// 		eventShortHeight	: '40px',			// 길이가 짧은 이벤트가 있을 경우, 높이 조절 default : 30
+// 	    businessHours		: true,				// 비즈니스 시간(토요일 일요일 배경색 회색으로 변함)
+		slotEventOverlap	: false,			// 이벤트 겹침 여부 , default : true
+		hiddenDays			: [],				// 달력 보기에 주말을 포함할 지 여부를 설정 default : [] (월 : 1, 일 : 0, 금 : 5)
+		dayHeaders			: true,				// headr에 월 표시 여부 default : true
+		height				: '800px',			// 높이 크기 조절
+		slotMinTime			: '08:00:00',		// 슬롯 최소 시간 default : '00:00:00'
+		slotMaxTime			: '19:30:00',		// 슬롯 최대 시간 default : '24:00:00'
+		scrollTime			: '08:00:00',		// 날짜 변경시 보여지는 시간 설정	 default : 06:00:00 (오전 6시)
+		scrollTimeReset		: true,				// 날짜 변경시 시간 초기화(scrollTime 시간으로 초기화) default : true
+		slotDuration		: '00:15:00',		// 슬롯의 시간 설정 default : '00:30:00'
+		slotLabelInterval	: '00:30',			// {hours:1} : "01:00"
+	  	selectable			: true,				// 테이블 선택 가능
+		selectMirror		: true,				// 테이블 선택 영역 이벤트 발생
+		slotLabelFormat 	: 					// 라벨의 보여지는 시간 설정
+			{					
+			  	hour		: 'numeric',
+			  	minute		: '2-digit',
+			  	omitZeroMinute: true,
+			  	meridiem	: 'long'
+			},
+		customButtons		: 					// 사용자 커스텀 버튼 추가
+			{					
+			    addEvent : {
+			      	text : '예약',
+			      	click : function() {
+			      		newEvent();
+		      		},		
+		   		}
+	  		},
+	  	select: function(arg) {
+	    	console.log(arg);
+	        var title = prompt('입력할 일정:');
+	    	// title 값이 있을때, 화면에 calendar.addEvent() json형식으로 일정을 추가
+	        if (title) {
+	          	calendar.addEvent({
+		            title	: title,
+		            start	: arg.start,
+		            end		: arg.end,
+		            allDay	: arg.allDay,
+		            backgroundColor:"yellow",
+		            textColor:"blue"
+	          	});
+	        }
+	    	calendar.unselect();
+	    },	
+		headerToolbar 	: {					// 캘린더 위 header 지정
+			start	: 'prev,today', 
+			center	: 'title',
+		 	end		: 'addEvent,next' 
+		},
+		buttonText 		:					// header버튼 이름 지정
+			{
+			  today	:    '오늘',
+			  month	:    'month',
+			  week	:    'week',
+			  day	:    'day',
+			  list	:    'list'
+		},
+		buttonIcons			:{
+		  	prev: 'chevron-left',
+		  	next: 'chevron-right'
+		},
+		viewHint: function(buttonText, buttonName) {// ??
+		    if (buttonName.match(/^dayGrid/)) { // matches "dayGridWeek"
+		      return buttonText + " list view" // results in "week list view"
+		    } else {
+		      return buttonText + " view" // results in "week view"
+		    }
+		},
+		/* ****************
+	   	*  예약 현황 불러오기       *
+	   	* ************** */
+	    eventSources: [
+	        {
+	          url: '/hospital/resv/list2',
+	          method: 'get',
+	          failure: function() {
+	            alert('there was an error while fetching events!');
+	          },
+		    }
+	      ],
+     	eventClick: function(info) {
+     		var element = $(info.el); // 이벤트 클릭 시 , 이벤트 정보를 담고 있다.
+			resvInfoEvent = info.event;
+     		var resvInfo = info.event.extendedProps; // 이벤트 정보 
+			console.log("event.extendedProps : " + JSON.stringify(resvInfo));
+			
+			// 이벤트 시간
+			var start = info.event.start;  
+			var end = info.event.end;  
+			
+     		//------------------------클릭 이벤트 시작 -----------------------------------------------
+     		$('.inputModal input').attr('readonly','true');
+     		$('.inputModal select').attr('disabled','disabled');
+     		$('textarea').attr('readonly','true');
+
+     	    if (end === null) {
+     	    	end = start;
+     	    }
+     	    modalTitle.html('예약 정보');
+     	    resvNum.val(resvInfo.resvNum);
+     	    ptNm.val(resvInfo.ptNm);
+     	    ptPhone.val(resvInfo.ptPhone);
+     	   	empNum.val(resvInfo.empNum);
+    	    resvCc.val(resvInfo.resvCc);
+    	   	resvStat.val(resvInfo.statNm);
+    	   	
+     		var date = moment(start).format('YYYY-MM-DD HH:mm').split(' '); // 년월일, 시간 분리
+     		var endTime = moment(end).format('YYYY-MM-DD HH:mm').split(' ');
+     		rDate.val(date[0]);
+     		rStartT.val(date[1]);
+     		rEndT.val(endTime[1]);
+     	   
+     	    addBtnContainer.hide();
+     	    modifyBtnContainer.show();
+     	    eventModal.modal('show');
+     		
+     		$('.modalBtnContainer-resvEvent button').css('display','none');
+     		$('#modalClose').css('display','block');
+
+     		if(moment(end).format('YYYY-MM-DD HH:mm') > fullToday()){
+     			console.log("resvInfo.status : " + resvInfo.status);
+     			if(resvInfo.status == 'IN_RESV'){
+     				$('#implResv').css('display','block');
+     				$('#cancelResv').css('display','block');
+     			} else if(resvInfo.status == 'IMPL_RESV'){
+     				$('#inResv').css('display','block');
+     			}
+     		}
+     		//------------------------클릭 이벤트 끝 -----------------------------------------------
+   	  	}
+ 	});
+   	Dcalendar.render();
+	// --------------------------------- 시간 달력 생성 끝----------------------------------------
+   	
+	// --------------------------------- 월 달력 생성 시작----------------------------------------
+    var calendarMonth = document.getElementById('calendarMonth');
+    var Mcalendar = new FullCalendar.Calendar(calendarMonth , {
+    	nowIndicator: true,
+	    initialView: 'dayGridMonth',
+	    locale: "ko",
+      	height : '650px',
+	    dayMaxEventRows: true, 				// 이벤트 + more 표시 여부
+// 	    views: {
+// 	      timeGrid: {
+// 	       dayMaxEventRows: 6 				// 이벤트 개수 제한
+// 	    }
+// 	    },
+		dayPopoverFormat : {				// 이벤트 popover 시 제목의 날짜 형식 지정 default : { month: 'long', day: 'numeric', year: 'numeric' }
+			month: 'long', 
+			day: 'numeric', 
+			year: 'numeric' 
+		}, 
+     	headerToolbar: {
+        	left: 'prev,today',
+          	center: 'title',
+          	right: 'next'
+        },
+        businessHours: true,		// 비즈니스 시간(토요일 일요일 배경색 회색으로 변함)
+//      navLinks: true, // can click day/week names to navigate views
+	    dayMaxEvents: true, // allow "more" link when too many events
+	    eventSources: [
+	      	{
+	          url: '/hospital/resv/list',
+	          method: 'get',
+	          failure: function() {
+	            alert('there was an error while fetching events!');
+	          },
+	        }
+	      ]
+    });
+    Mcalendar.render();
+	// --------------------------------- 월 달력 생성 끝----------------------------------------
+  
+//예약 가능 의사만 표시
+$(document).on("click", "#empNum",function(){ dateChange(); });
+
+//현재 날짜보다 이전 날짜의 데이터들중 
+//상태가 예약 이행, 예약 취소가 아닌 항목은 예약 미이행으로 상태 변경
+$(document).ready(function(){
+	// test
+	$.ajax({
+		url:'/hospital/resv/previousRes',
+		type:'get',
+		dataType:'json',
+		success:function(res){
+			console.log('미이행 예약 : ' + res);
+		},
+		error:function(err){
+			simpleJustErrorAlert(err.status);
+		}
+	});
+})
+
+// 모달을 통한 일정 추가
+var eventModal	= $('#resvAddModal');
+var rDate 		= $("input[name='resvDate']");	// 일자 선택
+var modalTitle 	= $('.modal-title');
+var resvNum 	= $('#resvNum');		// 예약 번호
+var ptNm 		= $('#ptNm');			// 환자명
+var ptPhone 	= $('#ptPhone'); 		// 휴대폰 번호
+var rStartT 	= $('#resvStartTime');	// 시작 시간
+var rEndT	 	= $('#resvEndTime');	// 종료 시간
+var empNum 		= $('#empNum');			// 의사 선택
+var resvCc 		= $('#resvCc');			// 호소증상
+var resvStat	= $('#resvStatus');		// 예약 상태
+
+var addBtnContainer = $('.modalBtnContainer-addEvent');
+var modifyBtnContainer = $('.modalBtnContainer-resvEvent');
+
+/* ****************
+ *  새로운 일정 생성
+ * ************** */
+var lastEditStart = ''; // 이벤트 발생 전 값 저장
+var lastEditEnd = ''; 	// 이벤트 발생 전 값 저장
+
+function newEvent () {
+// 	$('#calendarDay').fullCalendar('removeEvents');
+	$('input').removeAttr('readonly');
+	$('select').removeAttr('disabled');
+	$('textarea').removeAttr('readonly');
+	$('#status_div').attr('hidden','hidden');
+	
+	var today = fullToday();
+	var date = today.split(' '); // 년월일, 시간 분리
+	
+    $("#contextMenu").hide(); //메뉴 숨김
+    
+    modalTitle.html('새 예약');
+    resvNum.val('');
+    ptNm.val('');
+    ptNm.attr("placeholder",'이름을 입력하세요 ex(홍길동)');
+    ptPhone.val('');
+    ptPhone.attr("placeholder",'전화번호를 입력하세요 ex(01034448888)');
+    rDate.val(date[0]);
+    rStartT.attr("placeholder",'시간을 선택해 주세요');
+    rEndT.attr("placeholder",'시간을 선택해주세요');
+    rStartT.val('');
+    rEndT.val('');
+    empNum.val('').prop('selected', true);
+    resvCc.val('');
+    resvCc.attr("placeholder",'내원 이유를 간단히 적어주세요 ^^');
+    resvStat.val('예약 진행중');
+    
+    lastEditStart = date[1];
+    lastEditEnd = date[1];
+    
+    addBtnContainer.show();
+    modifyBtnContainer.hide();
+    eventModal.modal('show');
+
+    //새로운 일정 저장버튼 클릭
+    $('#save-event').unbind();
+    $('#save-event').on('click', function () {
+        
+		// 예약 테이블DB 저장 정보
+		var calData = {
+        	'ptNm'		: ptNm.val(),
+        	'ptPhone'	: ptPhone.val(),
+        	'resvSdt'	: rDate.val() + " " + rStartT.val(),
+        	'resvEdt'	: rDate.val() + " " + rEndT.val(),
+        	'empNum'	: empNum.val(),
+        	'resvCc'	: resvCc.val()
+        };
+		// 이벤트 추가될 데이터
+		var eventData = {
+			'title' 	: ptNm.val(),
+        	'ptNm'		: ptNm.val(),
+        	'ptPhone'	: ptPhone.val(),
+        	'start'		: rDate.val() + " " + rStartT.val(),
+        	'end'		: rDate.val() + " " + rEndT.val(),
+        	'empNum'	: empNum.val(),
+        	'resvCc'	: resvCc.val(),
+        	"backgroundColor":"#32CD32"
+	    };
+		
+		
+        if(calData.ptNm === '') {
+        	simpleErrorAlert('이름을 입력해주세요');
+            return false;
+        }
+        if(calData.ptPhone === '') {
+        	 simpleErrorAlert('전화번호를 입력해주세요');
+            return false;
+        }
+		if(calData.empNum === ''){
+			simpleErrorAlert('의사를 선택해주세요');
+            return false;
+		}
+		if(rDate.val() === '') {
+			simpleErrorAlert('시간을 확인해주세요');
+            return false;
+        }
+        if(rStartT.val() >= rEndT.val()) {
+        	simpleErrorAlert('시간을 확인해주세요');
+            return false;
+        }
+        
+        var sbTime = rStartT.val().split(",",0) + rStartT.val().split(",",1);
+        var ebTime = rEndT.val().split(",",0) + rEndT.val().split(",",1);
+
+        // 점심시간이 포함된 예약 일시일시 리턴
+        if(sbreak >= sbTime && ebreak <= ebTime){
+        	simpleErrorAlert("불가능한 예약 시간입니다.")
+        	return false;
+        }
+        
+        eventModal.find('input, textarea').val('');
+        eventModal.modal('hide');
+		
+        // header
+        const csrfToken = $('#_csrfToken').val(); 
+        //새로운 일정 저장
+        $.ajax({
+            url: "/hospital/resv/create",
+            type: "post",
+            data: JSON.stringify(calData),
+            dataType: "json",
+            beforeSend: function(xhr) {
+            	xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+            	xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+            },
+            success: function (result) {
+            	console.log(result);
+            	if(result == 1){
+                	//캘린더 초기화
+                	Dcalendar.refetchEvents();
+            		simpleSuccessAlert('예약 성공');
+            	} else {
+            		simpleErrorAlert('예약 실패..다시 시도해주세요')
+            	}
+            }
+        });
+    });
+};
+// 일정 추가 끝
+
+
+// 예약 취소
+$('#cancelResv').on('click', function () { 
+	var title = '예약 취소'	;
+	var text = '예약을 취소하시겠습니까?';	
+	var state = $(this).val();
+	resvState(title, text, state);
+});
+// 예약 이행
+$('#implResv').on('click', function () { 
+	var title = '예약 이행'	;
+	var text = '예약을 이행하시겠습니까?';	
+	var state = $(this).val();
+	resvState(title, text, state);
+});
+//예약 이행 취소
+$('#inResv').on('click', function () { 
+	var title = '예약이행 취소'	;
+	var text = '예약 이행을 취소하시겠습니까?';	
+	var state = $(this).val();
+	resvState(title, text, state);
+});
+
+//확인 취소 여부 함수
+function resvState(title, text, state){
+	Swal.fire({
+		title: title,
+		text: text,
+		showDenyButton: true,
+		confirmButtonText: '확인',
+		denyButtonText: '취소',
+	}).then((result) => {
+		if (result.isConfirmed) {
+			console.log(state);
+			crudState(state); 
+		} 
+	});
+}
+//예약 상태 변경
+function crudState(param){
+	console.log(param);
+	eventModal.modal('hide');
+	var resvNum = $('#resvNum').val();
+	
+	console.log(resvNum);
+	
+	var changeStat = param;
+	var data = { 
+    	'resvId' : resvNum,
+    	'resvStatus' : changeStat
+	}
+	console.log(data);
+	
+	// header
+    const csrfToken = $('#_csrfToken').val(); 
+    // 상태 변경
+    $.ajax({
+        type: "post",
+        url: "/hospital/resv/changeStat",
+        data: JSON.stringify(data),
+        dataType: 'json',
+        beforeSend: function(xhr) {
+        	xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+        	xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+        },
+        success: function (response) {
+        	var res = '비정상적인 접근입니다.';
+            console.log(response)
+            if(response == 1){
+            	if(data.resvStatus == 'CANCEL_RESV'){ res='예약이 취소되었습니다.'};
+            	if(data.resvStatus == 'IMPL_RESV'){ res='예약이행 완료' };
+            	if(data.resvStatus == 'IN_RESV'){ res='예약이행이 취소되었습니다.' };
+            	Dcalendar.refetchEvents();
+            	simpleSuccessAlert(res);
+            } else {
+            	simpleErrorAlert('변경 실패하였습니다.');
+            };
+        }
+    });
+};
+
+//날짜 변경시 예약 가능 의사 가져오기 이벤트
+function dateChange(){
+	//선택 불가 의사 초기화
+	$("select option").removeAttr('disabled');
+	var day = rDate.val();
+	var stime = rStartT.val();
+	var etime = rEndT.val();
+	
+	if(day == '' || stime == ''|| etime == ''){ 
+		return; }
+	
+	var sdate = day + " " + stime;
+	var edate = day + " " + etime;
+	
+	if(rDate.val() === ''){  return false;}
+	if(rStartT.val() === ''){return false;}
+	if(rEndT.val() === ''){  return false;}
+	
+	$.ajax({
+		url:'/hospital/resv/selectOption?sdate=' + sdate + '&edate=' + edate,
+		contentType:'application.json;charset=utf-8',
+		type:'get',
+		dataType:'json',
+		success:function(res){
+			$.each(res, function(i, v){
+				console.log(v);
+				var empNm = "#" + v;
+				console.log(empNm);
+				
+				$("select option[value*=" + v + "]").attr('disabled',true);
+				// css 속성 바꾸기
+				$("select option[value*=" + v + "]").css('text-shadow', '0px 0px 10px black');
+			});		
+		},
+		error:function(err){
+			simpleJustErrorAlert(err.status);
+		}
+	});
+}
+</script>

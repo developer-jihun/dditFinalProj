@@ -1,0 +1,14 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class TxCodeVO {
+	
+	private String txcCd;
+	private String txcNm;
+	private int txcPrice;
+	
+}

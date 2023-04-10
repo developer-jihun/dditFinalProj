@@ -1,0 +1,156 @@
+package com.web.ddentist.chat.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.chat.service.IChatService;
+import com.web.ddentist.emp.service.EmpDetails;
+import com.web.ddentist.vo.ChatMemberVO;
+import com.web.ddentist.vo.ChatVO;
+import com.web.ddentist.vo.ChatgroupVO;
+import com.web.ddentist.vo.EmployeeVO;
+
+@Controller
+@RequestMapping("/chat")
+public class ChatController {
+
+	@Autowired
+	private IChatService chatService;
+	@Autowired
+	private ChatHandler chatHandler;
+
+	@ResponseBody
+	@GetMapping("/chatgrpList")
+	public List<ChatgroupVO> chatgrpList(Authentication auth) {
+
+		EmpDetails empInfo = (EmpDetails) auth.getPrincipal();
+		String empNum = empInfo.getEmpVO().getEmpNum();
+
+		List<ChatgroupVO> chatgroup = chatService.chatgrpList(empNum);
+
+		return chatgroup;
+	}
+
+	@ResponseBody
+	@GetMapping("/chatList")
+	public List<ChatVO> chatList(@RequestParam String chatgrpNum){
+
+		List<ChatVO> chatList = chatService.chatList(chatgrpNum);
+
+		return chatList;
+	}
+
+	@ResponseBody
+	@PostMapping("/updateLastReadDate")
+	public void updateLastReadDate(@RequestBody ChatMemberVO chatMemVO){
+		chatService.updateLastReadDate(chatMemVO);
+	}
+
+	@ResponseBody
+	@GetMapping("/empList")
+	public List<EmployeeVO> empList(@RequestParam(required=false) String chatgrpNum){
+		return chatService.empList(chatgrpNum);
+	}
+
+	@ResponseBody
+	@PostMapping("/createNewChat")
+	public void createNewChat(@ModelAttribute ChatgroupVO chatgrpVO, @RequestParam String[] empNum){
+		List<ChatMemberVO> chatMemList = chatService.createNewChat(chatgrpVO, empNum);
+
+		if(chatMemList == null) return;
+
+		int chatgrpNum = chatgrpVO.getChatgrpNum();
+		chatHandler.newChatgrpCreated(chatgrpNum, chatMemList);
+	}
+
+	@ResponseBody
+	@PostMapping("/inviteNewMem")
+	public void inviteNewMem(@ModelAttribute ChatgroupVO chatgrpVO, @RequestParam String[] empNum){
+		List<ChatMemberVO> invitedMemList = chatService.inviteNewMem(chatgrpVO, empNum);
+
+		if(invitedMemList == null) return;
+
+		int chatgrpNum = chatgrpVO.getChatgrpNum();
+		try {
+			chatHandler.newMemInvited(chatgrpNum, invitedMemList);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@ResponseBody
+	@GetMapping("/listChatMem")
+	public List<EmployeeVO> listChatMem(@RequestParam int chatgrpNum){
+		return chatService.listChatMem(chatgrpNum);
+	}
+
+	@ResponseBody
+	@PostMapping("/exitChatgrp")
+	public void exitChatgrp(@RequestBody ChatMemberVO chatMemVO) {
+		chatService.exitChatgrp(chatMemVO);
+	}
+
+//	@ResponseBody
+//	@PostMapping("/createChatroom")
+//	public int createChatroom(String[] member, String chatroomName) {
+//
+//		return chatService.createChatroom(member, chatroomName);
+//	}
+//
+//	@ResponseBody
+//	@PostMapping("/chatroom")
+//	public String chat(String chatroomNum, Model model) {
+//
+//		model.addAttribute("chatroomNum", chatroomNum);
+//		return "chat/chatroom";
+//	}
+//
+//	@ResponseBody
+//	@PostMapping("/chatData")
+//	public List<ChatVO> chatData(@RequestBody Map<String, String> param){
+//
+//		List<ChatVO> chatData = chatService.chatData(param.get("chatroomNum"));
+//
+//		return chatData;
+//	}
+//
+//	@ResponseBody
+//	@GetMapping("/checkNonRead")
+//	public int checkNonRead(@RequestParam Map<String, String> param) {
+//
+//		int nonRead = chatService.checkNonRead(param);
+//
+//		return nonRead;
+//	}
+//
+//	@ResponseBody
+//	@PostMapping("/getSendResult")
+//	public ChatVO getSendResult(@RequestBody Map<String, String> param) {
+//
+//		ChatVO chatVO = chatService.getSendResult(param.get("chatroomNum"));
+//
+//		return chatVO;
+//	}
+//
+//	@GetMapping("/updateLastRead")
+//	public ResponseEntity<String> updateLastRead (@RequestParam Map<String, String> param) {
+//
+//		int result = chatService.updateLastRead(param);
+//
+//		if(result == 0) {
+//			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+//		}
+//
+//		return new ResponseEntity<String>(HttpStatus.OK);
+//	}
+}

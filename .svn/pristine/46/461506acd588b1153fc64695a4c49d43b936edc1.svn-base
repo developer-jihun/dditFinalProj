@@ -1,0 +1,81 @@
+package com.web.ddentist.hospital.site.doctorIntro.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.site.doctorIntro.service.DoctorIntroService;
+import com.web.ddentist.vo.IntroduceVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/site/doctorIntro")
+public class DoctorIntroController {
+	
+	
+	@Autowired
+	DoctorIntroService dService;
+	
+
+	//의사 전체 조회
+	@GetMapping("")
+	public String doctorIntroMain(Model model) {
+	
+		List<IntroduceVO> doctorList=this.dService.doctorIntroMain();
+		
+		model.addAttribute("doctorList",doctorList);
+		
+		log.info("doctorList:"+doctorList);
+		
+		return "hospital/doctorIntro";
+	}
+	
+	//의사 선택 조회
+	@ResponseBody
+	@PostMapping("/doctorSelect")
+	public IntroduceVO doctorSelect(@RequestBody IntroduceVO intVO) {
+		
+		log.info("doctorSelect : "+intVO);
+		
+		intVO=this.dService.doctorSelect(intVO);
+		
+		log.info(">>>>doctorSelect : "+intVO);
+		
+		IntroduceVO noDataVO = new IntroduceVO();
+		if(intVO == null) {
+			noDataVO.setNodata("noData");
+			return noDataVO;
+		}else {
+			return intVO;			
+		}
+
+	}
+	
+	//정보 저장
+	@ResponseBody
+	@PostMapping("/doctorSave")
+	public int doctorSave(@RequestBody IntroduceVO intVO) {
+		
+		log.info("doctorSave:"+intVO);
+		
+		int result = this.dService.doctorSave(intVO);
+		
+		log.info(">>>>intVO:"+result);
+		
+		return result;
+	}
+	
+	
+}
+
+	

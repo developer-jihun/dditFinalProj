@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						https://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security
+						https://www.springframework.org/schema/security/spring-security.xsd">
+	
+	<bean id="empDetailsService" class="com.web.ddentist.emp.service.EmpDetailsService" />
+	<bean id="patientDetailsService" class="com.web.ddentist.patient.service.PatientDetailsService" />
+	<bean id="passwordEncoderImpl" class="com.web.ddentist.security.PasswordEncoderImpl" />
+	
+	<security:http pattern="/hospital/**" auto-config="true" authentication-manager-ref="empAuth">
+		
+		<security:intercept-url pattern="/resources/js/*.js" access="permitAll" />
+		<security:intercept-url pattern="/hospital/login" access="permitAll" />
+		<security:intercept-url pattern="/hospital/**" access="hasRole('ROLE_EMP')" />
+		
+		<security:form-login login-page="/hospital/login" login-processing-url="/hospital/login"
+							 default-target-url="/hospital/desk"
+							 username-parameter="empId" password-parameter="empPw" />
+		
+		<security:session-management>
+			<security:concurrency-control max-sessions="1" />
+		</security:session-management>
+		
+		<security:logout logout-url="/hospital/logout" delete-cookies="JSESSIONID" invalidate-session="true" logout-success-url="/hospital/login" />
+		
+	</security:http>
+	
+	
+	<security:authentication-manager id="empAuth">
+		<security:authentication-provider user-service-ref="empDetailsService">
+			<security:password-encoder ref="bCryptPasswordEncoder" />
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+	
+	
+	<security:http authentication-manager-ref="patientAuth" >
+	
+		<security:intercept-url pattern="/ddit/login" access="permitAll" />
+		<security:intercept-url pattern="/ddit/mypage" access="hasRole('ROLE_PT')" />
+<!-- 		<security:intercept-url pattern="/ddit/**" access="hasRole('ROLE_PT')" /> -->
+		
+		<security:form-login login-page="/ddit/login" login-processing-url="/ddit/login" default-target-url="/ddit"
+							 username-parameter="ptId" password-parameter="ptPw" />
+		
+		<security:session-management>
+			<security:concurrency-control max-sessions="1" />
+		</security:session-management>
+		
+		<security:logout logout-url="/ddit/logout" delete-cookies="JSESSIONID" invalidate-session="true" logout-success-url="/ddit" />
+		
+	</security:http>
+	
+	
+	<security:authentication-manager id="patientAuth">
+		<security:authentication-provider user-service-ref="patientDetailsService">
+			<security:password-encoder ref="bCryptPasswordEncoder" />
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+</beans>

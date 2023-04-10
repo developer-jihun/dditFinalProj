@@ -1,0 +1,84 @@
+package com.web.ddentist.hospital.crm.sms.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.CrmVO;
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.SmsTemplateVO;
+import com.web.ddentist.vo.SmsVO;
+
+public interface ISmsService {
+	
+	/**
+	 * 입력받은 키워드로 해당하는 CRM 정보를 검색<br>
+	 * 
+	 * @param searchMap 검색창에 입력한 키워드, 검색 시작 일자, 검색 종료 일자
+	 * @return 환자 번호, 환자 명, 처리상태, CRM사유, 다음예약일, CRM 예정일, CRM 처리일이 포함된 VO의 목록
+	 */
+	public List<CrmVO> searchPtOnCrmList(Map<String, String> searchMap);
+	
+	/**
+	 * 입력받은 키워드로 해당하는 환자 정보를 검색<br>
+	 * 
+	 * @param keyword 검색창에 입력한 키워드
+	 * @return 환자 번호, 환자 명, 환자 연락처, 최근 진료일, 다음 예약일이 포함된 VO의 목록
+	 */
+	public List<PatientVO> searchPtOnTargetList(String keyword);
+	
+	/**
+	 * CRM에 등록되어 있는 고객들에게 NCloud의 SMS 서비스를 사용해 SMS를 전송
+	 * 
+	 * @param smsData SMS를 전송할 내용과 전송 대상인 CRM의 CRM 번호가 담긴 JSON 문자열 데이터
+	 * @return 총 전송 횟수
+	 */
+	public int sendSmsOnCrm(String smsData);
+	
+	/**
+	 * CRM 대상 검색에서 선택한 고객들에게 NCloud의 SMS 서비스를 사용해 SMS를 전송
+	 * 
+	 * @param smsData SMS를 전송할 내용과 환자 번호 목록이 담긴 JSON 문자열 데이터
+	 * @return 총 전송 횟수
+	 */
+	public int sendSmsOnTarget(String smsData);
+	
+	/**
+	 * 처리상태가 처리완료인 CRM을 미완료 상태로 변경하고 처리일자를 삭제
+	 * 
+	 * @param crmNumList 미완료처리할 CRM의 CRM 번호 목록
+	 * @return 미완료처리된 CRM 건수
+	 */
+	public int uncompleteCrm(List<String> crmNumList);
+	
+	/**
+	 * 처리상태가 미완료인 CRM을 처리완료 상태로 변경하고 처리일자를 갱신
+	 * 
+	 * @param crmNumList 완료처리할 CRM의 CRM 번호 목록
+	 * @return 완료처리된 CRM 건수
+	 */
+	public int completeCrm(List<String> crmNumList);
+	
+	/**
+	 * CRM을 삭제
+	 * 
+	 * @param crmNumList 삭제할 CRM의 CRM 번호
+	 * @return 삭제된 CRM 건수
+	 */
+	public int deleteCrm(List<String> crmNumList);
+	
+	/**
+	 * 정해진 기간의 SMS 발송 이력을 가져옴
+	 * 
+	 * @param searchMap 검색창에 입력한 키워드, 검색 시작 일자, 검색 종료 일자
+	 * @return SMS 발송이력 목록
+	 */
+	public List<SmsVO> searchSmsHist(Map<String, String> searchMap);
+
+	/**
+	 * SMS 템플릿 목록을 가져옴
+	 * 
+	 * @param smsTplVO SMS 템플릿 유형이 담긴 VO
+	 * @return SMS 템플릿 목록
+	 */
+	public List<SmsTemplateVO> listSmsTemplate(SmsTemplateVO smsTplVO);
+}

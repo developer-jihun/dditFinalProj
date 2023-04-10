@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.PatientMapper">
+
+	<select id="login" parameterType="ptVO" resultType="ptVO">
+		SELECT PT_NUM, PT_NM, PT_BRDT, PT_RRNO, PT_GEN, PT_PHONE, PT_ZIP, PT_ADDR, PT_ADDR_DET,
+			   PT_MEMO, PRVC_PVSN_AGRE_YN, SMS_RCPTN_AGRE_YN, PT_MRSA_YN, PT_PREG_YN,
+			   PT_REG_DT, PT_ID, PT_PW, PT_ACC_STATUS, PT_AUTHRT
+		  FROM PATIENT
+		 WHERE PT_ACC_STATUS = '1'
+		   AND PT_ID = #{ptId}
+	</select>
+	
+	<select id="selectPtInfo" parameterType="ptVO" resultType="ptVO">
+		SELECT PT_NUM, PT_NM, PT_PHONE
+		  FROM PATIENT
+		 WHERE PT_NM = #{ptNm}
+		   AND PT_RRNO = #{ptRrno}
+		   AND PT_PHONE = #{ptPhone}
+	</select>
+	
+	<update id="updatePtMrsaYn" parameterType="ptVO">
+		UPDATE PATIENT SET PT_MRSA_YN = #{ptMrsaYn}
+					 WHERE PT_NUM = #{ptNum}
+	</update>
+	
+	<select id="checkId" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		  FROM PATIENT
+		 WHERE PT_ID = #{ptId}
+	</select>
+	
+	<update id="insertPtAcc" parameterType="ptVO">
+		UPDATE PATIENT SET PT_ID = #{ptId},
+						   PT_PW = #{ptPw},
+						   PT_ACC_STATUS = '1',
+						   PT_AUTHRT = 'ROLE_PT'
+					 WHERE PT_NUM = #{ptNum}
+	</update>
+	
+	<select id="findId" parameterType="ptVO" resultType="String">
+		SELECT PT_ID
+		  FROM PATIENT
+		 WHERE PT_ACC_STATUS = '1'
+		   AND PT_NM = #{ptNm}
+		   AND PT_PHONE = #{ptPhone}
+	</select>
+	
+	<select id="findPw" parameterType="ptVO" resultType="String">
+		SELECT PT_NUM
+		  FROM PATIENT
+		 WHERE PT_ACC_STATUS = '1'
+		   AND PT_ID = #{ptId}
+		   AND PT_PHONE = #{ptPhone}
+	</select>
+	
+	<update id="resetPtPw" parameterType="ptVO">
+		UPDATE PATIENT SET PT_PW = #{ptPw}
+					 WHERE PT_NUM = #{ptNum}
+	</update>
+	
+</mapper>

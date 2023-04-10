@@ -1,0 +1,37 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+public class ChatMemberVO {
+	
+	private String empNum;
+	private int chatgrpNum;
+	private Date chatgrpLastread;
+	
+	
+	public String getEmpNum() {
+		return empNum;
+	}
+	public void setEmpNum(String empNum) {
+		this.empNum = empNum;
+	}
+	public int getChatgrpNum() {
+		return chatgrpNum;
+	}
+	public void setChatgrpNum(int chatgrpNum) {
+		this.chatgrpNum = chatgrpNum;
+	}
+	public Date getChatgrpLastread() {
+		return chatgrpLastread;
+	}
+	public void setChatgrpLastread(Date chatgrpLastread) {
+		this.chatgrpLastread = chatgrpLastread;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "ChatMemberVO [empNum=" + empNum + ", chatgrpNum=" + chatgrpNum + ", chatgrpLastread=" + chatgrpLastread
+				+ "]";
+	}
+}

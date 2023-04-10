@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mybatis 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.RcvmtMapper">
+	
+	<select id="listWaitingRcvmt" resultType="rcvmtVO">
+		SELECT V.RCVMT_NUM, V.PT_NUM, V.CHK_NUM, V.RCVMT_AMT,
+			   (SELECT PT_NM
+			      FROM CHECKUP
+			     WHERE CHK_NUM = V.CHK_NUM) PT_NM,
+			   (SELECT EMP_NM
+			      FROM EMPLOYEE
+			     WHERE EMP_NUM = (SELECT EMP_NUM
+			     				    FROM CHECKUP
+			     				   WHERE CHK_NUM = V.CHK_NUM)) EMP_NM
+		  FROM RCVMT V
+		 WHERE V.RCVMT_STATUS = 'WAIT_PAY'
+		   AND TO_CHAR(SYSDATE, 'YYYYMMDD') = (SELECT TO_CHAR(CHK_DT, 'YYYYMMDD')
+		                                         FROM CHECKUP
+		                                        WHERE CHK_NUM = V.CHK_NUM)
+	</select>
+	
+	<select id="listCompletedRcvmt" resultType="rcvmtVO">
+		SELECT V.RCVMT_NUM, V.PT_NUM, V.CHK_NUM, V.RCVMT_AMT,
+			   (SELECT PT_NM
+			      FROM CHECKUP
+			     WHERE CHK_NUM = V.CHK_NUM) PT_NM
+		  FROM RCVMT V
+		 WHERE V.RCVMT_STATUS = 'CMPTN_PAY'
+		   AND TO_CHAR(SYSDATE, 'YYYYMMDD') = (SELECT TO_CHAR(CHK_DT, 'YYYYMMDD')
+		                                         FROM CHECKUP
+		                                        WHERE CHK_NUM = V.CHK_NUM)
+	</select>
+	
+	<select id="selectRcvmt" parameterType="String" resultType="rcvmtVO">
+		SELECT V.RCVMT_NUM, V.PT_NUM, V.CHK_NUM, V.RCVMT_AMT, V.RCVMT_DSCNT_AMT,
+			   V.RCVMT_BALANCE, V.RCVMT_GRAMT, V.RCVMT_DT,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_CD_NM = V.RCVMT_STATUS) RCVMT_STATUS
+		  FROM RCVMT V
+		 WHERE RCVMT_NUM = #{rcvmtNum}
+	</select>
+	
+	<select id="listPtRcvmtHist" parameterType="String" resultType="rcvmtVO">
+		SELECT RCVMT_NUM, PT_NUM, CHK_NUM, RCVMT_AMT, RCVMT_DSCNT_AMT,
+			   RCVMT_STATUS, RCVMT_BALANCE, RCVMT_GRAMT, RCVMT_DT,
+			   TO_CHAR(RCVMT_DT, 'YYYY.MM.DD') RCVMT_DT_STR
+		  FROM RCVMT
+		 WHERE PT_NUM = #{ptNum}
+		   AND RCVMT_STATUS = 'CMPTN_PAY'
+	</select>
+	
+	<select id="listPtChkupHist" parameterType="String" resultType="chkupVO">
+		SELECT CHK_NUM, REG_NUM, PT_NUM, EMP_NUM, CHK_DT, PT_NM,
+			   TO_CHAR(CHK_DT, 'YYYY.MM.DD') CHK_DT_STR
+		  FROM CHECKUP
+		 WHERE PT_NUM = #{ptNum}
+	</select>
+	
+	<insert id="payInCash" parameterType="rctVO">
+		INSERT INTO RECEIPT (RCVMT_RCT_NUM, RCVMT_NUM, RCT_ISSUE_DT, RCT_SN, RCT_PAY_OPT, RCT_TYPE, RCT_AMT)
+					 VALUES ((SELECT COUNT(RCVMT_RCT_NUM) + 1
+					 			FROM RECEIPT)
+					 		,#{rcvmtNum}
+					 		,SYSDATE
+					 		,(SELECT COUNT(RCVMT_RCT_NUM) + 1
+					 			FROM RECEIPT
+					 		   WHERE RCVMT_NUM = #{rcvmtNum})
+					 		,#{rctPayOpt}
+					 		,#{rctType}
+					 		,#{rctAmt})
+	</insert>
+	
+	<update id="completeRcvmt" parameterType="rctVO">
+		UPDATE RCVMT SET RCVMT_STATUS = 'CMPTN_PAY',
+						 RCVMT_DSCNT_AMT = #{rcvmtDscntAmt}
+				   WHERE RCVMT_NUM = #{rcvmtNum}
+	</update>
+	
+	<update id="updateRcvmtBalance" parameterType="rctVO">
+		UPDATE RCVMT SET RCVMT_BALANCE = RCVMT_BALANCE - #{rctAmt}
+				   WHERE RCVMT_NUM = #{rcvmtNum}
+	</update>
+	
+</mapper>

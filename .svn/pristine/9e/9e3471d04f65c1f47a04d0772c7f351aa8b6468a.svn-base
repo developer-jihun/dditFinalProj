@@ -1,0 +1,238 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+
+<!-- summernote -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<script src="/resources/summernote-0.8.18-dist/lang/summernote-ko-KR.js"></script>
+
+<style>
+/* 뒤로가기, 게시물등록 버튼 */
+    .listBtn, .insertBtn{
+        border-radius:20px;
+        border:none;
+        background-color: #904aff;
+        color:white;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-weight: 500;
+    }
+
+/* 글씨체 css */
+    label{
+        font-family: 'Noto Sans KR', sans-serif;
+        font-weight: 700;
+    }
+    
+</style>
+<p id="mode" hidden="hidden">${mode}</p>
+
+ <!-- Head Image 시작 -->
+    <div class="boardHeadImage">
+        <div class="wrapper">
+            <div class="slide">
+                 <img src="/resources/images/layout/ddit/inquiryHeadImage.png" />
+            </div>
+        </div>
+    </div>
+    <!-- Head Image 끝 -->
+    <!-- main section 시작 -->
+    <section class="container">
+        <!-- 커뮤니티 nav 시작 -->
+        <div class="row" style="margin-left:7%; margin-top:50px; width:85%; height: 100px; border-bottom:1px solid gray;">
+            <div class="col-12">
+                <h4 style="margin-left:50px; margin-top: 20px; font-family: 'Noto Sans KR', sans-serif; font-weight:700;">커뮤니티</h4>
+            </div>
+            <div class="col-6">
+                <h6 style="margin-left:50px;  font-family: 'Noto Sans KR', sans-serif; opacity: 0.5; font-size:14px;">home   >   고객의 소리   >   커뮤니티</h6>
+            </div>
+        </div>
+        <!-- 커뮤니티 nav 끝 -->
+        <form  id="comFrm" name="comFrm" action="" method="post" enctype="multipart/form-data" onsubmit="return ">
+          <!-- 로그인 했을 시 -->
+	   	  <sec:authorize access="hasRole('ROLE_PT')">
+		    <sec:authentication var="ptInfo" property="principal.ptVO"></sec:authentication>
+            <div style="margin-left:7%; margin-top:50px; margin-bottom:30px; width:85%; height:auto;" >
+                <div class="mb-3 row">
+                    <div class="col-sm-1"></div>
+                    <!-- 작성자의 정보 시작 -->
+                    <input type="hidden" id="ptNum" name="ptNum" value="${ptInfo.ptNum}" />
+					<input type="hidden" id="ptId" name="ptId" value="${ptInfo.ptId}"/>
+					<!-- 작성자의 정보 끝 -->
+					
+					<!--  게시글 수정 시 -->
+					<c:if test="${communityVO.comNum!=null}">
+						<input type="hidden" id="comNum" name="comNum" value="${communityVO.comNum}"/>
+						<h4 style="margin-left:50px; margin-top: 5px; font-family: 'Noto Sans KR', sans-serif; font-weight:200;">
+							<span id="spnTitle">게시글 수정</span>
+						</h4>
+					</c:if>
+					
+					<!-- 게시글 등록 시 -->
+					<c:if test="${communityVO.comNum==null}">
+						<input type="hidden" id="comNum" name="comNum" value="0" />
+						<h4 style="margin-left:50px; margin-top: 5px; font-family: 'Noto Sans KR', sans-serif; font-weight:200;">
+							<span id="spnTitle">게시글 쓰기</span>
+						</h4>
+					</c:if>
+					
+					<hr style="margin-left:50px; width:94%;" />
+                    </div>
+                    <div class="col-sm-2"></div>
+                </div>
+					<div class="mb-3 row">
+						 <div class="col-sm-1"></div>
+						 <label for="comTitle" class="col-sm-1 col-form-label" style="text-align:center;">제목</label>
+		                     <div class="col-sm-9">
+		                    	<div class="input-group input-group mb-3">
+									<div class="input-group-prepend">
+										<select class="form-select" aria-label="Default select example" id="comType" name="comType" style="height:40px;">
+											<option value="말머리 선택"<c:if test='${communityVO.comType == "말머리 선택"}'>selected</c:if>>말머리 선택</option>
+											<option value="따끈따끈 후기"<c:if test='${communityVO.comType == "따끈따끈 후기"}'>selected</c:if>>따끈따끈 후기</option>
+											<option value="칭찬합니다"<c:if test='${communityVO.comType == "칭찬합니다"}'>selected</c:if>>칭찬합니다</option>
+											<option value="불편사항 및 개선사항"<c:if test='${communityVO.comType == "불편사항 및 개선사항"}'>selected</c:if>>불편사항 및 개선사항</option>
+										</select> 
+									</div>
+									<input type="text" class="form-control" style="width:300px;" id="comTitle" name="comTitle" value="${communityVO.comTitle}" placeholder="제목을 입력해주세요" />
+								</div>
+		                  	</div>
+                  	</div>
+				<!--  게시글 내용 수정 시작 -->
+                <div class="mb-3 row">
+                    <div class="col-sm-1"></div>
+                    <label for="comContent" class="col-sm-1 col-form-label" style="text-align:center;">내용</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" id="comContent" name="comContent" >${communityVO.comContent}</textarea>
+                    </div>
+                    <div class="col-sm-2"></div>
+                </div>
+                <!--  게시글 내용 수정 끝 -->
+            </div>
+          	</sec:authorize> 
+            
+            <div style="margin-left:10%; margin-right:10%;">
+            	<!-- 등록모드 시작 -->
+            	<span id="spn1">
+            		<input type="submit" class="btn btn-success insertBtn" id="insertBtn" value="게시물 등록" style="float:right; margin-right:-2%;" />
+            		<input type="button" class="btn btn-danger listBtn" id="listBtn" value="뒤로가기" style="margin-left:9%;" onclick="javascript:location.href='/ddit/community'"/>
+            	</span>
+            	<!-- 등록 모드 끝 -->
+            	
+            	<!-- 수정모드 시작 -->
+            	<span id="spn2">
+	                <input type="button" class="btn btn-success updateBtn" id="updateBtn" value="게시물 수정" style="float:right; margin-right:-2%;" />
+	                <input type="button" class="btn btn-danger backToDetail" id="backToDetail" value="뒤로가기" style="margin-left:9%;" onclick="javascript:location.href='/ddit/community/detail?comNum=${communityVO.comNum}'"/>
+                </span>
+            	<!-- 수정모드 끝 -->
+            </div>
+            <sec:csrfInput/>
+        </form>
+        
+    </section>
+<!-- main section 끝 -->
+<script>
+
+let mode = $("#mode").text();
+  
+    $(document).ready(function() {
+    	
+    	if(mode == "create"){
+//     		alert("create모드입니다!")
+	    	$("#updateBtn").hide();
+	    	$("#backToDetail").hide();
+    	}
+    	if(mode == "update"){
+//     		alert("update모드입니다!")
+    		$("#insertBtn").hide();
+    		$("#listBtn").hide();
+    		$("#updateBtn").show();
+    		$("#backToDetail").show();
+    		$("#insertBtn").attr("type", "button");
+    		$("#updateBtn").attr("type", "submit");
+    	}
+    	
+    	
+        //서머노트 초기화
+        $('#comContent').summernote({
+              height: 500,                 // 에디터 높이
+              minHeight: null,             // 최소 높이
+              maxHeight: null,             // 최대 높이
+              focus: true,                  // 에디터 로딩후 포커스를 맞출지 여부
+              lang: "ko-KR",					// 한글 설정
+              placeholder: '최대 2048자까지 쓸 수 있습니다'	//placeholder 설정
+        });
+        
+        let ptId = $("#ptId").val();
+        
+     
+        $("#updateBtn").on("click", function(){
+        	
+        	var comType = $("#comType").val();	
+        	var comContent = $("#comContent").val();
+        	var comTitle = $("#comTitle").val();
+        	console.log("수정할 comType : ", comType);
+        	if(comType == "말머리 선택"){
+        		alert("게시글 옵션을 선택해주세요.");
+        		return false;
+        	}
+        	
+        	if(comContent == null || comContent == ""){
+        		alert("게시글 내용을 입력해주세요.");
+        		return false;
+        	}
+        	
+        	if(mode=="update"){
+        		$("#comNum").val(${communityVO.comNum});
+  				      		
+    	    	$("#comFrm").prop("action", "/ddit/community/updatePost?${_csrf.parameterName}=${_csrf.token}" );
+    	    	$("#comFrm").submit;
+        	}
+        }); 
+    	
+    $("#insertBtn").on("click", function(){
+    	
+    	var comType = $("#comType").val();	
+    	console.log("등록할 comType : ", comType);
+    	var comContent = $("#comContent").val();
+    	
+    	if(comType == "말머리 선택"){
+    		alert("게시글 옵션을 선택해주세요.");
+    		return false;
+    	}
+    	
+    	if(comContent == null || comContent == ""){
+    		alert("게시글 내용을 입력해주세요.");
+    		return false;
+    	}
+    	
+    	
+    	if(mode=="create"){
+    		$("#comFrm").prop("action", "/ddit/community/insertPost?${_csrf.parameterName}=${_csrf.token}");
+	    	$("#comFrm").submit;
+    	}
+    });
+    
+
+		// 말머리 넣기
+		$("#comType").on("change",function(){
+			var comType = $("#comType").val();
+			console.log("comType : ", comType);
+			if(comType == "말머리 선택"){
+				$("#comTitle").val("");
+				$("#spnTitle").text("게시글 쓰기");
+			}
+			if(comType !== "말머리 선택"){
+				$("#comTitle").val("[" + $(this).val() + "] ");
+				$("#spnTitle").html($(this).val() + "&nbsp;");
+			}
+			
+		});
+	
+    });//end 달라function
+    // 뒤로가기 버튼을 눌렀을 때
+    function backToList(){
+    	window.location.href="/ddit/community/detail?comNum=${communityVO.comNum}";
+    }
+
+</script>

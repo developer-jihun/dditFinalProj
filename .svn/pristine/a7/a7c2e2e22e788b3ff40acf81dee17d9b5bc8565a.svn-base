@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.MediaMapper">
+	
+	<resultMap type="ptVO" id="patientMap">
+		<!-- id는 맨 위로 올린다 -->
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="ptGen" column="PT_GEN" />
+		<result property="ptBrdt" column="PT_BRDT" />
+		<result property="ptMemo" column="PT_MEMO" />
+		<collection property="chkList" resultMap="chkupMap"></collection>
+	</resultMap>
+	
+	<resultMap type="chkupVO" id="chkupMap">
+		<!-- id는 맨 위로 올린다 -->
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="regNum" column="REG_NUM" />
+		<result property="empNum" column="EMP_NUM" />
+		<result property="chkDt" column="CHK_DT" />
+		<result property="empNm" column="EMP_NM" />
+	</resultMap>
+	
+	<select id="checkUpList" parameterType="hashMap" resultMap="patientMap">
+		SELECT P.PT_NUM, P.PT_NM, P.PT_GEN, P.PT_BRDT,P.PT_MEMO,
+		       C.CHK_NUM, C.REG_NUM, C.EMP_NUM, C.CHK_DT,
+		       (SELECT E.EMP_NM
+		        FROM EMPLOYEE E
+		        WHERE E.EMP_NUM = C.EMP_NUM) AS EMP_NM
+		FROM PATIENT P, CHECKUP C
+		WHERE P.PT_NUM = C.PT_NUM
+		AND C.PT_NUM = #{ptNum}
+		<![CDATA[
+		AND C.CHK_DT > #{sdate}
+		AND C.CHK_DT < #{edate}
+		ORDER BY C.CHK_DT DESC
+		]]>
+	</select>
+	
+	
+	
+</mapper>

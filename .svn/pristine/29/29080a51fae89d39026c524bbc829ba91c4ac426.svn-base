@@ -1,0 +1,82 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<!-- aside bar 시작 -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4" style="height: auto;">
+	<a href="#" class="brand-link">
+		<img src="/resources/images/layout/hospital/hos_logo.png" alt="병원 로고" class="brand-image elevation-3" />
+		<!-- <span class="brand-text font-weight-light">TwoClick</span> -->
+		<img src="/resources/images/layout/hospital/TWO_CLICK_long.png" alt="병원 로고" class="brand-text" />
+	</a>
+	<div class="sidebar">
+		<nav class="mt-2">
+			<ul class="nav nav-pills nav-sidebar flex-column sidebaricon" data-widget="treeview" role="menu" data-accordion="false">
+				<!-- 데스크 <i>는 icon = fontawesome -->
+				<li class="nav-item">
+					<a href="/hospital/desk" class="nav-link sideLink">
+						<i class="nav-icon fa-sharp fa-solid fa-desktop"></i>
+						<p>데스크</p>
+					</a>
+				</li>
+				<!-- CRM -->
+				<li class="nav-item">
+					<a href="/hospital/sms" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-user"></i>
+						<p>CRM</p>
+					</a>
+				</li>
+				<!-- 수납 -->
+				<li class="nav-item">
+					<a href="/hospital/rcvmt" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-credit-card"></i>
+						<p>수납</p>
+					</a>
+				</li>
+				<!-- 예약 -->
+				<li class="nav-item">
+					<a href="/hospital/resv" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-clock"></i>
+						<p>예약</p>
+					</a>
+				</li>
+				<!-- 전자차트 -->
+				<li class="nav-item">
+					<a href="/hospital/chart" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-heart-pulse"></i>
+						<p>전자차트</p>
+					</a>
+				</li>
+				<!-- 진료보기 -->
+				<li class="nav-item">
+					<a href="/hospital/checkup" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-briefcase-medical"></i>
+						<p>진료보기</p>
+					</a>
+				</li>
+				<!-- 영상 -->
+				<li class="nav-item">
+					<a href="#" class="nav-link sideLink">
+						<i class="nav-icon fa-brands fa-youtube"></i>
+						<p>영상</p>
+					</a>
+				</li>
+				<!-- 서류 -->
+				<li class="nav-item">
+					<a href="/hospital/document" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-folder"></i>
+						<p>서류</p>
+					</a>
+				</li>
+				<!-- 병원관리 -->
+				<li class="nav-item">
+					<a href="/hospital/manage/empInfo" class="nav-link sideLink">
+						<i class="nav-icon fa-solid fa-chart-simple"></i>
+						<p>병원관리</p>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</aside>
+<!-- aside bar 끝 -->

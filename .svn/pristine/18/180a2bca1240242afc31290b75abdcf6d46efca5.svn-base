@@ -1,0 +1,172 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+public class EmployeeVO {
+	
+	private String empNum;
+	private String empNm;
+	private String jbgdCd;
+	private String deptCd;
+	private String doctLn;
+	private int hdofYn;
+	private String empPhone;
+	private String empBrdt;
+	private String empZip;
+	private String empAddr;
+	private String empDaddr;
+	private String empJncmpYmd;
+	private String empRtrmYmd;
+	private String empId;
+	private String empPw;
+	private String empImg;
+	
+	private List<EmployeeAuthrtVO> authList;
+	
+	
+	public String getEmpNum() {
+		return empNum;
+	}
+
+	public void setEmpNum(String empNum) {
+		this.empNum = empNum;
+	}
+
+	public String getEmpNm() {
+		return empNm;
+	}
+
+	public void setEmpNm(String empNm) {
+		this.empNm = empNm;
+	}
+
+	public String getJbgdCd() {
+		return jbgdCd;
+	}
+
+	public void setJbgdCd(String jbgdCd) {
+		this.jbgdCd = jbgdCd;
+	}
+
+	public String getDeptCd() {
+		return deptCd;
+	}
+
+	public void setDeptCd(String deptCd) {
+		this.deptCd = deptCd;
+	}
+
+	public String getDoctLn() {
+		return doctLn;
+	}
+
+	public void setDoctLn(String doctLn) {
+		this.doctLn = doctLn;
+	}
+
+	public int getHdofYn() {
+		return hdofYn;
+	}
+
+	public void setHdofYn(int hdofYn) {
+		this.hdofYn = hdofYn;
+	}
+
+	public String getEmpPhone() {
+		return empPhone;
+	}
+
+	public void setEmpPhone(String empPhone) {
+		this.empPhone = empPhone;
+	}
+	
+	public String getEmpBrdt() {
+		return empBrdt;
+	}
+
+	public void setEmpBrdt(String empBrdt) {
+		this.empBrdt = empBrdt;
+	}
+
+	public String getEmpZip() {
+		return empZip;
+	}
+
+	public void setEmpZip(String empZip) {
+		this.empZip = empZip;
+	}
+
+	public String getEmpAddr() {
+		return empAddr;
+	}
+
+	public void setEmpAddr(String empAddr) {
+		this.empAddr = empAddr;
+	}
+
+	public String getEmpDaddr() {
+		return empDaddr;
+	}
+
+	public void setEmpDaddr(String empDaddr) {
+		this.empDaddr = empDaddr;
+	}
+
+	public String getEmpJncmpYmd() {
+		return empJncmpYmd;
+	}
+
+	public void setEmpJncmpYmd(String empJncmpYmd) {
+		this.empJncmpYmd = empJncmpYmd;
+	}
+
+	public String getEmpRtrmYmd() {
+		return empRtrmYmd;
+	}
+
+	public void setEmpRtrmYmd(String empRtrmYmd) {
+		this.empRtrmYmd = empRtrmYmd;
+	}
+
+	public String getEmpId() {
+		return empId;
+	}
+
+	public void setEmpId(String empId) {
+		this.empId = empId;
+	}
+
+	public String getEmpPw() {
+		return empPw;
+	}
+
+	public void setEmpPw(String empPw) {
+		this.empPw = empPw;
+	}
+
+	public String getEmpImg() {
+		return empImg;
+	}
+
+	public void setEmpImg(String empImg) {
+		this.empImg = empImg;
+	}
+
+	public List<EmployeeAuthrtVO> getAuthList() {
+		return authList;
+	}
+
+	public void setAuthList(List<EmployeeAuthrtVO> authList) {
+		this.authList = authList;
+	}
+
+	
+	@Override
+	public String toString() {
+		return "EmployeeVO [empNum=" + empNum + ", empNm=" + empNm + ", jbgdCd=" + jbgdCd + ", deptCd=" + deptCd
+				+ ", doctLn=" + doctLn + ", hdofYn=" + hdofYn + ", empPhone=" + empPhone + ", empBrdt=" + empBrdt
+				+ ", empZip=" + empZip + ", empAddr=" + empAddr + ", empDaddr=" + empDaddr + ", empJncmpYmd="
+				+ empJncmpYmd + ", empRtrmYmd=" + empRtrmYmd + ", empId=" + empId + ", empPw=" + empPw + ", empImg="
+				+ empImg + ", authList=" + authList + "]";
+	}
+}

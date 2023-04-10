@@ -1,0 +1,158 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<style>
+.btn-group {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50%;
+	margin: auto;
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+
+.categoryBtn {
+	width: 200px;
+	height: 60px;
+	background-color: white;
+	color: gray;
+	border: 1px solid gray;
+	font-family: 'Noto Sans KR', sans-serif;
+	padding-top: 14px;
+}
+
+.categoryBtn:hover {
+	background-color: #ccadff;
+	border: 1px solid #ccadff;
+}
+
+.paginationBtn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+}
+
+.insertBtn {
+	background-color: #904aff;
+	border: none;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+	margin-right: 35px;
+	float: right;
+}
+
+span {
+	font-family: 'Noto Sans KR', sans-serif;
+}
+
+th {
+	font-family: 'Noto Sans KR', sans-serif;
+	text-align: center;
+}
+
+td {
+	font-family: 'Gothic A1', sans-serif;
+	text-align: center;
+}
+</style>
+<!-- Head Image 시작 -->
+<div class="boardHeadImage">
+	<div class="wrapper">
+		<div class="slide">
+			<img src="/resources/images/layout/ddit/inquiryHeadImage.png" />
+		</div>
+	</div>
+</div>
+<!-- Head Image 끝 -->
+<!-- button group 공지사항,문의게시판,이용안내 -->
+<div class="btn-group" role="group" aria-label="Basic example">
+	<a type="button" id="categoryBtn1" class="btn btn-primary btn-lg categoryBtn" href="/ddit/notice">공지사항</a>
+	<a type="button" id="categoryBtn2" class="btn btn-primary btn-lg categoryBtn" href="/ddit/inquiry" style="background-color: #904aff; color: white;">문의게시판</a>
+	<a type="button" id="categoryBtn3" class="btn btn-primary btn-lg categoryBtn" href="/ddit/community">커뮤니티</a>
+</div>
+<!-- main section 시작 -->
+<section class="container">
+	<!-- 커뮤니티 게시판 nav 시작 -->
+	<div class="row" style="margin-left: 7%; width: 85%; height: 100px; border-top: 1px solid gray; border-bottom: 1px solid gray;">
+		<div class="col-12">
+			<h4 style="margin-left: 50px; margin-top: 20px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">커뮤니티</h4>
+		</div>
+		<div class="col-6">
+			<h6 style="margin-left: 50px; font-family: 'Noto Sans KR', sans-serif; opacity: 0.5; font-size: 14px;">home > 고객의 소리 > 커뮤니티</h6>
+		</div>
+	</div>
+	<!-- 커뮤니티 게시판 nav 끝 -->
+
+	<div class="table-responsive">
+		<div class="table-wrapper" style="margin-left: 7%; width: 85%;">
+
+			<div class="row" style="margin: 20px;">
+				<div class="col-sm-6">
+					<span style="width: 10px;">Show</span> <select class="form-select" aria-label="Default select example" style="width: 18%; display: inline-block;">
+						<option value="10">10</option>
+						<option value="30">30</option>
+						<option value="50">50</option>
+					</select> <span style="width: 10px;">Entries</span>
+				</div>
+				<div class="col-sm-6">
+					<input type="submit" class="col-sm-3 btn btn-primary" id="searchBtn" value="검색" style="font-family: 'Noto Sans KR', sans-serif; background-color: #904aff; border: none; float: right; margin-left: 10px;" />
+					<input type="text" class="col-sm-6 form-control" id="search" name="search" placeholder="검색어를 입력해주세요" style="font-family: 'Noto Sans KR', sans-serif; width: 50%; float: right; opacity: 0.8;" />
+				</div>
+			</div>
+			<table class="table table-hover">
+				<thead style="border-top: 1px solid #c2c2c2;">
+					<tr>
+						<th class="p-3">번호</th>
+						<th class="p-3">작성일시</th>
+						<th class="p-3">제목</th>
+						<th class="p-3">작성자</th>
+						<th class="p-3">조회수</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!--  게시글 목록 뿌려주는 곳 -->
+					<c:forEach var="chair" items="${requestScope.chairList}"
+						varStatus="stat">
+						<tr class="trClassDelete">
+							<td><input type="checkbox"
+								class="form-control chairSelected" id="deleteChairCheck"
+								name="user_CheckBox" id="" required /></td>
+							<td>${chair.chairSn}</td>
+							<td><input type="text" data-chair="${chair.chairNm}"
+								class="form-control updateInput" value="${chair.chairNm}"
+								style="border: none;" readonly /></td>
+							<td><select id="deptCd" name="deptCd" class="form-control"
+								data-dept="${chair.deptCd}" disabled>
+									<option value="">진료실 선택</option>
+									<c:forEach var="dept" items="${requestScope.deptList}">
+										<option value="${dept.deptCd}"
+											<c:if test='${dept.deptCd == chair.deptCd}'>selected</c:if>>${dept.deptNm}</option>
+									</c:forEach>
+							</select></td>
+						</tr>
+					</c:forEach>
+					<tr>
+						<th class="p-3">1</th>
+						<td class="p-3">2023-03-01</td>
+						<td class="p-3">사랑니발치후 피가멈추지않아요</td>
+						<td class="p-3">정준석</td>
+						<td class="p-3 text-danger">답변대기</td>
+					</tr>
+				</tbody>
+			</table>
+			<input type="button" class="btn btn-primary insertBtn" value="글쓰기" id="insertBtn" onclick="inquiryWrite()" />
+			<nav class="paginationBtn" aria-label="Page navigation example">
+				<ul class="pagination">
+					<li class="page-item"><a class="page-link" href="#">Prev</a></li>
+					<li class="page-item active"><a class="page-link" href="#">1</a></li>
+					<li class="page-item"><a class="page-link" href="#">2</a></li>
+					<li class="page-item"><a class="page-link" href="#">3</a></li>
+					<li class="page-item"><a class="page-link" href="#">Next</a></li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</section>
+<!-- main section 끝 -->

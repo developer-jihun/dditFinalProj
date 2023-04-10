@@ -1,0 +1,37 @@
+package com.web.ddentist.hospital.document.service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.DocumentVO;
+import com.web.ddentist.vo.HospitalInfoVO;
+import com.web.ddentist.vo.PatientVO;
+
+
+public interface IDocument {
+	 
+	public int treatmentPlanPost(Map<String,String> map) throws IOException;
+
+	public int diagnosisPost(Map<String, String> map) throws IOException;
+
+	public int treatconfirmPost(Map<String, String> map) throws IOException;
+
+	public int CTPost(Map<String, String> map) throws IOException;
+
+	public int opinionPost(Map<String, String> map) throws IOException;
+
+	public int outsidePost(Map<String, String> map) throws IOException;
+
+	public List<DocumentVO> docList(DocumentVO documentVO);
+
+	public PatientVO patientInfo(String ptNum);
+
+	public HospitalInfoVO hospitalInfo();
+
+	public DocumentVO checkBox(DocumentVO documentVO);
+
+
+
+
+}

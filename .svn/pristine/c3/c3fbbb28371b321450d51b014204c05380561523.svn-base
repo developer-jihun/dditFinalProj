@@ -1,0 +1,29 @@
+package com.web.ddentist.hospital.site.faqInfo.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.FaqMapper;
+import com.web.ddentist.vo.FaqVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class FaqServiceImpl implements IFaqService {
+	
+	@Autowired
+	FaqMapper faqMapper;
+	
+//	<!-- 자주 묻는 질문 전체 목록 -->
+//	<select id="faqList" resultType="faqVO">
+	@Override
+	public List<FaqVO> getFaqList(){
+		List<FaqVO> list = this.faqMapper.getFaqList();
+		log.info("list : " + list);
+		return list;
+	};
+
+}

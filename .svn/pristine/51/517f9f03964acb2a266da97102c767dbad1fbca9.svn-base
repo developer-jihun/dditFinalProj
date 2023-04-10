@@ -1,0 +1,51 @@
+package com.web.ddentist.patient.service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+
+import com.web.ddentist.vo.PatientVO;
+
+public class PatientDetails extends User {
+	
+	private static final long serialVersionUID = -5959792854357594370L;
+	
+	private PatientVO ptVO;
+
+	public PatientDetails(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+		super(username, password, authorities);
+	}
+	
+	public PatientDetails(PatientVO ptVO) {
+		super(ptVO.getPtId(), ptVO.getPtPw(), createAuthList(ptVO));
+	}
+	
+	private static List<SimpleGrantedAuthority> createAuthList(PatientVO ptVO) {
+		List<SimpleGrantedAuthority> authList = new ArrayList<>();
+		authList.add(new SimpleGrantedAuthority(ptVO.getPtAuthrt()));
+		
+		return authList;
+	}
+	
+	public PatientVO getPtVO() {
+		return ptVO;
+	}
+
+	public void setPtVO(PatientVO ptVO) {
+		this.ptVO = ptVO;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public String toString() {
+		return "PatientDetails [ptVO=" + ptVO + "]";
+	}
+	
+}

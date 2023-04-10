@@ -1,0 +1,35 @@
+package com.web.ddentist.hospital.manage.empInfo.service;
+
+import java.util.List;
+
+import com.web.ddentist.vo.CommonCodeVO;
+import com.web.ddentist.vo.DepartmentVO;
+import com.web.ddentist.vo.EmployeeVO;
+import com.web.ddentist.vo.JbgdVO;
+
+public interface IEmpInfoService {
+	// 직원 등록
+	public int createEmp(EmployeeVO employeeVO);
+
+	// 직원 조회
+	public List<EmployeeVO> getList();
+
+	// 직원 정보 조회
+	public EmployeeVO getEmpInfo(EmployeeVO empVO);
+
+	// 직원 정보 수정
+	public int updateEmp(EmployeeVO employeeVO);
+
+	//직원 정보 삭제
+	public int deleteEmp(EmployeeVO employeeVO);
+	
+	//직급 리스트
+	public List<JbgdVO> getJbgd();
+	
+	//부서 리스트
+	public List<DepartmentVO> getDept();
+
+	// 공통코드
+	public List<CommonCodeVO> getCommon(String commGrCd);
+
+}

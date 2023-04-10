@@ -1,0 +1,124 @@
+package com.web.ddentist.hospital.manage.hospitalInfo.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.tomcat.util.buf.CharChunk.CharInputChannel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.manage.hospitalInfo.service.IHospitalInfoService;
+import com.web.ddentist.vo.ChairVO;
+import com.web.ddentist.vo.CommonCodeVO;
+import com.web.ddentist.vo.DepartmentVO;
+import com.web.ddentist.vo.HospitalInfoVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+
+/**
+ * 병원관리 메뉴 - 병원기초정보 관리 페이지
+ * 
+ * @author 박지은
+ *
+ */
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/manage/hosInfo")
+public class HospitalInfoController {
+	
+	@Autowired
+	IHospitalInfoService hospitalInfoService;
+	
+	// 병원기초 정보관리페이지 이동
+	@GetMapping("")
+	public String detail(Model model) {
+		log.info("병원기초정보 관리 페이지에 왔다. ");
+		
+		HospitalInfoVO hosInfo = this.hospitalInfoService.getHospitalInfo();
+		log.info("hosInfo : {병원정보 } : " + hosInfo);
+		
+		// 병원구분
+		String commGrCd = "HI_TYPE_CD";
+		
+		List<CommonCodeVO> hiTypeList =  this.hospitalInfoService.getCommon(commGrCd);
+		log.info("병원 구분 불러오기 : " + hiTypeList);
+		
+		// 진료실
+		List<DepartmentVO> deptList = this.hospitalInfoService.deptList();
+		log.info("deptList : {}" + deptList);
+		log.info("진료실 목록 불러오기 : " + deptList);
+		
+		// 체어
+		List<ChairVO> chairList = this.hospitalInfoService.chairList();
+		log.info("chairList : {}" + chairList);
+		
+		model.addAttribute("deptList", deptList);
+		model.addAttribute("chairList", chairList);
+		model.addAttribute("hosInfo", hosInfo);
+		model.addAttribute("hiTyeList", hiTypeList);
+	
+		
+		return "hospital/hospitalInfo";
+	}
+	
+	@ResponseBody
+	@PostMapping("/updateChair")
+	public String updateChair(@RequestBody List<ChairVO> param) {
+		
+		log.info("updateChair에 왔다~!!! " );
+		log.info("param : {} " + param);
+		
+		int result = this.hospitalInfoService.updateChair(param);
+		
+		if(result < 0) { //등록 실패
+			return "FAILED";
+		}else {   //등록 성공
+			return "SUCCESS";
+		}
+	}
+	
+	@ResponseBody
+	@PostMapping("createChair")
+	public String createChair(@RequestBody List<ChairVO> param) {
+		
+		log.info("createChair에 왔다~!!! " );
+		log.info("param : {} " + param);
+		
+		int result = this.hospitalInfoService.createChair(param);
+		
+
+		if(result < 0) { //등록 실패
+			return "FAILED";
+		}else {   //등록 성공
+			return "SUCCESS";
+		}
+	}
+	
+	@ResponseBody
+	@PostMapping("deleteChair")
+	public String deleteChair(@RequestBody List<ChairVO> param) {
+		
+		log.info("deleteChair에 왔다~!!! " );
+		log.info("param : {} " + param);
+		
+		int result = this.hospitalInfoService.deleteChair(param);
+		
+		
+		if(result < 0) { //등록 실패
+			return "FAILED";
+		}else {   //등록 성공
+			return "SUCCESS";
+		}
+	}
+	
+}

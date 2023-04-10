@@ -1,0 +1,160 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<style>
+/* chatCss */
+#chatButton{
+	padding-right:1.25rem;
+}
+.navbar-badge{
+	top:5px;
+}
+/* **************************** */
+.card-body::-webkit-scrollbar{
+	width: 8px;
+	height: 8px;
+}
+.card-body::-webkit-scrollbar-thumb{
+    background-color: #404b57;
+    border-radius: 5px;
+}
+.card-body::-webkit-scrollbar-track{
+    background-color: rgba(0,0,0,0);
+}
+.card-header{
+	background-color: #404b57 !important;
+}
+.ptRow, .mediaImgBox{
+	cursor: pointer;
+}
+#listChartBtn{
+	background-color: #904aff;
+	border-color: #904aff;
+}
+.downloadBtn{
+	width: 120px;
+	background: #FF5252;
+	border: none;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+}
+.cloBtn{
+	width: 120px;
+	border: none;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+}
+</style>
+<div class="content-wrapper" style="background-color: #657D96;">
+	<!-- main 검색창을 포함한 navbar 시작-->
+	<nav class="navbar navbar-expand navbar-white navbar-light" style="background-color: #404b57;">
+		<div class="input-group" style="width: 400px;">
+			<input type="text" class="form-control" id="ptSearch" placeholder="환자 검색" autocomplete="off" />
+			<div class="input-group-append">
+				<button type="button" id="ptSearchBtn" class="btn btn-outline-light" onclick="searchPt();">검색</button>
+			</div>
+		</div>
+<!-- 		<img src="/resources/images/layout/memo_icon.png" alt="메모" id="memo" class="brand-image elevation-1" style="margin-left: 15px;"> -->
+	</nav>
+
+	<section class="content" style="margin-top: 1%;">
+		<div class="row" style="height: 800px">
+			<div class="col-md-3" style="height: 100%;">
+				<div class="card card-info" style="height: 100%;">
+					<div class="card-header">
+						<div class="card-title">
+							<h3 class="m-0">환자 목록</h3>
+						</div>
+					</div>
+					<div class="card-body overflow-auto p-0">
+						<table class="table table-hover text-center">
+							<thead class="sticky-top" style="background-color: whitesmoke;">
+								<tr>
+									<th>차트번호</th>
+									<th>이름</th>
+								</tr>
+							</thead>
+							<tbody id="patientListBody">
+								<tr>
+									<td colspan="2">환자를 검색해주세요.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-5" style="height: 100%;">
+				<div class="card card-info" style="height: 100%;">
+					<div class="navbar card-header">
+						<div class="card-title">
+							<h3 class="m-0">진료 차트</h3>
+							<p class="m-0">환자명 : <span id="selectedPt"></span></p>
+						</div>
+					</div>
+					<div class="card-body py-2 text-right" style="max-height: 46px;">
+						<input hidden="text" id="ptNum" />
+						<input type="date" id="chartSDate" /> ~ <input type="date" id="chartEDate" />
+						<button type="button" id="listChartBtn" class="btn btn-primary btn-sm align-top ml-1" style="height: 30px; box-sizing: border-box;" onclick="listChart();">검색</button>
+					</div>
+					<div class="card-body overflow-auto p-0">
+						<table class="table">
+							<thead class="sticky-top text-center" style="background-color: whitesmoke;">
+								<tr>
+									<th style="width: 20%;">진료일</th>
+									<th style="width: 15%;">구분</th>
+									<th style="width: 45%;">내용</th>
+									<th style="width: 20%;">의사</th>
+								</tr>
+							</thead>
+							<tbody id="chartListBody" class="text-center">
+								<tr>
+									<td colspan="4">환자를 선택해주세요.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4" style="height: 100%;">
+				<div class="card card-info" style="height: 100%;">
+					<div class="card-header">
+						<div class="card-title">
+							<h3 class="m-0">영상 목록</h3>
+						</div>
+					</div>
+					<div class="card-body mx-auto overflow-auto p-0">
+						<div id="mediaList" class="d-flex flex-wrap">
+							<p class="my-3">환자를 선택해주세요.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+<div class="modal fade" id="mediaModal" data-backdrop="static" data-keyboard="false" tabindex="-1">
+	<div class="modal-dialog modal-lg modal-dialog-centered">
+		<div class="modal-content"  style="border-radius: 30px;">
+			<div class="modal-header" style="border-bottom: 2px solid #FF5252; width: 90%; margin-left: 5%;">
+				<div>
+					<h5 class="modal-title" id="mediaModalLabel" style="border-left: 3px solid #FF5252; padding-left: 10px; margin-bottom:10px;">영상이미지</h5>
+					<p class="m-0">#환자 : <span id="mediaModalPtNum"></span></p>
+					<p class="m-0">#촬영일 : <span id="mediaModalmedDtStr"></span></p>
+				</div>
+				<button type="button" class="close" data-dismiss="modal">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body text-center"  style="padding: 40px 40px;">
+				<img src="" alt="영상이미지" id="mediaModalImg" data-mednum="" style="width: 80%;" />
+			</div>
+			<div class="modal-footer" style="border-top:0px; margin:auto;">
+				<button type="button" class="btn btn-danger downloadBtn" onclick="downloadImg();">다운로드</button>
+				<button type="button" class="btn btn-outline-secondary cloBtn" data-dismiss="modal">닫기</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="/resources/js/alertModule.js"></script>
+<script src="/resources/js/checkup.js"></script>

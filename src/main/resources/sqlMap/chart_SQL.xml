@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.ChartMapper">
+
+	<select id="listDis" resultType="disVO">
+		SELECT DIS_CD, DIS_KOR_NM
+		  FROM DISEASE
+		 ORDER BY UPPER(DIS_CD)
+	</select>
+
+	<select id="listTxCode" resultType="txcVO">
+		SELECT TXC_CD, TXC_NM, TXC_PRICE
+		  FROM TX_CODE
+		 ORDER BY UPPER(TXC_CD)
+	</select>
+
+	<select id="listRegist" resultType="regVO">
+		SELECT A.REG_NUM, A.RESV_NUM, A.PT_NUM, A.EMP_NUM, A.REG_CC,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_GR_CD = 'REG_STATUS_CD'
+			       AND COMM_CD_NM = A.REG_STATUS) REG_STATUS,
+			   A.REG_DT, B.PT_NM, C.EMP_NM,
+			   (SELECT CHAIR_NM
+		          FROM CHAIR
+		       	 WHERE CHAIR_SN = A.CHAIR_NUM) CHAIR_NM,
+		       (SELECT CHK_NUM
+		          FROM CHECKUP
+		         WHERE REG_NUM = A.REG_NUM) CHK_NUM
+		  FROM REGIST A, PATIENT B, EMPLOYEE C
+		 WHERE A.REG_STATUS != 'CANCEL'
+  		   AND TO_CHAR(A.REG_DT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		   AND A.PT_NUM = B.PT_NUM
+		   AND A.EMP_NUM = C.EMP_NUM
+		 ORDER BY A.REG_NUM
+	</select>
+
+	<select id="listResv" resultType="reservationVO">
+		SELECT R.RESV_NUM, R.PT_NUM, R.EMP_NUM, R.PT_PHONE,
+			   R.RESV_CC, R.RESV_STATUS,
+			   TO_CHAR(R.RESV_SDT, 'YYYY-MM-DD HH24:MI') RESV_SDT,
+			   (SELECT EMP_NM
+			      FROM EMPLOYEE
+			     WHERE EMP_NUM = R.EMP_NUM) EMP_NM,
+			   CASE WHEN INSTR(R.PT_NM, '!!') != 0 THEN
+			   		SUBSTR(R.PT_NM, 3)
+			   ELSE
+			   		R.PT_NM
+			   END PT_NM
+		  FROM RESERVATION R
+		 WHERE TO_CHAR(R.RESV_SDT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		   AND R.RESV_STATUS = 'IN_RESV'
+	</select>
+
+	<insert id="insertCheckup" parameterType="chkupVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="chkNum">
+			SELECT 'C' || TO_CHAR(SYSDATE, 'YYYYMMDD')
+			           || '-'
+			           || TRIM(TO_CHAR(NVL(MAX(SUBSTR(CHK_NUM, INSTR(CHK_NUM, '-') + 1)), 0) + 1, '0000'))
+			  FROM CHECKUP
+			 WHERE TO_CHAR(CHK_DT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</selectKey>
+		INSERT INTO CHECKUP (CHK_NUM, REG_NUM, PT_NUM, EMP_NUM, CHK_DT, PT_NM)
+					VALUES (#{chkNum}
+						   ,#{regNum}
+						   ,(SELECT PT_NUM
+							  FROM REGIST
+							 WHERE REG_NUM = #{regNum})
+						   ,#{empNum}
+						   ,SYSDATE
+						   ,(SELECT PT_NM
+							  FROM PATIENT
+							 WHERE PT_NUM = (SELECT PT_NUM
+							                   FROM REGIST
+							                  WHERE REG_NUM = #{regNum})))
+	</insert>
+
+	<update id="stopCheckup" parameterType="chkupVO">
+		UPDATE REGIST SET REG_STATUS = 'STOP'
+					WHERE REG_NUM = (SELECT REG_NUM
+									   FROM CHECKUP
+									  WHERE CHK_NUM = #{chkNum})
+	</update>
+
+	<insert id="insertRcvmt" parameterType="chkupVO">
+		INSERT INTO RCVMT (RCVMT_NUM, PT_NUM, CHK_NUM, RCVMT_AMT, RCVMT_DSCNT_AMT, RCVMT_STATUS, RCVMT_BALANCE, RCVMT_GRAMT, RCVMT_DT, RCVMT_TYPE)
+				   VALUES ((SELECT 'V' || TO_CHAR(SYSDATE, 'YYYYMMDD')
+							           || '-'
+							           || (SELECT TRIM(TO_CHAR(NVL(SUBSTR(MAX(RCVMT_NUM), 11), 0) + 1, '0000'))
+							                 FROM RCVMT)
+							  FROM DUAL)
+						  ,(SELECT PT_NUM
+						      FROM CHECKUP
+						     WHERE CHK_NUM = #{chkNum})
+						  ,#{chkNum}
+						  ,#{totalCheckupCost}
+						  ,0
+						  ,'WAIT_PAY'
+						  ,#{totalCheckupCost}
+						  ,#{totalCheckupCost}
+						  ,SYSDATE
+						  ,'CHECKUP'
+						  )
+	</insert>
+
+	<update id="completeCheckup" parameterType="chkupVO">
+		UPDATE REGIST SET REG_STATUS = 'CMPTN_TREAT'
+					WHERE REG_NUM = (SELECT REG_NUM
+									   FROM CHECKUP
+									  WHERE CHK_NUM = #{chkNum})
+	</update>
+
+	<insert id="insertPi" parameterType="piVO">
+		INSERT INTO PI (PI_SN, CHK_NUM, DIS_CD, PI_TOOTH_NUM, PI_CONTENT)
+				VALUES ((SELECT NVL(MAX(PI_SN), 0) + 1
+				 		   FROM PI
+				 		  WHERE CHK_NUM = #{chkNum})
+				 	   ,#{chkNum}
+				 	   ,#{disCd}
+				 	   ,#{piToothNum}
+				 	   ,#{piContent}
+				 	   )
+	</insert>
+
+	<insert id="insertTxPlan" parameterType="txpVO">
+		INSERT INTO TX_PLAN (TXP_SN, CHK_NUM, TXC_CD, TXP_TOOTH_NUM, TXP_CONTENT, TXP_COST)
+				VALUES ((SELECT NVL(MAX(TXP_SN), 0) + 1
+				 		   FROM TX_PLAN
+				 		  WHERE CHK_NUM = #{chkNum})
+				 	   ,#{chkNum}
+				 	   ,#{txcCd}
+				 	   ,#{txpToothNum}
+				 	   ,#{txpContent}
+				 	   ,(SELECT TXC_PRICE * (SELECT NVL(REGEXP_COUNT(#{txpToothNum}, ','), 0) + 1
+						                       FROM DUAL)
+						   FROM TX_CODE
+						  WHERE TXC_CD = #{txcCd})
+				 	   )
+	</insert>
+
+	<insert id="insertTx" parameterType="txVO">
+		INSERT INTO TX (TX_SN, CHK_NUM, TXC_CD, TX_TOOTH_NUM, TX_CONTENT, TX_COST)
+				VALUES ((SELECT NVL(MAX(TX_SN), 0) + 1
+				 		   FROM TX
+				 		  WHERE CHK_NUM = #{chkNum})
+				 	   ,#{chkNum}
+				 	   ,#{txcCd}
+				 	   ,#{txToothNum}
+				 	   ,#{txContent}
+				 	   ,(SELECT TXC_PRICE * (SELECT NVL(REGEXP_COUNT(#{txToothNum}, ','), 0) + 1
+						                       FROM DUAL)
+						   FROM TX_CODE
+						  WHERE TXC_CD = #{txcCd})
+				 	   )
+	</insert>
+
+	<insert id="insertTxNext" parameterType="txnVO">
+		INSERT INTO TX_NEXT (TXN_SN, CHK_NUM, TXC_CD, TXN_TOOTH_NUM, TXN_CONTENT, TXN_COST)
+				VALUES ((SELECT NVL(MAX(TXN_SN), 0) + 1
+				 		   FROM TX_NEXT
+				 		  WHERE CHK_NUM = #{chkNum})
+				 	   ,#{chkNum}
+				 	   ,#{txcCd}
+				 	   ,#{txnToothNum}
+				 	   ,#{txnContent}
+				 	   ,(SELECT TXC_PRICE * (SELECT NVL(REGEXP_COUNT(#{txnToothNum}, ','), 0) + 1
+						                       FROM DUAL)
+						   FROM TX_CODE
+						  WHERE TXC_CD = #{txcCd})
+				 	   )
+	</insert>
+
+
+	<update id="updateRegStatusInTreat" parameterType="String">
+		UPDATE REGIST SET REG_STATUS = 'IN_TREAT'
+					WHERE REG_NUM = #{regNum}
+	</update>
+
+	<!--
+	<select id="listPtPi" parameterType="String" resultType="piVO">
+		SELECT P.PI_SN, P.CHK_NUM, P.DIS_CD, P.PI_TOOTH_NUM, P.PI_CONTENT,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+		       (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM,
+		       (SELECT DIS_KOR_NM
+		          FROM DISEASE
+		         WHERE DIS_CD = P.DIS_CD) DIS_KOR_NM
+		  FROM PI P, CHECKUP C
+		 WHERE P.CHK_NUM = C.CHK_NUM
+		   AND P.CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		 ORDER BY P.CHK_NUM DESC, P.PI_SN DESC
+	</select>
+	 -->
+	<!--
+	<select id="listPtTxPlan" parameterType="String" resultType="txpVO">
+		SELECT TXP.TXP_SN, TXP.CHK_NUM, TXP.TXC_CD, TXP.TXP_TOOTH_NUM, TXP.TXP_CONTENT, TXP.TXP_COST,
+		       TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXP.TXC_CD) TXC_NM,
+		       (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX_PLAN TXP, CHECKUP C
+		 WHERE TXP.CHK_NUM = C.CHK_NUM
+		   AND TXP.CHK_NUM IN (SELECT CHK_NUM
+		                         FROM CHECKUP
+		                        WHERE PT_NUM = #{ptNum})
+		 ORDER BY TXP.CHK_NUM DESC, TXP.TXP_SN DESC
+	</select>
+	 -->
+	<!--
+	<select id="listPtTx" parameterType="String" resultType="txVO">
+		SELECT TX.TX_SN, TX.CHK_NUM, TX.TXC_CD, TX.TX_TOOTH_NUM, TX.TX_CONTENT, TX.TX_COST,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+			   (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TX.TXC_CD) TXC_NM,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX TX, CHECKUP C
+		 WHERE TX.CHK_NUM = C.CHK_NUM
+		   AND TX.CHK_NUM IN (SELECT CHK_NUM
+		                       FROM CHECKUP
+		                      WHERE PT_NUM = #{ptNum})
+		 ORDER BY TX.CHK_NUM DESC, TX.TX_SN DESC
+	</select>
+	 -->
+	<!--
+	<select id="listPtTxNext" parameterType="String" resultType="txnVO">
+		SELECT TXN.TXN_SN, TXN.CHK_NUM, TXN.TXC_CD, TXN.TXN_TOOTH_NUM, TXN.TXN_CONTENT, TXN.TXN_COST,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+			   (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXN.TXC_CD) TXC_NM,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX_NEXT TXN, CHECKUP C
+		 WHERE TXN.CHK_NUM = C.CHK_NUM
+		   AND TXN.CHK_NUM IN (SELECT CHK_NUM
+		                         FROM CHECKUP
+		                        WHERE PT_NUM = #{ptNum})
+		 ORDER BY TXN.CHK_NUM DESC, TXN.TXN_SN DESC
+	</select>
+	 -->
+
+
+
+	<resultMap id="chkupMap" type="chkupVO">
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="empNum" column="EMP_NUM" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<collection property="piList" resultMap="piMap" />
+		<collection property="txpList" resultMap="txPlanMap" />
+		<collection property="txList" resultMap="txMap" />
+		<collection property="txnList" resultMap="txNextMap" />
+	</resultMap>
+	<resultMap id="piMap" type="piVO">
+		<result property="piSn" column="PI_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="disCd" column="DIS_CD" />
+		<result property="piToothNum" column="PI_TOOTH_NUM" />
+		<result property="piContent" column="PI_CONTENT" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="disKorNm" column="DIS_KOR_NM" />
+	</resultMap>
+	<resultMap id="txPlanMap" type="txpVO">
+		<result property="txpSn" column="TXP_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TXP_TXC_CD" />
+		<result property="txpToothNum" column="TXP_TOOTH_NUM" />
+		<result property="txpContent" column="TXP_CONTENT" />
+		<result property="txpCost" column="TXP_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TXP_TXC_NM" />
+	</resultMap>
+	<resultMap id="txMap" type="txVO">
+		<result property="txSn" column="TX_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TX_TXC_CD" />
+		<result property="txToothNum" column="TX_TOOTH_NUM" />
+		<result property="txContent" column="TX_CONTENT" />
+		<result property="txCost" column="TX_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TX_TXC_NM" />
+	</resultMap>
+	<resultMap id="txNextMap" type="txnVO">
+		<result property="txnSn" column="TXN_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TXN_TXC_CD" />
+		<result property="txnToothNum" column="TXN_TOOTH_NUM" />
+		<result property="txnContent" column="TXN_CONTENT" />
+		<result property="txnCost" column="TXN_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TXN_TXC_NM" />
+	</resultMap>
+
+	<select id="listChart" parameterType="String" resultMap="chkupMap">
+		SELECT C.CHK_NUM, C.PT_NUM, C.PT_NM, C.EMP_NUM,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT_STR,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM,
+			   P.PI_SN, P.CHK_NUM, P.DIS_CD, P.PI_TOOTH_NUM, P.PI_CONTENT,
+		       (SELECT DIS_KOR_NM
+		          FROM DISEASE
+		         WHERE DIS_CD = P.DIS_CD) DIS_KOR_NM,
+		       TXP.TXP_SN, TXP.CHK_NUM, TXP.TXC_CD TXP_TXC_CD, TXP.TXP_TOOTH_NUM, TXP.TXP_CONTENT, TXP.TXP_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXP.TXC_CD) TXP_TXC_NM,
+		       TX.TX_SN, TX.CHK_NUM, TX.TXC_CD TX_TXC_CD, TX.TX_TOOTH_NUM, TX.TX_CONTENT, TX.TX_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TX.TXC_CD) TX_TXC_NM,
+		       TXN.TXN_SN, TXN.CHK_NUM, TXN.TXC_CD TXN_TXC_CD, TXN.TXN_TOOTH_NUM, TXN.TXN_CONTENT, TXN.TXN_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXN.TXC_CD) TXN_TXC_NM
+		  FROM CHECKUP C LEFT OUTER JOIN PI P ON(C.CHK_NUM = P.CHK_NUM)
+		                 LEFT OUTER JOIN TX_PLAN TXP ON(C.CHK_NUM = TXP.CHK_NUM)
+		                 LEFT OUTER JOIN TX ON(C.CHK_NUM = TX.CHK_NUM)
+		                 LEFT OUTER JOIN TX_NEXT TXN ON(C.CHK_NUM = TXN.CHK_NUM)
+		 WHERE C.PT_NUM = #{ptNum}
+		 ORDER BY C.CHK_DT DESC
+	</select>
+
+	<resultMap id="queMap" type="queVO">
+		<result property="ptNum" column="QUE_PT_NUM" />
+		<result property="quePharm" column="QUE_PHARM" />
+		<collection property="uConList" resultMap="uConMap" />
+	</resultMap>
+	<resultMap id="uConMap" type="uConVO">
+		<result property="ptNum" column="CON_PT_NUM" />
+		<result property="conNum" column="CON_NUM" />
+		<result property="conNm" column="CON_NM" />
+		<result property="conDet" column="CON_DET" />
+	</resultMap>
+	<select id="listMedicalAlerts" parameterType="String" resultMap="queMap">
+		SELECT Q.PT_NUM QUE_PT_NUM, Q.QUE_PHARM,
+		       U.PT_NUM CON_PT_NUM, U.CON_NUM, U.CON_NM, U.CON_DET
+		  FROM QUESTIONNAIRE Q LEFT OUTER JOIN UNDERLYING_CONDITION U ON (Q.PT_NUM = U.PT_NUM)
+		 WHERE Q.PT_NUM = #{ptNum}
+	</select>
+
+	<select id="checkPiTxDt" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		  FROM CHECKUP
+		 WHERE CHK_NUM = #{chkNum}
+		   AND TO_DATE(TO_CHAR(CHK_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') > TO_DATE(TO_CHAR(SYSDATE - 7, 'YYYY-MM-DD'), 'YYYY-MM-DD')
+	</select>
+
+	<delete id="deletePi" parameterType="piVO">
+		DELETE
+		  FROM PI
+		 WHERE CHK_NUM = #{chkNum}
+		   AND PI_SN = #{piSn}
+	</delete>
+
+	<delete id="deleteTxPlan" parameterType="txpVO">
+		DELETE
+		  FROM TX_PLAN
+		 WHERE CHK_NUM = #{chkNum}
+		   AND TXP_SN = #{txpSn}
+	</delete>
+
+	<delete id="deleteTx" parameterType="txVO">
+		DELETE
+		  FROM TX
+		 WHERE CHK_NUM = #{chkNum}
+		   AND TX_SN = #{txSn}
+	</delete>
+
+	<delete id="deleteTxNext" parameterType="txnVO">
+		DELETE
+		  FROM TX_NEXT
+		 WHERE CHK_NUM = #{chkNum}
+		   AND TXN_SN = #{txnSn}
+	</delete>
+
+	<select id="listCheckupCost" parameterType="String" resultType="txVO">
+		SELECT TX.TX_SN, TX.CHK_NUM, TX.TXC_CD, TX.TX_TOOTH_NUM, TX.TX_CONTENT, TX.TX_COST,
+			   (SELECT TXC_NM
+			      FROM TX_CODE
+			     WHERE TXC_CD = TX.TXC_CD) TXC_NM
+		  FROM TX
+		 WHERE TX.CHK_NUM = #{chkNum}
+	</select>
+
+	<select id="selectToothHist" parameterType="Map" resultType="txVO">
+		SELECT TX.TXC_CD, (SELECT TXC_NM
+		                     FROM TX_CODE
+		                    WHERE TXC_CD = TX.TXC_CD) TXC_NM
+		  FROM CHECKUP C LEFT OUTER JOIN TX TX ON (C.CHK_NUM = TX.CHK_NUM)
+		 WHERE C.PT_NUM = #{ptNum}
+		   AND TX.TX_TOOTH_NUM LIKE '%' || #{toothNum} || '%'
+	</select>
+
+</mapper>

@@ -1,0 +1,145 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
+<!-- jquery 3.6.0 -->
+<script src="https://code.jquery.com/jquery-3.6.4.js"></script>
+<!-- bootstrap 5 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- icon setting = font awesome -->
+<script src="https://kit.fontawesome.com/5f4aa574e8.js"></script>
+<!-- google font + 500/700 -->
+<!-- 사용시 font-weight : 500 or 700으로 줄것 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<!-- Swiper Demo Css, JS setting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="/resources/images/layout/ddit/logo/favicon-16x16.png">
+<style>
+body {
+    background: linear-gradient(-45deg, #ff6a3d, hsl(337, 100%, 81%), #ade9ff, #44ffd3, #904aff);
+    background-size: 400% 400%;
+    animation: gradient 18s ease infinite;
+    height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.justify-content-center{
+    animation: fadein 1s;
+    -webkit-animation: fadein 1s; /* Safari and Chrome */
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@-webkit-keyframes fadein { /* Safari and Chrome */
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.selectLoginBtn {
+	background-color: #904aff;
+	border: none;
+	width: 300px;
+	border-radius: 30px;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.homeBtn {
+	border: none;
+	width: 300px;
+	border-radius: 30px;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.userBtn, .empBtn {
+	transition: all 0.3s;
+	position: relative;
+	cursor: pointer;
+}
+
+.userBtn:hover, .empBtn:hover {
+	transform: scale(1.05);
+}
+
+.card {
+	background: rgba(255, 255, 255, 0.7);
+	border: none;
+}
+</style>
+<!-- main section 시작 -->
+<section class="container">
+	<div class="row justify-content-center">
+		<div class="col-xl-8 col-lg-12 col-md-9" style="padding-top: 100px;">
+			<div class="card o-hidden shadow-lg my-5" style="border-radius: 30px;">
+				<div class="card-body p-4 pt-4">
+					<a class="navbar-brand" href="#" style="width: 500px;">
+						<img src="/resources/images/layout/ddit/logo/ptPage_logo.png" alt="Logo">
+						<img src="/resources/images/layout/ddit/logo/Topnavbar_logo.png" alt="Logo">
+					</a>
+					<div class="row" style="-bs--gutter-x: 0rem; margin-top: 10%;">
+						<div style="-bs--gutter-x: none; width: 200px; height: 300px; margin: auto; margin-left: 20%;">
+							<img src="/resources/images/layout/ddit/empBtn.png" class="empBtn" />
+						</div>
+						<div style="-bs--gutter-x: none; width: 200px; height: 300px; margin: auto; margin-right: 20%;">
+							<img src="/resources/images/layout/ddit/userBtn.png" class="userBtn" />
+						</div>
+					</div>
+					<div class="mb-4 d-flex justify-content-center align-items-center" style="margin-top: 70px;">
+						<div class="d-grid gap-2">
+							<a type="button" class="btn btn-primary btn-lg selectLoginBtn" href="#" role="button">로그인 화면으로</a>
+							<a type="button" class="btn btn-danger btn-lg homeBtn" href="/ddit" role="button">홈으로</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<script>
+$(".selectLoginBtn").on('click', function(){
+	if($(this).attr('href') == '#'){
+		alert('화면을 선택해주세요.');
+	}
+})
+
+//회원/고객버튼 클릭시 이벤트 시작
+
+$(".userBtn").on("click",function(){
+    $(".empBtn").attr("src","/resources/images/layout/ddit/empBtn.png")
+    $(this).attr("src","/resources/images/layout/ddit/selectUserBtn.png");
+    $(".selectLoginBtn").attr("href","/ddit/login");
+}); // 회원예약버튼 클릭시 이벤트 끝..
+
+// 병원관계자버튼 클릭시 이벤트 시작
+$(".empBtn").on("click",function(){
+    $(".userBtn").attr("src","/resources/images/layout/ddit/userBtn.png")
+    $(this).attr("src","/resources/images/layout/ddit/selectEmpBtn.png");
+    $(".selectLoginBtn").attr("href","/hospital/desk");
+}); // 병원관계자버튼 클릭시 이벤트 끝..
+</script>

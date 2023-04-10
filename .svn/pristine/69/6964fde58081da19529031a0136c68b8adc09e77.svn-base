@@ -1,0 +1,37 @@
+package com.web.ddentist.hospital.site.faqInfo.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.web.ddentist.hospital.site.faqInfo.service.IFaqService;
+import com.web.ddentist.vo.FaqVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/site/faqInfo")
+public class faqInfoController {
+	
+	@Autowired
+	IFaqService iFaqService;
+	
+	//요청URI : /hospital/site/faqInfo
+	@GetMapping("")
+	public String main(Model model) {
+		
+		List<FaqVO> list = this.iFaqService.getFaqList();
+		log.info("list : " + list);
+		
+		model.addAttribute("faqList", list);
+		
+		
+		return "hospital/faq";
+	}
+	
+}

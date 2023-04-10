@@ -1,0 +1,24 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class ReceiptVO {
+	
+	private int rcvmtRctNum;
+	private String rcvmtNum;
+	private String docIssueNum;
+	private Date rctIssueDt;
+	private int rctSn;
+	private String rctPayOpt;
+	private String rctType;
+	private String rctCardComp;
+	private int rctCardNum;
+	private int rctAcceptNum;
+	private int rctAmt;
+	
+	private int rcvmtDscntAmt;
+	
+}

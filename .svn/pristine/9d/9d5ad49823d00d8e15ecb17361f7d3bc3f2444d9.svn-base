@@ -1,0 +1,24 @@
+package com.web.ddentist.patient.mypage.controller;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/ddit/mypage")
+public class MypageController {
+	
+	@Autowired
+	
+	@GetMapping("")
+	public String getMypage() {
+		return "patient/mypage";
+	}
+	
+	
+}

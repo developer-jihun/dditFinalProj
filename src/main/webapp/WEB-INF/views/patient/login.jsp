@@ -1,0 +1,440 @@
+<%@ page language="java" contentType="text/html; charset=utf-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<!-- bootstrap 5 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jquery 3.6.4 -->
+<script src="https://code.jquery.com/jquery-3.6.4.js"></script>
+<!-- icon setting = font awesome -->
+<script src="https://kit.fontawesome.com/5f4aa574e8.js"></script>
+<!-- google font + 500/700 -->
+<!-- 사용시 font-weight : 500 or 700으로 줄것 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<!-- Swiper Demo Css, JS setting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="/resources/images/layout/ddit/logo/favicon-16x16.png">
+<title>고객/환자 로그인</title>
+<style>
+/* body */
+body {
+	background-color: #404b57;
+}
+
+/* Button css */
+.violetBtn:hover{
+	background-color:#7c3dde !important;
+}
+
+.redBtn:hover{
+	background-color:#e13636 !important;
+}
+.loginBtn, .homeBtn {
+	font-family: 'Noto Sans KR', sans-serif;
+	border-radius: 50px;
+	font-weight: 700;
+	height: 50px;
+}
+
+.signupBtn, .nonUserBtn {
+	border-radius: 50px;
+	margin-left: 30px;
+	margin-bottom: 10px;
+	width: 85%;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+	height: 50px;
+}
+
+.loginBtn {
+	background-color: #9d59f0;
+	border: none;
+	width: 48%;
+}
+
+.homeBtn {
+	border: none;
+	width: 48%;
+}
+
+.signupBtn {
+	background-color: #3e63db;
+	border: none;
+	padding-top: 11px;
+}
+
+.certificationBtn, .certChkBtn {
+	background-color: #9d59f0;
+	border-radius: 50px;
+	border: none;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.nextBtn {
+	background-color: #9d59f0;
+	border: none;
+	border-radius: 30px;
+	width: 120px;
+	height: 50px;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.chkNextBtn {
+	background-color: #9d59f0;
+	border: none;
+	border-radius: 30px;
+	width: 120px;
+	height: 50px;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.chkNextBtn[disabled] {
+	background-color: #FF5252;
+	border: none;
+}
+
+.chkBtn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+	margin-top: 30px;
+}
+/* 글씨체 css */
+label {
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+textarea, input, select {
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+}
+
+h4 {
+	margin: 30px;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+a {
+	margin-left: 33%;
+	text-decoration: none;
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 500;
+	color: gray;
+}
+
+a:hover {
+	color: #404b57;
+}
+
+.modal-title {
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 700;
+}
+
+.redBtn{
+		background-color:#FF5252;
+		border:none;
+		font-family: 'Noto Sans KR', sans-serif;
+		font-weight:500;
+		color:white;
+	}
+
+.redBtn:hover{
+	background-color:#e13636 !important;
+	border:none;
+	color:white;
+}
+</style>
+</head>
+<body>
+	<!-- main section 시작 -->
+	<section class="container">
+		<div class="row justify-content-center">
+			<div class="col-xl-10 col-lg-12 col-md-9" style="padding-top: 100px;">
+				<div class="card border-0 shadow-lg my-5" style="border-radius: 30px; box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4) !important;">
+					<div class="card-body p-0">
+						<div class="row" style="padding-right: 2%;">
+							<div class="col-lg-6">
+								<img src="/resources/images/layout/ddit/userLoginImage.png" style="border-top-left-radius: 30px; border-bottom-left-radius: 30px;" />
+							</div>
+							<div class="col-lg-6">
+								<div class="p-3">
+									<div class="text-center">
+										<h4>고객/환자 로그인</h4>
+									</div>
+									<form class="employee" name="loginForm" action="/ddit/login" method="post">
+										<sec:csrfInput />
+										<div style="border: 2px solid #dddddd; border-radius: 30px; padding: 30px;">
+											<div class="row pb-3">
+												<label for="id" class="col-sm-3 col-form-label">아이디</label>
+												<div class="col-sm-9">
+													<input type="text" class="form-control" id="ptId" name="ptId" value="${requestScope.rememberId}" placeholder="아이디를 입력해주세요" required>
+												</div>
+											</div>
+											<div class="row pb-3">
+												<label for="password" class="col-sm-3 col-form-label">비밀번호</label>
+												<div class="col-sm-9">
+													<input type="password" class="form-control" id="ptPw" name="ptPw" placeholder="비밀번호를 입력해주세요" required>
+												</div>
+											</div>
+											<div class="form-check pb-2">
+												<input class="form-check-input" type="checkbox" id="rememberId" name="rememberId" value="Y" <c:if test="${requestScope.rememberId != null}">checked</c:if> />
+												<label class="form-check-label" for="rememberId"> 아이디 저장 </label>
+											</div>
+											<c:if test="${requestScope.errMsg != null and requestScope.errMsg != ''}">
+												<label class="text-danger">${requestScope.errMsg}</label>
+											</c:if>
+										</div>
+										<div class="d-flex justify-content-between align-items-center" style="width: 85%; margin-top: 15px; margin-left: 30px; margin-bottom: 10px;">
+											<input type="submit" class="btn btn-primary loginBtn" value="로그인" />
+											<input type="button" class="btn btn-danger homeBtn" value="홈으로" onclick="javascript:location.href='/ddit';" />
+										</div>
+										<a class="btn btn-success signupBtn" data-bs-toggle="modal" href="#signupModal" role="button"> 회원가입 </a>
+										<a class="btn btn-secondary nonUserBtn mb-4" style="padding-top: 11px;" href="/ddit/resv/select"> 비회원 예약 </a>
+										<div class="row mb-4">
+											<div class="offset-sm-1 col-sm-4">
+												<a href="/ddit/findId">아이디 찾기</a>
+											</div>
+											<div class="offset-sm-1 col-sm-4">
+												<a href="/ddit/findPw">비밀번호 찾기</a>
+											</div>
+										</div>
+										<a href="/hospital/login">혹시 병원관계자신가요?</a>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- 회원가입 인증 Modal -->
+	<div class="modal fade" id="signupModal" data-bs-backdrop="static" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content" style="border-radius: 30px;">
+				<div class="modal-header" style="border-bottom: 2px solid #FF5252;width: 90%;margin-left: 5%;">
+					<h5 class="modal-title" id="signupModalLabel">회원가입 인증</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body" style="padding: 40px 40px;">
+					<form name="signupAuthForm">
+						<div class="row mb-3" style="padding-bottom: 30px;">
+							<div class="col-sm-2"></div>
+							<label for="ptNm" class="col-sm-1 col-form-label"><span style="color: red;">*</span>이름</label>
+							<div class="col-md-1"></div>
+							<div class="col-sm-5">
+								<input type="text" class="form-control" id="ptNm" name="ptNm" required />
+							</div>
+							<div class="col-sm-3"></div>
+						</div>
+						<div class="row mb-3" style="padding-bottom: 30px;">
+							<div class="col-sm-1"></div>
+							<label for="ptRrno1" class="col-sm-3 col-form-label" style="padding-left: 70px;"><span style="color: red;">*</span>주민등록번호</label>
+							<div class="col-sm-2">
+								<input type="text" class="form-control" id="ptRrno1" name="ptRrno1" maxlength="6" required />
+							</div>
+							<span style="width: 10px; text-align: center;">-</span>
+							<div class="col-sm-2">
+								<input type="password" class="form-control" id="ptRrno2" name="ptRrno2" maxlength="7" required />
+							</div>
+							<div class="col-sm-2"></div>
+						</div>
+						<div class="row mb-3" style="padding-bottom: 30px;">
+							<div class="col-sm-2"></div>
+							<label for="ptPhone1" class="col-sm-2 col-form-label"><span style="color: red;">*</span>연락처</label>
+							<div class="col-sm-2" style="width: 100px;">
+								<input type="text" class="form-control" id="ptPhone1" name="ptPhone1" maxlength="3" required />
+							</div>
+							<span style="width: 10px; text-align: center;">-</span>
+							<div class="col-sm-2" style="width: 100px;">
+								<input type="text" class="form-control" id="ptPhone2" name="ptPhone2" maxlength="4" required />
+							</div>
+							<span style="width: 10px; text-align: center;">-</span>
+							<div class="col-sm-2" style="width: 100px;">
+								<input type="text" class="form-control" id="ptPhone3" name="ptPhone3" maxlength="4" required />
+							</div>
+							<div class="col-sm-2">
+								<input type="button" value="인증번호 받기" class="btn btn-danger redBtn certificationBtn" onclick="sendAuthNum();" />
+							</div>
+						</div>
+						<div id="authNumInputGroup" class="row mb-3" style="display: none; padding-bottom: 30px;">
+							<div class="col-sm-1"></div>
+							<label for="authNum" class="col-sm-3 col-form-label" style="padding-left: 70px;"><span style="color: red;">*</span>인증번호</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" id="authNum" name="authNum" required />
+							</div>
+							<div class="col-sm-2">
+								<input type="button" value="인증번호 확인" id="certChkBtn" class="btn btn-danger redBtn certChkBtn" onclick="checkAuthNum();" />
+							</div>
+						</div>
+					</form>
+				</div>
+				<div id="signupModalFooter" class="modal-footer" style="display: none;">
+					<button class="btn btn-danger redBtn nextBtn" data-bs-target="#signupAgreeModal" data-bs-toggle="modal">다음으로</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 회원가입 인증하고 난뒤에 동의서 받는 Modal -->
+	<div class="modal fade" id="signupAgreeModal" data-bs-backdrop="static" tabindex="-1">
+		<div class="modal-dialog modal-dialog-scrollable modal-lg">
+			<div class="modal-content" style="border-radius:30px;">
+				<div class="modal-header" style="border-bottom: 2px solid #FF5252;width: 90%;margin-left: 5%;">
+					<h5 class="modal-title" id="signupAgreeModalLabel">회원가입 - 진료 기록 정보 공유 동의 여부</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" style="padding: 30px;">
+					<div style="border: 2px solid #dddddd; padding: 20px;">
+						<h5 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">개인정보보호법과의 관계 1. 개인정보보호법 제6조* * 개인정보보호법 제6조(다른 법률과의 관계) 개인정보 보호에 관하여는 다른 법률에 특별한 규정이 있는 경우를 제외하고는 이 법에서 정하는 바에 따른다.</h5>
+						<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500;">개인정보보호법 제6조에 따라, 의료기관이 보유하는 환자에 관한 기록(정보)에 대해 의료법이 우선 적용 2. 의료법 우선 적용 - ⅰ)의료기관이, ⅱ)보유 중인 ⅲ)환자에 관한 기록을 ⅳ)제3자(외부자)에게, ⅴ)열람 또는 사본 발급 등 그 내용의 확인을 제공하는 경우에 개인정보보호법을 적용하지 않고 의료법*을 적용함 * 의료법 제21조 또는 제21조의2 규정 등 적용 - 따라서 개인정보보호법에서 제3자 제공이 허용되는 경우라도 의료법 제21조 또는 제21조의2에서 정하는 경우가 아니면 환자에 관한 기록과 관련한 정보를 제3자에게 제공 금지 3. 개인정보보호법이 적용되는 경우(의료법 적용하지 않음) - 가명처리하여 환자식별력이 없는 진료기록(정보) - 의료기관이 아닌 자(또는 기관)가 보유하는 진료기록(정보) * 예시) 의료기관이 아닌 환자가 보관 중인 진료기록 사본을 제3자에게 주는 것은 개인정보보호법 적용 사안이지 의료법과 관련 없음.</h6>
+						<img src="/resources/images/layout/ddit/agreeDoc.png" />
+						<h5 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">의료법 제21조(진료기록 열람 및 사본 등의 제공) 󰊱</h5>
+						<h6 style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500;">요청자 본인확인 및 제출 서류 1. 환자가 요청하는 경우(의료법 제21조 제1항 근거) (1) 요청 절차(의료법 시행규칙 제13조의3 제4항 개정, 20.2.28일 시행) - 환자가 본인에 관한 기록의 열람 또는 사본 발급 등 그 내용의 확인을 요청하는 경우 의료기관은 요청자가 환자 본인임을 확인하여야 하며, 그 외에 제출서류는 필요하지 않음 - 이 때 의료기관이 환자 본인임을 확인하는 방법에 대해 제한이 없으므로 신분증 확인 또는 휴대폰 본인인증이나 전화를 통한 개인정보 문답 등 각 의료기관이 인정 하는 대면 또는 비대면의 다양한 방법으로 본인 확인 가능 ※ 환자가 온라인 본인인증을 거쳐 해당 의료기관(홈페이지)에 회원가입하고 아이디, 패스워드를 부여받았다면, 다시 온라인 본인인증을 거치지 않고 아이디, 패스워드 입력을 통한 로그인 만으로 환자 본인확인 가능 (2) 법정대리인의 요청 - 환자의 법정대리인이 요청하는 경우에도 환자 본인이 요청하는 경우에 준하여 환자의 법정대리인임을 증명하고 추가 제출서류 없이 환자의 진료기록 사본을 요청할 수 있음(이하 이 지침에서 환자의 법정대리인은 환자의 법정대리인임을 증명하는 한, 환자와 동일한 권한으로 진료기록 사본 발급을 의료기관에 요청하거나 대리인에게 위임 가능함) - 법정대리인임을 증명하는 서류를 제출하는 경우에 온라인 또는 직접 방문 제출이 가능하며, 본인확인 방법은 환자와 마찬가지로 온라인 본인인증 등 의료기관이 인정하는 대면 또는 비대면의 다양한 방법으로 가능</h6>
+					</div>
+					<div class="form-check chkBtn">
+						<form name="ptMrsaYnForm" action="/ddit/signup" method="post">
+							<input class="form-check-input chkBox" type="checkbox" id="ptMrsaYn" name="ptMrsaYn" value="Y" onchange="agreeCheck()" />
+							<label class="form-check-label" for="flexCheckDefault" style="margin-left: 10px;"> 진료기록정보공유 동의 </label>
+							<sec:csrfInput />
+						</form>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<input type="button" id="toSignupBtn" class="btn btn-primary redBtn chkNextBtn" value="다음으로" disabled onclick="javascript:document.ptMrsaYnForm.submit();" />
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+
+	// 인증번호 받기 버튼 클릭시
+	function sendAuthNum(){
+
+		const signupAuthForm = document.signupAuthForm;
+
+		const ptNm = signupAuthForm.ptNm.value;
+		if(ptNm == ''){
+			alert('이름을 입력해주세요.');
+			return false;
+		}
+
+		const ptRrno = signupAuthForm.ptRrno1.value + signupAuthForm.ptRrno2.value;
+		if(!ptRrno.match(/^[\d]{13}$/g)){
+			alert('주민등록번호를 다시 한번 확인해주세요.');
+			return false;
+		}
+
+		const ptPhone = signupAuthForm.ptPhone1.value + signupAuthForm.ptPhone2.value + signupAuthForm.ptPhone3.value;
+		if(!ptPhone.match(/^[\d]{9,11}$/g)){
+			alert('연락처를 다시 한번 확인해주세요.');
+			return false;
+		}
+
+		fetch('/ddit/sendAuthNum', {
+			method: 'post',
+			headers: {
+				'X-CSRF-TOKEN' : '${_csrf.token}',
+				'Content-Type' : 'application/json;charset=utf-8'
+			},
+			body: JSON.stringify({
+				ptNm : ptNm,
+				ptRrno : ptRrno,
+				ptPhone : ptPhone
+			})
+		})
+			.then(res => {
+				if(!res.ok) throw new Error();
+				return res.text();
+			})
+			.then(text => {
+				if(text == 'FAILED') throw new Error();
+				if(text == 'NONE'){
+					alert('일치하는 환자 정보가 없습니다.');
+					return false;
+				}
+				if(text == 'ALREADY'){
+					alert('이미 가입한 환자입니다.');
+					return false;
+				}
+				alert('인증번호가 발송되었습니다.');
+				$("#authNumInputGroup").show();
+				$('#authNum').val('');
+			})
+			.catch(() => {
+				alert('잠시 후 다시 시도해주세요.');
+			});
+	}
+
+	// 인증번호 확인
+	function checkAuthNum(){
+
+		const signupAuthForm = document.signupAuthForm;
+		const authNum = signupAuthForm.authNum.value;
+
+		fetch('/ddit/checkAuthNum', {
+			method: 'post',
+			headers: {
+				'X-CSRF-TOKEN' : '${_csrf.token}',
+				'Content-Type' : 'application/json;charset=utf-8'
+			},
+			body: JSON.stringify({
+				authNum : authNum
+			})
+		})
+			.then(res => {
+				if(!res.ok) throw new Error();
+				return res.text();
+			})
+			.then(text => {
+				if(text == 'FAILED') {
+					alert('인증번호가 틀립니다.');
+					return false;
+				}
+				alert('인증되었습니다.');
+				$('#authNum').prop('disabled', true);
+				$('#certChkBtn').prop('disabled', true);
+				$('#signupModalFooter').show();
+			})
+			.catch(() => {
+				alert('잠시 후 다시 시도해주세요.');
+			})
+	}
+
+	// 모달창을 닫으면 폼 및 모달 구성 초기화
+	$('.btn-close').on('click', function(){
+		document.signupAuthForm.reset();
+		$('#authNumInputGroup').hide();
+		$('#signupModalFooter').hide();
+	});
+
+    // 진료기록정보공유 checkbox 클릭시 다음으로 버튼 활성화, 체크풀면 비활성화
+    function agreeCheck(){
+        var toSignupBtn = document.querySelector("#toSignupBtn");
+        if(toSignupBtn.disabled == true){
+        	toSignupBtn.disabled = false;
+        }else{
+        	toSignupBtn.disabled = true;
+        }
+    }
+
+</script>
+</html>

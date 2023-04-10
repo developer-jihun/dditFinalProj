@@ -1,0 +1,142 @@
+
+listRegist();
+
+// 접수 목록 조회
+function listRegist(){
+	
+	const registTable = document.querySelector('#registList');
+	registTable.innerHTML = '';
+	
+	fetch('/hospital/desk/listRegist')
+		.then(res => res.json())
+		.then(regList => {
+			
+			let code = '';
+			regList.forEach(function(reg, idx){
+				code += '<tr class="regRow dropdown">';
+				code += '<td data-value="' + (idx + 1) + '">' + (idx + 1) + '</td>';
+				if(reg.regStatus == '접수완료'){
+					code += '<td data-toggle="dropdown">';
+					code += '<ul class="dropdown-menu">';
+					code += '<li><a class="dropdown-item" href="#" onclick="cancelRegistAlert(\'' + reg.regNum + '\')">접수취소</a></li>';
+					code += '</ul>';
+					code += reg.regStatus;
+					code += '</td>';
+				} else {
+					code += '<td>';
+					code += reg.regStatus;
+					code += '</td>';
+				}
+				
+				code += '<td>' + reg.ptNum + '</td>';
+				code += '<td>' + reg.ptNm + '</td>';
+				code += '<td></td>';
+				let regDt = new Date(reg.regDt);
+				let hour = regDt.getHours();
+				if(hour < 10) hour = '0' + hour;
+				let minutes = regDt.getMinutes();
+				if(minutes < 10) minutes = '0' + minutes;
+				code += '<td>' + hour + ':' + minutes + '</td>';
+				code += '<td></td>';
+				code += '<td>' + reg.chairNm + '</td>';
+				code += '<td>' + reg.empNm + '</td>';
+				code += '<td>' + reg.regCc + '</td>';
+				code += '</tr>';
+			});
+			
+			registTable.insertAdjacentHTML('beforeEnd', code);
+			getWaitingTimeMinute();
+			setInterval(getWaitingTimeMinute, 1000);
+		});
+}
+
+// 접수 취소 알림창
+function cancelRegistAlert(regNum){
+	
+	Swal.fire({
+		title: '접수를 취소하시겠습니까?',
+		showDenyButton: true,
+		confirmButtonText: '확인',
+		denyButtonText: '취소',
+	}).then((result) => {
+		if (result.isConfirmed) {
+			cancelRegist(regNum);
+		}
+	});
+}
+
+// 접수 취소
+function cancelRegist(regNum){
+	
+	const csrfToken = $('#_csrfToken').val();
+	
+	fetch('/hospital/desk/cancelRegist', {
+		method: 'post',
+		headers: {
+			'X-CSRF-TOKEN' : csrfToken,
+			'Content-Type' : 'application/json;charset=utf-8'
+		},
+		body : JSON.stringify({
+			'regNum' : regNum
+		})
+	})
+		.then(res => res.text())
+		.then(text => {
+			
+			if(text == 'FAILED'){
+				simpleErrorAlert();
+			}
+			
+			simpleSuccessAlert('접수가 취소되었습니다.');
+			listRegist();
+		});
+}
+
+// 접수 등록
+function insertRegist(){
+	
+	if(document.patientForm.ptNum.value == ''){
+		simplePatientSelectNeedAlert();
+		return false;
+	}
+	
+	let registForm = new FormData();
+	registForm.append('ptNum', document.patientForm.ptNum.value);
+	registForm.append('empNum', document.querySelector('#regDoc').value);
+	registForm.append('regCc', document.querySelector('#regCc').value);
+	registForm.append('chairNum', document.querySelector('#chairNum').value);
+	
+	const csrfToken = $('#_csrfToken').val();
+	
+	fetch('/hospital/desk/insertRegist?_csrf=' + csrfToken, {
+		method: 'post',
+		body: registForm
+	})
+		.then(res => res.text())
+		.then(text => {
+			
+			if(text == 'FAILED') {
+				simpleErrorAlert();
+				return false;
+			}
+			
+			simpleSuccessAlert('접수가 등록되었습니다.');
+			
+		});
+}
+
+// 대기시간 계산
+function getWaitingTimeMinute(){
+	
+	let today = new Date();
+	let nowMinutes = today.getHours() * 60 + today.getMinutes();
+	
+	let registTr = document.querySelectorAll('.regRow');
+	for(regTr of registTr){
+		let regTime = regTr.childNodes[5].textContent.split(':');
+		let regMinutes = parseInt(regTime[0]) * 60 + parseInt(regTime[1]);
+		
+		regTr.childNodes[4].textContent = (nowMinutes - regMinutes) + '분';
+	}
+	
+}

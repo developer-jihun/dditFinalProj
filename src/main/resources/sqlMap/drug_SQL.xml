@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace : xml파일이 여러개일 수 있으므로
+	이를 구별하기 위한 식별 용도로 사용
+ -->
+<mapper namespace="com.web.ddentist.mapper.DrugMapper">
+
+	<!-- 발주 약품 검색 -->
+	<select id="showMd" parameterType="String" resultType="drugVO">
+		SELECT DRUG_NUM, DRUG_NM, DRUG_NM_EN, DRUG_TYPE, DRUG_INGRE, DRUG_COMP, DRUG_COUNT
+		FROM DRUG
+		WHERE DRUG_NM LIKE '%'||#{keyword}||'%'
+		   OR DRUG_NM_EN LIKE '%'||#{keyword}||'%'
+  		   OR DRUG_TYPE LIKE '%'||#{keyword}||'%' 
+   		   OR DRUG_INGRE LIKE '%'||#{keyword}||'%'
+	</select>
+
+	
+	<!-- 발주 추가(영수증) -->
+	<insert id="insertPurchase" parameterType="purchaseVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="purNum">
+			SELECT 'P' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || TRIM(TO_CHAR(COUNT(PUR_NUM) + 1, '000'))
+     		FROM   PURCHASE
+    		WHERE  TO_CHAR(PUR_DT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</selectKey>
+		INSERT INTO PURCHASE(PUR_NUM, PUR_COST) 
+   		VALUES(
+            #{purNum},
+            #{purCost}
+    	)
+	</insert>
+	
+	<!-- 발주 약품 추가 
+	List<PurchaseDrugVO> purchaseDrugVOList
+	-->
+	<update id="insertPurchaseDrug" parameterType="java.util.List">
+		<selectKey resultType="int" order="BEFORE" keyProperty="seq"  >
+			SELECT NVL(MAX(PUR_DRUG_SN),0)+1 FROM PURCHASE_DRUG
+		</selectKey> 
+		
+		<foreach collection="list" item="purchaseDrugVO"
+			open="INSERT ALL" close="SELECT * FROM DUAL" separator=" "
+			index="idx">
+			INTO PURCHASE_DRUG(PUR_DRUG_SN, PUR_NUM, DRUG_NUM, DRUG_NM, PUR_DRUG_COUNT)
+			    VALUES(
+			    	#{idx}+#{seq},
+			    	#{purchaseDrugVO.purNum},
+			    	#{purchaseDrugVO.drugNum},
+			    	(SELECT DRUG_NM FROM DRUG WHERE DRUG_NUM=#{purchaseDrugVO.drugNum}),
+			    	#{purchaseDrugVO.purDrugCount}
+			    	)
+		</foreach>
+	</update>
+	
+	<!-- 발주 후 재고수 변경 !!! 발주 완료로 바뀌고 변경되도록 수정하기================(수정 완료 공부용으로 남김)
+		List<PurchaseDrugVO> purchaseDrugVOList
+	-->
+	<update id="updateDrugCount" parameterType="purchaseVO">
+		UPDATE DRUG T
+		SET    T.DRUG_COUNT = NVL(T.DRUG_COUNT,0) + (
+		        SELECT NVL(MAX(B.PUR_DRUG_COUNT),0)
+		        FROM   PURCHASE A, PURCHASE_DRUG B
+		        WHERE  A.PUR_NUM = B.PUR_NUM
+		        AND    A.PUR_NUM = #{purNum}
+		        AND    B.DRUG_NUM = T.DRUG_NUM
+		    )
+	</update>
+	
+	<!-- 발주 중 목록 초기 데이터 넣어주기 -->
+	<select id="showPurchasing" resultType="purchaseVO">
+		SELECT A.PUR_NUM, A.PUR_COST, A.PUR_DT, A.PUR_STATUS
+		FROM   PURCHASE A
+		WHERE  A.PUR_STATUS = '1'
+		ORDER BY A.PUR_DT DESC
+	</select>
+	
+	<!-- 발주 건 취소 -->
+	<delete id="cancelPurchase" parameterType="purchaseVO">
+		DELETE 
+		  FROM PURCHASE
+		 WHERE PUR_NUM = #{purNum}
+	</delete>
+	
+	<!-- 발주 완료 목록 초기 데이터 넣어주기 -->
+	<select id="showPurchased" resultType="purchaseVO">
+		SELECT PUR_NUM, PUR_COST, PUR_DT, PUR_STATUS 
+		FROM PURCHASE 
+		WHERE PUR_STATUS='0'
+		ORDER BY PUR_DT DESC
+	</select>
+	
+	<!-- 발주 : 발주 약품 = 1:N
+		발주
+	 -->
+	<resultMap type="purchaseVO" id="purchaseMap">
+		<result property="purNum" column="PUR_NUM" />
+		<result property="purCost" column="PUR_COST" />
+		<result property="purDt" column="PUR_DT" />
+		<result property="purStatus" column="PUR_STATUS" />
+		<collection property="purchaseDrugList" resultMap="purchaseDrugMap" ></collection>
+	</resultMap>
+	
+	<!-- 발주 : 발주 약품 = 1:N
+		발주 약품
+	 -->
+	<resultMap type="purchaseDrugVO" id="purchaseDrugMap">
+		<result property="purDrugSn" column="PUR_DRUG_SN" />
+		<result property="purNum" column="PUR_NUM" />
+		<result property="drugNum" column="DRUG_NUM" />
+		<result property="drugNm" column="DRUG_NM" />
+		<result property="purDrugCount" column="PUR_DRUG_COUNT" />
+	</resultMap> 
+		
+	
+	<!-- 발주 중인 목록 가져오기 -->
+	<select id="selectPurchase" parameterType="purchaseVO" resultMap="purchaseMap">
+		SELECT A.PUR_NUM, A.PUR_COST, A.PUR_DT, A.PUR_STATUS,
+		B.PUR_DRUG_SN, B.PUR_NUM, B.DRUG_NUM, B.DRUG_NM, B.PUR_DRUG_COUNT
+		FROM PURCHASE A INNER JOIN PURCHASE_DRUG B
+		ON(B.PUR_NUM=A.PUR_NUM)
+		WHERE A.PUR_NUM=#{purNum}
+	</select>
+
+	<!-- 발주 완료 목록 처리 시작 -->
+	<!-- 1) 재고 수량 일괄 변경 -->
+	<update id="updateCount" parameterType="purchaseVO">
+		UPDATE DRUG T
+		SET    T.DRUG_COUNT = NVL(T.DRUG_COUNT,0) + (
+		        SELECT NVL(MAX(B.PUR_DRUG_COUNT),0)
+		        FROM   PURCHASE A, PURCHASE_DRUG B
+		        WHERE  A.PUR_NUM = B.PUR_NUM
+		        AND    A.PUR_NUM = #{purNum}
+		        AND    B.DRUG_NUM = T.DRUG_NUM
+		    )
+	</update>
+	
+	<!-- 2) 발주 완료 목록 가져오기 -->
+	<select id="purchaseFinishList" parameterType="purchaseVO" resultType="purchaseVO">
+		SELECT A.PUR_NUM, A.PUR_COST, A.PUR_DT, A.PUR_STATUS
+		FROM   PURCHASE A
+		WHERE  A.PUR_STATUS = '0'
+		ORDER BY A.PUR_DT DESC
+	</select>
+	
+	<!-- 발주 완료 목록 처리 끝 -->
+	
+	<!-- 발주 상태 발주 완료로 변경 -->
+	<update id="updateStatus" parameterType="purchaseVO">
+		UPDATE PURCHASE
+		SET	   PUR_STATUS = '0'
+		WHERE  PUR_NUM=#{purNum}
+	</update>
+	
+	<!-- 발주 중 목록 처리 시작 -->
+	<!-- 1) 재고 수량 일괄 변경 -->
+	<update id="reupdateCount">
+		UPDATE DRUG T
+		SET    T.DRUG_COUNT = NVL(T.DRUG_COUNT,0) - (
+		        SELECT NVL(MAX(B.PUR_DRUG_COUNT),0)
+		        FROM   PURCHASE A, PURCHASE_DRUG B
+		        WHERE  A.PUR_NUM = B.PUR_NUM
+		        AND    A.PUR_NUM = #{purNum}
+		        AND    B.DRUG_NUM = T.DRUG_NUM
+		)
+	</update>
+	
+	<!-- 2) 발주 중 목록 가져오기 =>이거는 id="showPurchasing"으로 하기 -->
+
+	<!-- 발주 상태 발주 중으로 변경 -->
+	<update id="reupdateStatus" parameterType="purchaseVO">
+		UPDATE PURCHASE
+		SET	   PUR_STATUS = '1'
+		WHERE  PUR_NUM=#{purNum}
+	</update>
+	
+	<!-- 발주 중 목록 처리 끝 -->
+	
+	<!-- 발주 기간 목록 가져오기 -->
+	<select id="purchasePeriod" parameterType="purchaseVO" resultType="purchaseVO">
+		SELECT PUR_NUM, PUR_COST, PUR_DT, PUR_STATUS FROM PURCHASE 
+		WHERE PUR_STATUS='0'
+		      AND PUR_DT BETWEEN #{startDate} AND #{endDate}
+	</select>
+</mapper>
+
+
+
+
+
+
+
+

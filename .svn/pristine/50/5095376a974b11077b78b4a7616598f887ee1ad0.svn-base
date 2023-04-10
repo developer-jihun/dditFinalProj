@@ -1,0 +1,164 @@
+// 모달을 통한 일정 추가
+var rAddModal	= $('#resvAddModal');
+var rInfoModal	= $("#resvInfoModal");
+var rDate 		= $("#resvDate");		//$("input[name='resvDate']");	// 일자 선택
+var modalTitle 	= $('.modal-title');
+var resvNum 	= $('#resvNum');		// 예약 번호
+var ptNm 		= $('#ptNm');			// 환자명
+var ptPhone 	= $('#ptPhone'); 		// 휴대폰 번호
+var rStartT 	= $('#resvStartTime');	// 시작 시간
+var rEndT	 	= $('#resvEndTime');	// 종료 시간
+var empNum 		= $('#empNum');			// 의사 선택
+var resvCc 		= $('#resvCc');			// 호소증상
+var resvStat	= $('#resvStatus');		// 예약 상태
+
+/* ****************
+ *  새로운 일정 생성
+ * ************** */
+var lastEditStart = ''; // 이벤트 발생 전 값 저장
+var lastEditEnd = ''; 	// 이벤트 발생 전 값 저장
+
+function newEvent () {
+	$(".input-modal").removeClass("is-valid");
+	$(".input-modal").removeClass("is-invalid"); 
+	$(".error-modal").removeClass("error");
+	
+	var today = fullToday();
+	var date = today.split(' '); // 년월일, 시간 분리
+	
+    $("#contextMenu").hide(); //메뉴 숨김
+    
+    modalTitle.html('새 예약');
+    ptNm.attr("placeholder",'홍길동');
+    ptPhone.attr("placeholder",'010XXXX****');
+    rDate.val(date[0]);
+    rEndT.attr("placeholder",'시간을 선택해주세요');
+    resvCc.attr("placeholder",'내원 이유를 간단히 적어주세요 ^^');
+    
+    lastEditStart = date[1];
+    lastEditEnd = date[1];
+    
+    rAddModal.modal('show');
+    //새로운 일정 저장버튼 클릭
+    $('#save-event').unbind();
+    $('#save-event').on('click', function () {
+        
+		// 예약 테이블DB 저장 정보
+		var calData = {
+        	'ptNm'		: ptNm.val().trim(),
+        	'ptPhone'	: ptPhone.val().trim(),
+        	'resvSdt'	: rDate.val() + " " + rStartT.val(),
+        	'resvEdt'	: rDate.val() + " " + rEndT.val(),
+        	'empNum'	: empNum.val(),
+        	'resvCc'	: resvCc.val()
+        };
+		
+        if(calData.ptNm === '') {
+        	$("#errPtNm").addClass("error");
+        	ptNm.addClass("is-invalid");
+            return false;
+        }
+        if(calData.ptPhone === '') {
+       		$("#errPtPhone").addClass("error");
+       		ptPhone.addClass("is-invalid");
+            return false;
+        }
+		if(rDate.val() === '') {
+			simpleErrorAlert('날짜를 선택해주세요');
+			rDate.addClass("is-invalid");
+            return false;
+        }
+        if(rStartT.val() >= rEndT.val()) {
+        	simpleErrorAlert('시간을 확인해주세요');
+        	rStartT.addClass("is-invalid");
+        	rEndT.addClass("is-invalid");
+            return false;
+        }
+        if(calData.empNum === ''){
+			simpleErrorAlert('의사를 선택해주세요');
+			empNum.addClass("is-invalid");
+            return false;
+		}
+        
+        var sbTime = rStartT.val().split(",",0) + rStartT.val().split(",",1);
+        var ebTime = rEndT.val().split(",",0) + rEndT.val().split(",",1);
+
+        // 점심시간이 포함된 예약 일시일시 리턴
+        if(sbreak >= sbTime && ebreak <= ebTime){
+        	simpleErrorAlert("해당 시간은 휴식시간 입니다.");
+        	rStartT.addClass("is-invalid");
+        	rEndT.addClass("is-invalid");
+        	return false;
+        }
+        
+        rAddModal.find('input, textarea').val('');
+        rAddModal.modal('hide');
+		
+        // header
+        const csrfToken = $('#_csrfToken').val(); 
+        //새로운 일정 저장
+        $.ajax({
+            url: "/hospital/resv/create",
+            type: "post",
+            data: JSON.stringify(calData),
+            dataType: "json",
+            beforeSend: function(xhr) {
+            	xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+            	xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+            },
+            success: function (result) {
+            	console.log(result);
+            	if(result == 1){
+                	//캘린더 초기화
+                	resvEventReLoding();
+            		simpleSuccessAlert('예약 성공');
+            	} else {
+            		simpleErrorAlert('예약 실패..다시 시도해주세요')
+            	}
+            }
+        });
+    });
+};
+// 일정 추가 끝
+
+// 모달 날짜 선택 제한
+$(document).on("blur", "#resvDate",function(){
+	var clickDate = $(this).val();
+	
+	// 이전 날짜 선택 불가
+	if(today() > clickDate){
+		simpleErrorAlert('선택 불가능한 날짜입니다.');
+		$("#resvDate").val(today());
+	}
+	
+	// 일요일 선택 시 
+	if(new Date(clickDate).getDay() == 0 ){
+		simpleErrorAlert('일요일은 예약이 불가능합니다.');
+		$("#resvDate").val(today());
+	}
+	empNum.val('');
+});
+
+// 시작시간 선택 가능 판별
+$(document).on("change","#resvStartTime",function(){
+	var choseTime = $("#resvDate").val() + ' ' + $(this).val();
+	if(fullToday() > choseTime){
+		simpleErrorAlert('선택 불가능한 시간입니다.');
+		$("#resvStartTime").val('');
+		rStartT.attr("placeholder",'시간을 선택해 주세요');
+	}
+	empNum.val('');
+	return;
+});
+
+// 종료시간 선택 가능 판별
+$(document).on("change","#resvEndTime",function(){
+	var choseTime = $("#resvDate").val() + ' ' + $(this).val();
+	if(fullToday() > choseTime){
+		simpleErrorAlert('선택 불가능한 시간입니다.');
+		$("#resvEndTime").val('');
+		rEndT.attr("placeholder",'시간을 선택해주세요');
+	}
+	empNum.val('');
+	return;
+});

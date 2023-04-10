@@ -1,0 +1,34 @@
+package com.web.ddentist.mapper;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.ReservationVO;
+
+public interface ReservationMapper {
+	
+	// 예약 목록 추가
+	public int create(ReservationVO vo);
+	
+	// 예약 목록 불러오기
+	public List<ReservationVO> getAllList(Map<String, String> map);
+	
+	// 예약 취소 /예약 이행/ 예약 이행 취소
+	public int changeStat(Map<String, String> map);
+	
+	// 병원 오픈 시간 가져오기
+	public Map<String, String> openTime();
+	
+	// 전체 의사 목록 가져오기
+	public List<Map<String, String>> empInfo();
+	
+	// 예약 현황 가져오기
+	public List<Map<String, String>> resvState();
+	
+	// 예약 불가능한 의사
+	public List<String> selectOption(Map<String, Date> map);
+	
+	// 예약 미이행 변경
+	public int previousRes();
+}

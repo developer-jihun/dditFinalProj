@@ -1,0 +1,73 @@
+package com.web.ddentist.hospital.desk.service;
+
+import java.util.List;
+
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.QuestionnaireVO;
+
+public interface IDeskService {
+	
+	/**
+	 * 환자 등록
+	 * 
+	 * @param patientVO 환자 정보가 담긴 VO
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int insertPatient(PatientVO patientVO);
+	
+	/**
+	 * 환자 정보 수정
+	 * 
+	 * @param patientVO 환자 정보가 담긴 VO
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int updatePatient(PatientVO patientVO);
+	
+	/**
+	 * 환자 검색
+	 * 
+	 * @param keyword 환자 검색에 입력한 키워드
+	 * @return 해당 키워드에 일치하는 환자 VO 목록
+	 */
+	public List<PatientVO> searchPatient(String keyword);
+	
+	/**
+	 * 환자 정보 조회
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 환자 정보가 담긴 VO
+	 */
+	public PatientVO selectPatient(String ptNum);
+	
+	/**
+	 * 환자 정보 삭제
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 성공 : SUCCESS, 실패 : FAILED, 진료기록이 있어 거부됨 : DENIED
+	 */
+	public String deletePatient(String ptNum);
+	
+	/**
+	 * 문진표 작성
+	 * 
+	 * @param queVO 문진표 내용
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int insertQue(QuestionnaireVO queVO);
+	
+	/**
+	 * 회원 문진표 조회
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 회원의 문진표와 기저질환 정보가 담긴 VO
+	 */
+	public QuestionnaireVO selectPtQue(String ptNum);
+	
+	/**
+	 * 회원 문진표 수정
+	 * 
+	 * @param queVO 문진표 내용
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int updateQue(QuestionnaireVO queVO);
+}

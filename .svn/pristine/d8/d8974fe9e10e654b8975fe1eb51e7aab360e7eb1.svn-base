@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.SmsMapper">
+	
+	<select id="listPtPhone" parameterType="List" resultType="ptVO">
+		SELECT PT_NUM, PT_NM, PT_PHONE
+		  FROM PATIENT
+		 WHERE PT_NUM IN
+		 <foreach collection="list" item="ptNum" open="(" close=")" separator=",">
+		 		#{ptNum}
+		 </foreach>
+	</select>
+	
+</mapper>

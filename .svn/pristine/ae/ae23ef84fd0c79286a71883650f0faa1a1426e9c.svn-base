@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.DocumentMapper">
+
+	<!-- 병명 검색 -->
+	<sql id="where">
+		<!-- 조건 검색 -->
+		<if test="keyword!=null and keyword!=''">
+		AND   (DIS_CD LIKE '%' || #{keyword} || '%'
+		OR     DIS_KOR_NM LIKE '%' || #{keyword} || '%')
+		</if>
+	</sql>
+
+	<!-- 약품 검색 -->
+	<sql id="where2">
+		<!-- 조건 검색 -->
+		<if test="keyword!=null and keyword!=''">
+		AND   (DRUG_NUM LIKE '%' || #{keyword} || '%'
+		OR     DRUG_NM LIKE '%' || #{keyword} || '%')
+		</if>
+	</sql>
+
+	<!-- 향후 치료비 추정서 -->
+	<insert id="treatmentPlanPost" parameterType="map" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'4',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- 발급번호 -->
+	<select id="getNum" resultType="String">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+	</select>
+
+	<!-- 진단서 -->
+	<insert id="diagnosisPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'1',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- 치료확인서 -->
+	<insert id="treatconfirmPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'3',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- CT소견서 -->
+	<insert id="CTPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'5',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- 소견서 -->
+	<insert id="opinionPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'2',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- 원외처방전 -->
+	<insert id="outsidePost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'6',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- 서류 리스트 -->
+	<select id="docList" resultType="docVO" parameterType="docVO">
+		SELECT A.DOC_ISSUE_NUM,A.PT_NUM,A.DOC_NUM,A.DOC_ISSUE_REASON,A.DOC_ISSUE_DT,A.DOC_SAVE_PATH,A.CHK_NUM,
+		B.PT_NM,B.PT_BRDT,
+		(SELECT D.DOC_NAME
+        FROM DOCUMENT D
+        WHERE D.DOC_NUM = A.DOC_NUM) AS DOC_NAME,
+        (SELECT D.DOC_ISSUE_PRICE
+        FROM DOCUMENT D
+        WHERE D.DOC_NUM = A.DOC_NUM) AS DOC_ISSUE_PRICE
+		FROM document_issue A INNER JOIN PATIENT B
+		ON(A.PT_NUM=B.PT_NUM)
+        where A.pt_num=#{ptNum}
+        ORDER BY DOC_ISSUE_DT DESC
+	</select>
+
+	<!-- 진료번호 불러오기위한 작업 -->
+	<resultMap id="ptMap" type="ptVO">
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="ptBrdt" column="PT_BRDT" />
+		<result property="ptRrno" column="PT_RRNO" />
+		<result property="ptGen" column="PT_GEN" />
+		<result property="ptPhone" column="PT_PHONE" />
+		<result property="ptZip" column="PT_ZIP" />
+		<result property="ptAddr" column="PT_ADDR" />
+		<result property="ptAddrDet" column="PT_ADDR_DET" />
+		<collection property="chkList" resultMap="chkMap" />
+		<!-- VO에서 list형식으로 부르고 있다면 map처럼 써야 함 -->
+	</resultMap>
+
+	<!-- 진료번호 부르기. 위의 resultMap이랑 여기의 resultMap이랑 같아야 함-->
+	<resultMap id="chkMap" type="chkupVO">
+		<result property="chkNum" column="CHK_NUM" />
+	</resultMap>
+
+	<!-- 차트번호가 같은 환자만 해당하는 진료번호를 끌고 오도록 하는 환자 정보 -->
+	<select id="patientInfo" parameterType="String" resultMap="ptMap">
+		SELECT P.PT_NUM, P.PT_NM, P.PT_BRDT, P.PT_PHONE,
+			   P.PT_ZIP, P.PT_ADDR, P.PT_ADDR_DET, P.PT_GEN,
+		       C.CHK_NUM,
+		       SUBSTR(PKG_CRYPTO.DECRYPT(P.PT_RRNO),1,6) || '-' || SUBSTR(PKG_CRYPTO.DECRYPT(P.PT_RRNO),7,12) as PT_RRNO
+		  FROM PATIENT P LEFT OUTER JOIN CHECKUP C ON (P.PT_NUM = C.PT_NUM)
+		 WHERE P.PT_NUM = #{ptNum}
+		 <!-- form이 patient p면 on에서도 p를 먼저 써줘야 한다-->
+	</select>
+
+	<!-- 병원 정보(1행) -->
+	<select id="hospitalInfo" resultType="hospitalInfoVO">
+		SELECT * FROM HOSPITAL_INFO
+	</select>
+
+	<!-- 체크박스 및 달력 체크-->
+	<!-- 반복문:<foreach collection=리스트 형식으로 되어있는 값 item=변수 index="index" separator="," open="(" close=")"> -->
+	<select id="checkBox" resultType="docVO" parameterType="docVO">
+		SELECT I.DOC_ISSUE_NUM, I.PT_NUM, I.DOC_NUM, I.DOC_ISSUE_REASON, I.DOC_ISSUE_DT, I.DOC_SAVE_PATH, I.CHK_NUM,
+			   (SELECT DOC_NAME
+		          FROM DOCUMENT
+		         WHERE DOC_NUM = I.DOC_NUM) AS DOC_NAME,
+		       (SELECT DOC_ISSUE_PRICE
+		          FROM DOCUMENT
+		         WHERE DOC_NUM = I.DOC_NUM) AS DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE I
+         WHERE I.PT_NUM = #{ptNum}
+        		<if test="docNumList.length > 0">
+        			AND I.DOC_NUM IN
+        			<foreach collection="docNumList" item="item" index="index" separator="," open="(" close=")">
+        				#{item}
+        			</foreach>
+        		</if>
+                <if test="docStartDt != null and docStartDt != ''">
+                <![CDATA[
+                	AND I.DOC_ISSUE_DT >= TO_DATE(#{docStartDt}, 'YYYY-MM-DD')
+                ]]>
+                </if>
+                <if test="docFinalDt != null and docStartDt != ''">
+                <![CDATA[
+                	AND I.DOC_ISSUE_DT <= TO_DATE(#{docFinalDt}, 'YYYY-MM-DD')+1
+                ]]>
+                <!-- VO에는 String타입으로 저장했고, SQL은 date타입이나 to_Date를 통해 Date타입으로 바꿔줘야한다 -->
+                </if>
+		 ORDER BY DOC_ISSUE_DT DESC
+	</select>
+
+<!-- 	Fri Mar 03 09:00:00 KST 2023 날짜 구하는거 -->
+<!-- 	<select id="getDate" resultType="docVO" parameterType="docVO"> -->
+<!-- 		SELECT * -->
+<!--   		FROM DOCUMENT_ISSUE -->
+<!--  		WHERE TO_CHAR(DOC_ISSUE_DT, 'YYYY-MM-DD') BETWEEN TO_CHAR(#{docStartDt}, 'YYYY-MM-DD') AND  TO_CHAR(#{docFinalDt} + 1, 'YYYY-MM-DD') -->
+<!-- 	</select> -->
+
+	<!-- 병명 모달 리스트 -->
+	<select id="disList" resultType="disVO">
+		select * from disease
+	</select>
+
+	<!-- 병명 모달 검색 -->
+	<select id="disModalSelect" resultType="disVO" parameterType="disVO">
+		select * from disease where 1=1
+		<include refid="where"></include>
+	</select>
+
+	<!-- 병명 모달 하나 선택하면 값이 입력됨 -->
+	<select id="showCdNm" resultType="disVO" parameterType="disVO">
+		SELECT * FROM DISEASE WHERE DIS_CD=#{disCd} OR DIS_KOR_NM=#{disKorNm}
+	</select>
+
+	<!-- 약품 모달 리스트 -->
+	<select id="druList" resultType="drugVO" parameterType="drugVO">
+		select * from Drug
+	</select>
+
+	<!-- 약품 모달 검색 -->
+	<select id="druModalSelect" resultType="drugVO" parameterType="drugVO">
+		select * from drug where 1=1
+		<include refid="where2"></include>
+	</select>
+
+	<!-- 약품 모달 하나 선택하면 값이 입력됨 -->
+	<select id="showDrug" resultType="drugVO" parameterType="drugVO">
+		SELECT * FROM drug WHERE DRUG_NUM=#{drugNum} OR DRUG_NM=#{drugNm}
+	</select>
+
+	<insert id="insertPrescription" parameterType="prcpVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="prcpNum">
+			SELECT 'PRCP' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || TRIM(TO_CHAR(NVL(SUBSTR(MAX(PRCP_NUM), 14), 0) + 1, '0000'))
+			  FROM PRESCRIPTION
+		</selectKey>
+		INSERT INTO PRESCRIPTION (PRCP_NUM, CHK_NUM, PRCP_DT)
+						  VALUES (#{prcpNum}
+						  		 ,#{chkNum}
+						  		 ,SYSDATE)
+	</insert>
+
+	<update id="insertPrcpDrug" parameterType="List">
+		<foreach collection="list" open="INSERT ALL" close="SELECT * FROM DUAL" item="drugVO" index="idx" separator=" ">
+			INTO PRCP_DRUG (PRCP_DRUG_SN, PRCP_NUM, DRUG_NUM, DRUG_NM, DRUG_DOSEONCE, DRUG_DOSEDAY, DRUG_DAY)
+					VALUES (#{idx} + 1
+						   ,#{drugVO.prcpNum}
+						   ,#{drugVO.drugNum}
+						   ,#{drugVO.drugNm}
+						   ,#{drugVO.dosage}
+						   ,#{drugVO.doses}
+						   ,#{drugVO.dosesdate})
+		</foreach>
+	</update>
+
+	<select id="ptRvmList" parameterType="string" resultType="rcvmtVO">
+		SELECT *
+		  FROM RCVMT
+		 WHERE PT_NUM = #{ptNum}
+		   AND RCVMT_BALANCE != 0
+	</select>
+
+	<insert id="InsertCheckup" parameterType="hashMap">
+		<selectKey keyColumn="RCVMT_NUM" keyProperty="rcvmtNum" order="BEFORE" resultType="java.lang.String">
+			SELECT NVL((
+				    SELECT RCVMT_NUM
+				    FROM RCVMT
+				    WHERE RCVMT_NUM = #{rcvmtNumOrign}
+				    ), (SELECT 'V' || TO_CHAR(SYSDATE, 'YYYYMMDD')
+		                       || '-'
+		                       || (SELECT TRIM(TO_CHAR(NVL(SUBSTR(MAX(RCVMT_NUM), 11), 0) + 1, '0000'))
+		                             FROM RCVMT)
+		                        FROM DUAL)) AS RCVMT_NUM
+			FROM DUAL
+		</selectKey>
+		MERGE
+		 INTO RCVMT R
+		USING DUAL
+		   ON (R.RCVMT_NUM = #{rcvmtNumOrign})
+		 WHEN MATCHED THEN
+		    UPDATE SET
+		 	  		R.RCVMT_AMT = #{rcvmtDscntAmt},
+		 	  		R.RCVMT_STATUS = (SELECT COMM_CD_NM
+				                    FROM COMMON_GROUP G, COMMON_CODE C
+				                    WHERE C.COMM_GR_CD = G.COMM_GR_CD
+				                    AND G.COMM_GR_CD = 'PAY_STATUS_CD'
+				                    AND COMM_CD_CNT = '수납완료'),
+                    R.RCVMT_GRAMT =  #{rcvmtGramt},
+                    R.RCVMT_BALANCE = (SELECT RCVMT_BALANCE + #{docPay}
+										 FROM RCVMT
+										WHERE RCVMT_NUM = #{rcvmtNumOrign}),
+   					R.RCVMT_DT = SYSDATE
+		 	  WHERE R.RCVMT_NUM = #{rcvmtNumOrign}
+		 WHEN NOT MATCHED THEN
+		      INSERT (R.RCVMT_NUM, R.PT_NUM, R.RCVMT_AMT, R.RCVMT_DSCNT_AMT, R.RCVMT_STATUS,
+					  R.RCVMT_BALANCE, R.RCVMT_GRAMT, R.RCVMT_DT, R.RCVMT_TYPE)
+				VALUES (#{rcvmtNum}
+				      ,#{ptNum}
+				      ,#{total}
+				      ,'0'
+				      ,'CMPTN_PAY'
+				      ,#{total}
+				      ,#{total}
+				      ,SYSDATE
+				      ,'DOCUMENT'
+				      )
+	</insert>
+
+	<insert id="InsertDocList" parameterType="java.util.List">
+		<foreach collection="list" item="item" open="INSERT ALL " close="SELECT * FROM DUAL" separator=" " index="index">
+			INTO DOC_RCVMT (DOC_RCVMT_SN, DOC_ISSUE_NUM, RCVMT_NUM, DOC_ISSUE_COUNT)
+			VALUES ((
+				SELECT NVL(MAX(DOC_RCVMT_SN),0) + 1
+				FROM DOC_RCVMT
+				) + #{index} , #{item.docNum}, #{item.rcvmtNum}, #{item.docCnt})
+		</foreach>
+	</insert>
+
+	<insert id="docPay" parameterType="hashMap">
+		INSERT INTO RECEIPT (RCT_NUM, RCVMT_NUM, RCT_ISSUE_DT, RCVMT_RCT_SN, RCT_PAY_OPT, RCT_CARD_COMP, RCT_CARD_NUM, RCT_ACCEPT_NUM, RCT_AMT)
+					 VALUES ((SELECT NVL(MAX(RCT_NUM), 0) + 1
+					 			FROM RECEIPT)
+					 		,#{rcvmtNum}
+					 		,SYSDATE
+					 		,(SELECT NVL(MAX(RCVMT_RCT_SN), 0) + 1
+					 			FROM RECEIPT
+					 		   WHERE RCVMT_NUM = #{rcvmtNum})
+					 		,#{rctPayOpt}
+                            ,#{rctCardComp}
+                            ,#{rctCardNum}
+                            ,#{rctAcceptNum}
+					 		,#{rctAmt})
+	</insert>
+
+</mapper>

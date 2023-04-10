@@ -1,0 +1,164 @@
+package com.web.ddentist.ddit.inquiry.controller;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.Principal;
+import java.util.List;
+import java.util.Random;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Response;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.resource.HttpResource;
+
+import com.sun.javafx.collections.MappingChange.Map;
+import com.web.ddentist.ddit.inquiry.service.InquiryService;
+import com.web.ddentist.patient.service.PatientDetails;
+import com.web.ddentist.vo.InquiryVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/ddit/inquiry")
+public class InquiryController {
+	
+	@Autowired
+	InquiryService inquiryService;
+	
+	// 리스트 불러오기
+	@GetMapping("")
+	public String home(Model model) {
+		log.info("home에 왔다.");
+		
+		List<InquiryVO> inqVOList = inquiryService.getAllList();
+		log.info("inquiVOList : " + inqVOList);
+		
+		// 목록가져오기
+		model.addAttribute("inqVO", inqVOList);
+		// 현재 로그인한 사람의 정보 가져오기;
+		PatientDetails patient = null;
+		if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() == "anonymousUser") {
+			return "ddit/inquiry";
+		}else {
+			patient = (PatientDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();			
+		}
+		
+		model.addAttribute("ptVO", patient.getPtVO());
+		
+		return "ddit/inquiry";
+	}
+	
+	// 게시물 상세보기 페이지 이동
+	@GetMapping("/detail")
+	public String detail(@ModelAttribute InquiryVO inqVO, Model model) {
+		log.info("상세보기에 왔다.");
+		
+		// 선택한 게시물 데이터 불러오기
+		log.info("inqVO : " + inqVO);
+		InquiryVO selectInq = inquiryService.selectInq(inqVO);
+		// 선택한 게시물의 데이터를 불러와 inqVO에 넣었다.
+		model.addAttribute("inqVO", selectInq);
+		
+		// PatientDetails 가 null(== 비회원) 이라면 그냥 바로 페이지를 로딩하도록한다.
+		PatientDetails patientData = null;
+		if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() == "anonymousUser") {
+			return "ddit/inquiryDetail";
+		}else {
+			patientData = (PatientDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();						
+		}
+		
+		// 현재 접속한 사용자정보
+		model.addAttribute("ptVO", patientData.getPtVO());
+		
+		return "ddit/inquiryDetail";
+	}
+	
+	
+	@GetMapping("/delete")
+	public String delete(@ModelAttribute InquiryVO inqVO) {
+		log.info("삭제에 왔다.");
+		log.info("delete inqVO 데이터 : " + inqVO);
+		
+		int result = inquiryService.deleteInq(inqVO);
+		
+		return "redirect:/ddit/inquiry";
+	}
+	
+	// 게시물작성 페이지로 이동하기(로그인한 작성자의 데이터 포함)
+	@GetMapping("/write")
+	public String write(@ModelAttribute InquiryVO inqVO, Model model) {
+		log.info("글쓰기에 도착했다.");
+		log.info("inqVO : " + inqVO);
+			
+		InquiryVO modiInqVO = null; 
+		PatientDetails patientData = null;
+		
+		if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() == "anonymousUser") {
+			return "ddit/inquiryWrite";
+		}else {
+			patientData = (PatientDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		}  
+		log.info("환자정보 가져오기 : " + patientData.getPtVO());
+		// 로그인한 사용자의 데이터, 문의글 가져오기
+		modiInqVO = inquiryService.modifyInq(inqVO);
+		log.info("로그인한 사용자의 modiInqVO : " + modiInqVO);
+		
+		// 게시글 정보(수정목적으로 데이터 땡겨옴)
+		model.addAttribute("inqVO", modiInqVO);
+		// 현재 로그인한 사용자정보
+		model.addAttribute("ptVO", patientData.getPtVO());
+		
+		return "ddit/inquiryWrite";
+	}
+	
+	
+	@PostMapping("/create")
+	public String create(@ModelAttribute InquiryVO inqVO, Model model, HttpServletResponse response) throws IOException {
+		log.info("게시글 등록 버튼을 누름");
+		
+		int result = inquiryService.createInq(inqVO);
+		
+		String goPage = "";
+		if(result > 0) {	// 게시물 등록(수정) 성공시	
+			goPage = "redirect:/ddit/inquiry/detail?inqNum=" + inqVO.getInqNum();
+		}else {	// 게시물 등록(수정) 실패시
+			model.addAttribute("error", "writeError");
+			model.addAttribute("inqVO", inqVO);
+			goPage = "ddit/inquiryWrite";
+		}
+		
+		return goPage;
+	}
+	
+	@ResponseBody
+	@PostMapping("/secret")
+	public Boolean secret(@RequestBody InquiryVO inqVO) {
+		
+		log.info("secret에 왔다.");
+		log.info("password 데이터 왔냐 : " + inqVO);
+		
+		int cnt = inquiryService.getPassword(inqVO);
+		log.info("cnt : " + cnt);
+		
+		Boolean result = true;
+		
+		if(cnt > 0) {
+			return result = true;
+		}else {
+			return result = false;
+		}
+		
+	}
+}

@@ -1,0 +1,24 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+
+import com.web.ddentist.vo.DocumentVO;
+
+public interface PdocumentMapper {
+
+	List<DocumentVO> getDList(DocumentVO documentVO);
+
+	List<DocumentVO> checkBox(DocumentVO documentVO);
+
+	DocumentVO getReissuance(DocumentVO documentVO);
+
+	int getLockerUpdate(DocumentVO documentVO);
+
+	List<DocumentVO> getLockerList(DocumentVO documentVO);
+
+	int getMinusUpdate(DocumentVO documentVO);
+
+	List<DocumentVO> getList(DocumentVO documentVO);
+
+
+}

@@ -1,0 +1,24 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.NoticeVO;
+
+public interface PnoticeMapper {
+	
+	
+//	<!-- 전체 행의 수(total) -->
+//	<select id="getTotal" resultType="int">
+	public int getTotal();
+	
+//	<!-- 파라미터로 받은 정보로 페이징처리하기 -->
+//	<select id="beforePaginglist" parameterType="hashMap" resultType="noticeVO">
+	public List<NoticeVO> beforePaginglist(Map<String, String> map);
+
+//	<!-- 상세 정보 조회 -->
+//	<select id="noticeDetail" parameterType="noVO" resultType="noVO">
+	public NoticeVO noticeDetail(NoticeVO noticeVO);
+
+}
+

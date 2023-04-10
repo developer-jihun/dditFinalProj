@@ -1,0 +1,47 @@
+package com.web.ddentist.hospital.checkup.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.checkup.service.ICheckupService;
+import com.web.ddentist.vo.CheckupVO;
+import com.web.ddentist.vo.PatientVO;
+
+@Controller
+@RequestMapping("/hospital/checkup")
+public class CheckupController {
+	
+	@Autowired
+	private ICheckupService checkupService;
+	
+	
+	@GetMapping("")
+	public String home() {
+		return "hospital/checkup";
+	}
+	
+	@ResponseBody
+	@GetMapping("/searchPt")
+	public List<PatientVO> searchPt(@RequestParam String keyword){
+		return checkupService.searchPt(keyword);
+	}
+	
+//	@ResponseBody
+//	@GetMapping("/listChart")
+//	public Map<String, Object> listChart(@RequestParam Map<String, String> searchMap) {
+//		return checkupService.listChart(searchMap);
+//	}
+	@ResponseBody
+	@GetMapping("/listChart")
+	public List<CheckupVO> listChart(@RequestParam Map<String, String> searchMap) {
+		return checkupService.listChart(searchMap);
+	}
+	
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace : xml파일이 여러개일 수 있으므로
+	이를 구별하기 위한 식별 용도로 사용
+ -->
+<mapper namespace="com.web.ddentist.mapper.BannerMapper">
+
+	<!-- 배너 등록하기 -->
+	<insert id="uploadFormAction" parameterType="bannerVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="bannerNum">
+		    SELECT NVL(MAX(BANNER_NUM),0)+1 FROM BANNER
+		</selectKey>
+		INSERT INTO BANNER(BANNER_NUM, BANNER_NM, BANNER_SIZE, BANNER_PATH, BANNER_THUMBNAIL)
+		VALUES(
+			#{bannerNum},
+		    #{bannerNm},
+		    #{bannerSize},
+		    #{bannerPath},
+		    #{bannerThumbnail}
+		)
+	</insert>
+
+</mapper>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.ChartMapper">
+
+	<select id="listRegist" resultType="regVO">
+		SELECT A.REG_NUM, A.RESV_NUM, A.PT_NUM, A.EMP_NUM, A.REG_CC,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_GR_CD = 'REG_STATUS_CD'
+			       AND COMM_CD_NM = A.REG_STATUS) REG_STATUS,
+			   A.REG_DT, B.PT_NM, C.EMP_NM,
+			   (SELECT CHAIR_NM
+		          FROM CHAIR
+		       	 WHERE CHAIR_SN = A.CHAIR_NUM) CHAIR_NM,
+		       (SELECT CHK_NUM
+		          FROM CHECKUP
+		         WHERE REG_NUM = A.REG_NUM) CHK_NUM
+		  FROM REGIST A, PATIENT B, EMPLOYEE C
+		 WHERE A.REG_STATUS != 'CANCEL'
+  		   AND TO_CHAR(A.REG_DT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		   AND A.PT_NUM = B.PT_NUM
+		   AND A.EMP_NUM = C.EMP_NUM
+		 ORDER BY A.REG_NUM
+	</select>
+	
+	<select id="listResv" resultType="reservationVO">
+		SELECT RESV_NUM, PT_NUM, EMP_NUM, PT_NM, PT_PHONE, RESV_CC, RESV_SDT, RESV_EDT, RESV_ET, RESV_STATUS
+		  FROM RESERVATION
+		 WHERE TO_CHAR(RESV_SDT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		   AND RESV_STATUS = 'IN_RESV'
+	</select>
+	
+	<insert id="insertCheckup" parameterType="chkupVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="chkNum">
+			SELECT 'C' || TO_CHAR(SYSDATE, 'YYYYMMDD')
+			           || '-'
+			           || TRIM(TO_CHAR(NVL(MAX(SUBSTR(CHK_NUM, INSTR(CHK_NUM, '-') + 1)), 0) + 1, '0000'))
+			  FROM CHECKUP
+			 WHERE TO_CHAR(CHK_DT, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</selectKey>
+		INSERT INTO CHECKUP (CHK_NUM, REG_NUM, PT_NUM, EMP_NUM, CHK_DT, PT_NM)
+					VALUES (#{chkNum}
+						   ,#{regNum}
+						   ,(SELECT PT_NUM
+							  FROM REGIST
+							 WHERE REG_NUM = #{regNum})
+						   ,#{empNum}
+						   ,SYSDATE
+						   ,(SELECT PT_NM
+							  FROM PATIENT
+							 WHERE PT_NUM = (SELECT PT_NUM
+							                   FROM REGIST
+							                  WHERE REG_NUM = #{regNum})))
+	</insert>
+	
+	
+	<update id="insertPi" parameterType="List">
+		<foreach collection="list" item="piVO" open="INSERT ALL" close="SELECT * FROM DUAL" index="idx" separator=" ">
+			INTO PI (PI_NUM, CHK_NUM, DIS_CD, TOOTH_NUM, PI_CONTENT, PI_HIST)
+				 VALUES (#{idx} + (SELECT NVL(MAX(PI_NUM), 0) + 1
+						 			FROM PI
+						 		   WHERE CHK_NUM = #{piVO.chkNum})
+				 		,#{piVO.chkNum}
+				 		,#{piVO.disCd}
+				 		,#{piVO.toothNum}
+				 		,#{piVO.piContent}
+				 		,#{piVO.piHist}
+				 		)
+		</foreach>
+	</update>
+	
+	
+	<update id="updateRegStatusInTreat" parameterType="String">
+		UPDATE REGIST SET REG_STATUS = 'IN_TREAT'
+					WHERE REG_NUM = #{regNum}
+	</update>
+	
+	<select id="listPi" parameterType="String" resultType="piVO">
+		SELECT P.PI_NUM, P.CHK_NUM, P.DIS_CD, P.TOOTH_NUM, P.PI_CONTENT, P.PI_HIST, TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+		       (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM PI P, CHECKUP C
+		 WHERE P.CHK_NUM = C.CHK_NUM
+		   AND P.CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		 ORDER BY P.CHK_NUM DESC
+	</select>
+	
+	<select id="listTxPlan" parameterType="String" resultType="txpVO">
+		SELECT TXP_SN, CHK_NUM, TXC_CD, TOOTH_NUM, TXP_COST
+		  FROM TX_PLAN
+		 WHERE CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		 ORDER BY CHK_NUM DESC
+	</select>
+	
+	<select id="listTx" parameterType="String" resultType="txVO">
+		SELECT TX_SN, CHK_NUM, DIS_CD, TXC_CD, TX_STATE, TOOTH_NUM, TX_CONTENT, TX_MEMO, TXC_PRICE
+		  FROM TX
+		 WHERE CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		 ORDER BY CHK_NUM DESC
+	</select>
+	
+	<select id="listTxNext" parameterType="String" resultType="txpVO">
+		SELECT TXN_SN, CHK_NUM, TXC_CD, TOOTH_NUM, TXC_COST
+		  FROM TX_NEXT
+		 WHERE CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		 ORDER BY CHK_NUM DESC
+	</select>
+	
+</mapper>

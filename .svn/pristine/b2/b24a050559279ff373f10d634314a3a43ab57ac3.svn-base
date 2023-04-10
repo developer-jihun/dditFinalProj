@@ -1,0 +1,23 @@
+// 전체 선택 체크박스 선택 시
+$(document).on('click', '#allCheck' ,function(){
+	if($('#allCheck').is(':checked')){ $('input:checkbox.filter').prop('checked',true); } 
+	else { 							   $('input:checkbox.filter').prop('checked', false); }
+	$('.calendar').fullCalendar('refetchEvents');
+});
+//체크박스 클릭시
+$(document).on('click', 'input:checkbox.filter', function(){
+	var checkFilter = 0; // 전체 수
+	var countCheckFIlter = 0; // 체크 된 수
+	$("input:checkbox.filter").each(function(i, v){
+		if($(this).is(':checked')){ countCheckFIlter++; }
+		checkFilter++;
+	});
+	
+	if(checkFilter == countCheckFIlter){ $('#allCheck').prop('checked',true); } 
+	else { $('#allCheck').prop('checked', false); }
+	$('.calendar').fullCalendar('refetchEvents');
+});
+//SELECT FILTER 변경시
+$(document).on('change', '#type_filter', function(){
+	$('.calendar').fullCalendar('refetchEvents');
+});

@@ -1,0 +1,45 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class PatientVO {
+	
+	private String ptNum;
+	private String ptNm;
+	private String ptBrdt;
+	private String ptRrno;
+	private String ptGen;
+	private String ptPhone;
+	private String ptZip;
+	private String ptAddr;
+	private String ptAddrDet;
+	private String ptMemo;
+	private String prvcPvsnAgreYn;
+	private String smsRcptnAgreYn;
+	private String ptMrsaYn;
+	private String ptPregYn;
+	private Date ptRegDt;
+	private String ptId;
+	private String ptPw;
+	private String ptAccStatus;
+	private String ptAuthrt;
+	
+	private QuestionnaireVO queInfo;
+	
+	private List<CheckupVO> chkList;
+	
+	private String recentCheckupDt;
+	private String crmNxResvDtStr;
+	
+	public PatientVO() {
+		this.prvcPvsnAgreYn = "N";
+		this.smsRcptnAgreYn = "N";
+		this.ptMrsaYn = "N";
+		this.ptPregYn = "N";
+	}
+	
+}

@@ -1,0 +1,12 @@
+package com.web.ddentist.vo;
+
+import lombok.Data;
+
+@Data
+public class TxCodeVO {
+	
+	private String txcCd;
+	private String txcNm;
+	private int txcPrice;
+	
+}

@@ -1,0 +1,96 @@
+package com.web.ddentist.hospital.desk.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.DeskMapper;
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.QuestionnaireVO;
+import com.web.ddentist.vo.UnderlyingConditionVO;
+
+@Service
+public class DeskServiceImpl implements IDeskService {
+	
+	@Autowired
+	private DeskMapper deskMapper;
+	
+	@Override
+	public int insertPatient(PatientVO patientVO) {
+		return deskMapper.insertPatient(patientVO);
+	}
+	
+	@Override
+	public int updatePatient(PatientVO patientVO) {
+		return deskMapper.updatePatient(patientVO);
+	}
+	
+	@Override
+	public List<PatientVO> searchPatient(String keyword) {
+		return deskMapper.searchPatient(keyword);
+	}
+	
+	@Override
+	public PatientVO selectPatient(String ptNum) {
+		return deskMapper.selectPatient(ptNum);
+	}
+	
+	@Override
+	public String deletePatient(String ptNum) {
+		
+		int result = deskMapper.countCheckupRecord(ptNum);
+		if(result > 0) return "DENIED";
+		
+		result = deskMapper.deletePatient(ptNum);
+		return result == 1 ? "SUCCESS" : "FAILED";
+	}
+	
+	@Override
+	public int insertQue(QuestionnaireVO queVO) {
+		
+		int result = deskMapper.insertQue(queVO);
+		if(result == 0) return result;
+		
+		List<UnderlyingConditionVO> uConList = new ArrayList<>();
+		for(UnderlyingConditionVO uCon : queVO.getuConList()) {
+			if(uCon.getConNm() != null) {
+				uCon.setPtNum(queVO.getPtNum());
+				uConList.add(uCon);
+			}
+		}
+		
+		return deskMapper.insertUCon(uConList);
+	}
+	
+	@Override
+	public QuestionnaireVO selectPtQue(String ptNum) {
+		return deskMapper.selectPtQue(ptNum);
+	}
+	
+	@Override
+	public int updateQue(QuestionnaireVO queVO) {
+		
+		int result = deskMapper.insertQue(queVO);
+		if(result == 0) return result;
+		
+		if(queVO.getuConList() == null) {
+			int count = deskMapper.checkUConCount(queVO.getPtNum());
+			if(count > 0) return deskMapper.resetUCon(queVO.getPtNum());
+			
+			return result;
+		}
+		
+		List<UnderlyingConditionVO> uConList = new ArrayList<>();
+		for(UnderlyingConditionVO uCon : queVO.getuConList()) {
+			if(uCon.getConNm() != null) {
+				uCon.setPtNum(queVO.getPtNum());
+				uConList.add(uCon);
+			}
+		}
+		
+		deskMapper.resetUCon(queVO.getPtNum());
+		return deskMapper.insertUCon(uConList);
+	}
+}

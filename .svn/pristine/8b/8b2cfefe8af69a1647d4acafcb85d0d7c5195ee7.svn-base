@@ -1,0 +1,16 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class CommunityReplyVO {
+	private int replyNum;
+	private int comNum;
+	private String ptNum;
+	private String replyContent;
+	private Date replyDt;
+	private int targetReplyNum;
+	private int lvl;
+}

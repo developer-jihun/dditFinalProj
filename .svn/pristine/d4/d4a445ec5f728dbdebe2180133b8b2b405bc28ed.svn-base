@@ -1,0 +1,54 @@
+package com.web.ddentist.ddit.pdocument.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.PdocumentMapper;
+import com.web.ddentist.vo.DocumentVO;
+
+@Service
+public class PdocumentServiceImpl implements IPdocument {
+
+	@Autowired
+	PdocumentMapper pdocumentMapper;
+	
+	@Override
+	public List<DocumentVO> getDList(String ptNum) {
+		return pdocumentMapper.getDList(ptNum);
+	}
+
+	@Override
+	public List<DocumentVO> checkBox(DocumentVO documentVO) {
+		return pdocumentMapper.checkBox(documentVO);
+	}
+
+	@Override
+	public DocumentVO getReissuance(DocumentVO documentVO) {
+		return pdocumentMapper.getReissuance(documentVO);
+	}
+
+	@Override
+	public int getLockerUpdate(DocumentVO documentVO) {
+		return pdocumentMapper.getLockerUpdate(documentVO);
+	}
+
+	@Override
+	public List<DocumentVO> getLockerList(String ptNum) {
+		return pdocumentMapper.getLockerList(ptNum);
+	}
+
+	@Override
+	public int getMinusUpdate(DocumentVO documentVO) {
+		return pdocumentMapper.getMinusUpdate(documentVO);
+	}
+
+	@Override
+	public List<DocumentVO> getList(DocumentVO documentVO) {
+		return pdocumentMapper.getList(documentVO);
+	}
+
+
+
+}

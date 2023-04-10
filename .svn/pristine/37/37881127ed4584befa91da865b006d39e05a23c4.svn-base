@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.HospitalInfoMapper">
+
+	<select id="getHospitalInfo" resultType="hospitalInfoVO">
+		SELECT
+			HI_BRNO, HI_NM, HI_TYPE, HI_IMG, HI_PHONE
+		  , HI_FAX, HI_ZIP, HI_ADDR, HI_DADDR, HI_EML
+		  , HI_HP, HI_RPRSV_NM, HI_RPRSV_RRNO, HI_OPEN_TIME
+		  , HI_CLOSE_TIME, HI_LUNCH_STIME, HI_LUNCH_ETIME 
+  		  FROM HOSPITAL_INFO
+	</select>
+
+	
+	<!-- 병원구분 select option 값 : 치과병원, 치과의원  --> 
+	<select id="getCommon" resultType="commCdVO" parameterType="String">
+		SELECT 
+			COMM_CD_NM
+		  , COMM_CD_CNT
+	      FROM COMMON_CODE
+	     WHERE COMM_GR_CD = #{HI_TYPE_CD}
+    </select>
+    
+    <!-- 부서리스트 가져오기 -->
+	<select id="deptList" resultType="deptVO">
+		SELECT 
+			DEPT_CD
+		  , DEPT_NM
+          FROM DEPARTMENT
+	</select>
+	
+	<!-- 체어리스트 가져오기 -->
+	<select id="chairList" resultType="chairVO">
+		SELECT B.CHAIR_SN, B.CHAIR_NM, A.DEPT_CD 
+		  FROM DEPARTMENT A RIGHT OUTER JOIN CHAIR B
+		    ON A.DEPT_CD = B.DEPT_CD
+	  ORDER BY B.CHAIR_SN ASC, 
+	 		   A.DEPT_CD ASC
+		       
+	</select>
+	
+	<!-- 체어 수정 -->
+	<update id="updateChair" parameterType="chairVO">
+		UPDATE CHAIR
+		   SET CHAIR_NM=#{chairNm}, DEPT_CD=#{deptCd}
+	     WHERE CHAIR_SN=#{chairSn}
+	</update>
+	
+	<!--  체어 등록 -->
+	<insert id="createChair" parameterType="chairVO">
+		INSERT INTO CHAIR 
+			 VALUES(
+			        (SELECT MAX(NVL(A.CHAIR_SN,0))+1
+			           FROM CHAIR A)
+			        , #{chairNm}
+			        , #{deptCd}
+			       )
+	</insert>
+	
+	<!-- 체어 삭제 -->
+	<delete id="deleteChair" parameterType="chairVO">
+		DELETE 
+		  FROM CHAIR
+	     WHERE CHAIR_SN=#{chairSn}
+	</delete>
+</mapper>

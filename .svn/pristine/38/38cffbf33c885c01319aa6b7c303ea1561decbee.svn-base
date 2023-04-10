@@ -1,0 +1,259 @@
+package com.web.ddentist.hospital.manage.empInfo.controller;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.web.ddentist.hospital.manage.empInfo.service.IEmpInfoService;
+import com.web.ddentist.vo.CommonCodeVO;
+import com.web.ddentist.vo.DepartmentVO;
+import com.web.ddentist.vo.EmployeeVO;
+import com.web.ddentist.vo.JbgdVO;
+
+import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnailator;
+
+
+
+/**
+ * 병원관리 메뉴 - 직원관리 페이지
+ * 
+ * @author 박지은
+ */
+@Slf4j
+@Controller
+@RequestMapping("/hospital/manage/empInfo")
+public class EmpInfoController {
+
+	@Autowired
+	IEmpInfoService empInfoService;
+
+	// 직원 정보 페이지이동
+	@GetMapping("")
+	public String detail(Model model) {
+		log.info("직원정보 페이지에 왔다.");
+		
+		/**
+		 * 공통코드 쓸 경우
+		 */
+		
+		String commGrCd = "HDOF_YN_CD";
+		List<CommonCodeVO> hdpfYnList  = this.empInfoService.getCommon(commGrCd);
+		log.info("hdpfYnList : {}" + hdpfYnList);
+		
+		List<JbgdVO> jbgdList = this.empInfoService.getJbgd();
+		List<DepartmentVO> deptList = this.empInfoService.getDept();
+		
+		model.addAttribute("hdpfYnList", hdpfYnList);
+		model.addAttribute("jbgdList", jbgdList);
+		model.addAttribute("deptList", deptList);
+		
+		return "hospital/empInfo";
+	}
+
+	// 직원 리스트 조회
+	@ResponseBody
+	@GetMapping("/empList")
+	public List<EmployeeVO> empList() {
+		log.info("empList에 왔다!!!");
+
+		List<EmployeeVO> empList = this.empInfoService.getList();
+		log.info("직원 list : " + empList);
+
+		return empList;
+	}
+
+	// 직원 정보 조회
+	@ResponseBody
+	@GetMapping("/getEmpInfo")
+	public EmployeeVO getEmpInfo(@ModelAttribute EmployeeVO empVO) {
+
+		log.info("getEmpInfo에 왔다!!!");
+		log.info("empVO : {}", empVO);
+		EmployeeVO vo = this.empInfoService.getEmpInfo(empVO);
+		log.info("직원 조회 결과 : {}", vo);
+
+		return vo;
+	}
+
+	// 골뱅이Valid는 CusVO의 validation 체크를 해주는 애너테이션
+	@PostMapping("/createEmp")
+	public String createPost(@Validated @ModelAttribute EmployeeVO employeeVO,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") Date empBrdt,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") Date empJncmpYmd,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") Date empRtrmYmd, 
+			MultipartFile uploadFile, Model model) {
+
+		log.info("employeeVO : " + employeeVO);
+		log.info("empBrdt : " + empBrdt + "empJncmpYmd : " + empJncmpYmd + "empRtrmYmd : " + empRtrmYmd);
+		
+		//재직여부가 기본적으로 0으로 들어오는데 새로운 직원을 등록할때는 1로 바꿔준다.
+		if(employeeVO.getHdofYn() == 0) {
+			employeeVO.setHdofYn(1);
+		}
+		
+		String uploadFilename = "";
+		
+		if(!uploadFile.isEmpty()) {
+		//파일업로드 서비스 호출
+		uploadFilename = fileUpload(uploadFile);
+		
+		
+		//  /2023/02/21/fdsfe_즤니.jpg
+		String filename = "/" + getFolder().replace("\\", "/") + "/" + "s_" + uploadFilename;
+		employeeVO.setEmpImg(filename);
+		}
+		
+		int result = this.empInfoService.createEmp(employeeVO);
+		// errors.hasErrors() : 문제 발생 시 true
+
+		// 입력성공 : 상세보기로 redirect. 기본키 데이터를 파라미터로 보냄
+		// 요청한게 create 인데 detail로 가니까 다른페이지를 응답해주니까
+		if (result > 0) {
+			return "redirect:/hospital/empInfo";
+		}else {
+			model.addAttribute("employeeVO" , employeeVO);
+			return "hospital/empInfo";
+		}
+	}
+
+	// 직원정보수정
+	@ResponseBody
+	@PostMapping("/updateEmp")
+	public int updateEmp(@ModelAttribute EmployeeVO employeeVO, 
+						 @RequestParam(value= "uploadFile", required= false) MultipartFile uploadFile) {
+		log.info("updateEmp에 왔다!!");
+		log.info("employeeVO : " + employeeVO);
+		
+		String empRtrmYmd = employeeVO.getEmpRtrmYmd();
+		log.info("empRtrmYmd : {퇴사일자} " + empRtrmYmd);
+		
+		String checked = "";
+		
+		if(empRtrmYmd == null || empRtrmYmd.equals("")) {  // 재직자일 경우에 해당
+			if(employeeVO.getHdofYn() == 0) {  //0으로 들어왔을때 1로 바꿔준다.
+				employeeVO.setHdofYn(1);
+			}
+		}else if(empRtrmYmd != null) {  //퇴사자일 경우에 해당
+			if(employeeVO.getHdofYn() == 1) { //1일때 0으로 바꿔준다.
+				employeeVO.setHdofYn(0);
+			}
+		}
+		
+		String uploadFilename = "";
+		
+		if(!uploadFile.isEmpty()) {
+		//파일업로드 서비스 호출
+		uploadFilename = fileUpload(uploadFile);
+		
+		
+		//  /2023/02/21/fdsfe_즤니.jpg
+		String filename = "/" + getFolder().replace("\\", "/") + "/" + "s_" + uploadFilename;
+		employeeVO.setEmpImg(filename);
+		}
+		
+		int result = this.empInfoService.updateEmp(employeeVO);
+		log.info("result : " + result+ "업데이트 성공!!!!");
+		
+		return result;
+		
+	}
+	
+	@ResponseBody
+	@GetMapping("/deleteEmp")
+	// 직원 정보 삭제
+	public int deleteEmp(@ModelAttribute EmployeeVO employeeVO) {
+		log.info("deleteEmp에 왔다!!!");
+		
+		int result = this.empInfoService.deleteEmp(employeeVO);
+		
+		return result;
+	}
+
+	public String fileUpload(MultipartFile uploadFile) {
+		
+
+		String uploadFolder ="C:\\eGov3.10.0\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\images\\employee";
+		
+		File uploadPath = new File(uploadFolder, getFolder());
+	    log.info("upload Path : " +  uploadPath);
+	    
+	    if(uploadPath.exists()==false) { 
+	        uploadPath.mkdirs(); 
+	    } 
+	    String uploadFileName= uploadFile.getOriginalFilename();
+	    System.out.println("오리지날 파일이름 : " + uploadFileName);
+	    
+	    UUID uuid = UUID.randomUUID();
+	    uploadFileName = uuid.toString() +  "_" + uploadFileName;
+	    
+	    File saveFile = new File(uploadPath, uploadFileName);
+	    
+	    try {
+	        //계획을 실행 => 파일 복사됨(클라이언트의 파일을 서버의공간으로 복사)
+	        uploadFile.transferTo(saveFile);
+	        
+	        //썸네일 처리하자
+			if(checkImageType(saveFile)) {
+				
+			//썸네일 생성
+			FileOutputStream thumbnail = new FileOutputStream(new File(uploadPath, "s_" + uploadFileName));
+			Thumbnailator.createThumbnail(uploadFile.getInputStream(), thumbnail, 150, 150);
+			thumbnail.close(); //outputStream을 close
+			}
+	        	
+	    } catch (IllegalStateException e) {
+	        log.error(e.getMessage());
+	    } catch (IOException e) {
+	        log.error(e.getMessage());
+	    }
+        
+	    return uploadFileName;
+	}
+	
+	//이미지냐?
+	public static boolean checkImageType(File uploadFile) {
+		
+		//마임타입인지 확인
+		//file.toPath() : 파일객체를 path객체로 변환함
+		try {
+			String contentType = Files.probeContentType(uploadFile.toPath());
+			log.info("contentType : " + contentType);
+			
+			//contentType가 image로 시작하면 true를리턴
+			return contentType.startsWith("image");
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// 이 파일이 이미지가 아닐 경우
+		return false;
+	}
+
+	public static String getFolder() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+		String str = sdf.format(date);
+		
+		return str.replace("-", File.separator);
+	}
+}

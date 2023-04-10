@@ -1,0 +1,18 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class DocumentVO {
+
+		private String docIssueNum;//발급번호
+	    private String ptNum;//차트번호
+	    private int[] docNum;//서류번호
+	    private String docIssueReason;//발급사유
+	    private String docSavePath;//서류 경로
+	    private Date docIssueDt;//발급일시
+		private String chkNum; //진료번호
+	}
+

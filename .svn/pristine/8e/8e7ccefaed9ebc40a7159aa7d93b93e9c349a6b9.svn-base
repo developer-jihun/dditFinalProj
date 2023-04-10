@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.ReservationMapper">
+	
+	<!-- 전체 일정 가져오기 -->
+	<select id="getAllList" resultType="reservationVO" parameterType="hashMap">
+		SELECT R.*, E.EMP_NM,
+		    (
+		    SELECT
+		        C.COMM_CD_CNT
+		    FROM COMMON_CODE C, COMMON_GROUP G
+		    WHERE C.COMM_GR_CD=G.COMM_GR_CD
+		    AND   G.COMM_GR_CD='RESV_STATUS_CD'
+		    AND   C.COMM_CD_NM=R.RESV_STATUS
+		    ) AS STAT_NM
+		FROM RESERVATION R, EMPLOYEE E
+		WHERE R.EMP_NUM=E.EMP_NUM
+		AND RESV_STATUS != (
+		    SELECT
+		        C.COMM_CD_NM
+		    FROM COMMON_CODE C, COMMON_GROUP G
+		    WHERE C.COMM_GR_CD=G.COMM_GR_CD
+		    AND   G.COMM_GR_CD='RESV_STATUS_CD'
+		    AND   C.COMM_CD_CNT='예약취소'
+		)
+		
+	</select>
+	
+	<!-- 일정 추가하기 -->
+	<insert id="create" parameterType="reservationVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="resvNum">
+		SELECT 'R'||TO_CHAR(SYSDATE, 'yyyyMMdd')||'-'||
+               NVL(LPAD(SUBSTR(MAX(RESV_NUM),12,3)+1,4,0),'0001')
+          FROM RESERVATION
+         WHERE REGEXP_LIKE(RESV_NUM, TO_CHAR(SYSDATE, 'yyyyMMdd'))
+        </selectKey>
+
+		INSERT INTO RESERVATION
+				(RESV_NUM, PT_NUM, EMP_NUM, PT_NM, PT_PHONE, RESV_CC
+				, RESV_SDT, RESV_EDT, RESV_ET)
+		VALUES(#{resvNum},(
+				SELECT NVL((
+			            SELECT  PT_NUM
+			            FROM    PATIENT
+			            WHERE   1=1
+			            AND     PT_PHONE = #{ptPhone}
+			            AND		PT_NM = #{ptNm}
+			            ),
+			            (
+			            SELECT 'T'||TO_CHAR(SYSDATE, 'yyMMdd')||
+			                   NVL(LPAD(SUBSTR(MAX(PT_NUM),8)+1,3,0),'001')
+			              FROM RESERVATION
+			             WHERE REGEXP_LIKE(PT_NUM, TO_CHAR(SYSDATE, 'yyMMdd'))
+			            ))
+			    FROM    DUAL
+				),#{empNum},#{ptNm},#{ptPhone},#{resvCc}
+				,TO_DATE(#{resvSdt},'yyyy-mm-dd HH24:mi'),TO_DATE(#{resvEdt},'yyyy-mm-dd HH24:mi'),TO_NUMBER(#{resvEt}))
+	</insert>
+	
+	<!-- 예약 상태 변경 -->
+	<update id="changeStat" parameterType="hashMap">
+		UPDATE RESERVATION SET RESV_STATUS = #{resvStatus}
+		<![CDATA[
+		WHERE RESV_EDT >= SYSDATE 
+		AND RESV_NUM = #{resvId}
+		]]>
+	</update>
+	
+	<!-- 의사 목록 가져오기 
+		직원 구분이 원장, 의사인 목록만 가져와야 함
+	--> 
+	<select id="empInfo" resultType="hashMap" >
+		SELECT DISTINCT(E.EMP_NUM), E.EMP_NM
+	    FROM EMPLOYEE E, (
+	        SELECT JBGD_CD
+	          FROM JBGD
+	         WHERE JBGD_NM = '원장'
+	            OR JBGD_NM = '치과의사'
+	         ) J
+	    WHERE E.JBGD_CD = J.JBGD_CD
+	</select>
+	
+	<!-- 예약 현황 구분 --> 
+	<select id="resvState" resultType="hashMap" >
+		SELECT
+	        C.COMM_CD_NM, C.COMM_CD_CNT
+	    FROM COMMON_CODE C, COMMON_GROUP G
+	    WHERE C.COMM_GR_CD=G.COMM_GR_CD
+	    AND   G.COMM_GR_CD='RESV_STATUS_CD'
+	    AND   C.COMM_CD_CNT!='예약취소'
+	</select>
+	
+	<!-- 예약 있는 의사 목록 가져오기 -->
+	<select id="selectOption" resultType="string" parameterType="hashMap">
+		SELECT DISTINCT(R.EMP_NUM) ,E.EMP_NM
+		FROM   RESERVATION R, EMPLOYEE E
+		<![CDATA[
+		WHERE   R.EMP_NUM = E.EMP_NUM
+		AND 	(E.JBGD_CD = 1 OR E.JBGD_CD = 2)
+		AND		R.RESV_SDT < TO_DATE(#{edate},'yyyy-mm-dd HH24:mi')
+		AND     R.RESV_EDT > TO_DATE(#{sdate},'yyyy-mm-dd HH24:mi')
+		AND     R.RESV_STATUS = (
+			SELECT
+		        C.COMM_CD_NM
+		    FROM COMMON_CODE C, COMMON_GROUP G
+		    WHERE C.COMM_GR_CD=G.COMM_GR_CD
+		    AND   G.COMM_GR_CD='RESV_STATUS_CD'
+		    AND   C.COMM_CD_CNT='예약중'
+		)
+		]]>
+	</select>
+	
+	<!-- 오늘 날짜보다 이전 예약 현황을 예약 미이행으로 상태변경  -->
+	<update id="previousRes" >
+		UPDATE RESERVATION SET RESV_STATUS='NONCOM_RESV'
+		<![CDATA[
+		WHERE RESV_EDT <= SYSDATE 
+		AND RESV_STATUS = (
+			SELECT
+			    C.COMM_CD_NM
+			FROM COMMON_CODE C, COMMON_GROUP G
+			WHERE C.COMM_GR_CD=G.COMM_GR_CD
+			AND   G.COMM_GR_CD='RESV_STATUS_CD'
+			AND   C.COMM_CD_CNT='예약중'
+		)
+		]]>
+	</update>
+	
+	<select id="openTime" resultType="hospitalInfoVO">
+		SELECT HI_OPEN_TIME, HI_CLOSE_TIME, HI_LUNCH_STIME, HI_LUNCH_ETIME
+		  FROM HOSPITAL_INFO
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.DocumentMapper">
+	
+	<insert id="treatmentPlanPost" parameterType="map" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'4',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<select id="getNum" resultType="String">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+	</select>
+	
+	<insert id="diagnosisPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'1',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<insert id="treatconfirmPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'3',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<insert id="CTPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'5',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<insert id="opinionPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'2',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<insert id="outsidePost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'6',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<select id="docList" resultType="docVO" parameterType="docVO">
+		SELECT A.DOC_ISSUE_NUM,A.PT_NUM,A.DOC_NUM,A.DOC_ISSUE_REASON,A.DOC_ISSUE_DT,A.DOC_SAVE_PATH,A.CHK_NUM,
+		B.PT_NM,B.PT_BRDT
+		FROM document_issue A INNER JOIN PATIENT B
+		ON(A.PT_NUM=B.PT_NUM)
+        where A.pt_num=#{ptNum}
+	</select>
+
+	<resultMap id="ptMap" type="ptVO">
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="ptBrdt" column="PT_BRDT" />
+		<result property="ptRrno" column="PT_RRNO" />
+		<result property="ptPhone" column="PT_PHONE" />
+		<result property="ptZip" column="PT_ZIP" />
+		<result property="ptAddr" column="PT_ADDR" />
+		<result property="ptAddrDet" column="PT_ADDR_DET" />
+		<collection property="chkList" resultMap="chkMap" />
+	</resultMap>
+	<resultMap id="chkMap" type="chkupVO">
+		<result property="chkNum" column="CHK_NUM" />
+	</resultMap>
+	<select id="patientInfo" parameterType="String" resultMap="ptMap">
+		SELECT P.PT_NUM, P.PT_NM, P.PT_BRDT, P.PT_RRNO, P.PT_PHONE, P.PT_ZIP, P.PT_ADDR, P.PT_ADDR_DET,
+		       C.CHK_NUM
+		  FROM PATIENT P LEFT OUTER JOIN CHECKUP C ON (P.PT_NUM = C.PT_NUM)
+		 WHERE P.PT_NUM = #{ptNum}
+	</select>
+	
+	<!-- 병원 정보(1행) -->
+	<select id="hospitalInfo" resultType="hospitalInfoVO">
+		SELECT HI_BRNO, HI_NM, HI_TYPE, HI_IMG, HI_PHONE, HI_FAX, HI_ZIP, HI_ADDR
+		     ,  HI_EMP_DADDR, HI_EML, HI_HP, HI_RPRSV_NM, HI_RPRSV_RRNO
+		     ,  HI_OPEN_TIME, HI_CLOSE_TIME, HI_LUNCH_STIME, HI_LUNCH_ETIME
+		 FROM   HOSPITAL_INFO
+	</select>
+	
+	<select id="checkBox" resultType="docVO" parameterType="docVO">
+		SELECT A.DOC_ISSUE_NUM,A.PT_NUM,A.DOC_NUM,A.DOC_ISSUE_REASON,A.DOC_ISSUE_DT,A.DOC_SAVE_PATH,A.CHK_NUM,
+		B.PT_NM,B.PT_BRDT
+		FROM document_issue A INNER JOIN PATIENT B
+		ON(A.PT_NUM=B.PT_NUM)
+        where A.pt_num=#{ptNum}
+        <choose>
+            <when test="docNum!=null and docNum!=''">
+                AND A.DOC_NUM IN 
+                <foreach collection="docNum" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </when>
+        </choose>
+	</select>
+	
+	
+</mapper>

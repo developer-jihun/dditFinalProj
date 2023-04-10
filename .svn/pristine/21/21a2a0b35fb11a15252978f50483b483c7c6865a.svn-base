@@ -1,0 +1,12 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+public class CommunityVO {
+	private int comNum;
+	private String ptNum;
+	private String comTitle;
+	private String comContent;
+	private Date comDt;
+	private int comInqCnt;
+}

@@ -1,0 +1,21 @@
+package com.web.ddentist.vo;
+
+import lombok.Data;
+
+@Data
+public class TxVO {
+	
+	private int txSn;
+	private String chkNum;
+	private String txcCd;
+	private String txToothNum;
+	private String txContent;
+	private int txCost;
+	
+//	private String chkDt;
+	private String chkDtStr;
+	private String empNm;
+	
+	private String txcNm;
+	
+}

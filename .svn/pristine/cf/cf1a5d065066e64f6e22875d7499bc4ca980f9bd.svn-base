@@ -1,0 +1,79 @@
+package com.web.ddentist.hospital.crm.sms.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.crm.sms.service.ISmsService;
+import com.web.ddentist.vo.CrmVO;
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.SmsVO;
+
+@Controller
+@RequestMapping("/hospital/sms")
+public class SmsController {
+	
+	@Autowired
+	private ISmsService smsService;
+	
+	@GetMapping("")
+	public String home() {
+		return "hospital/crmSms";
+	}
+	
+	@ResponseBody
+	@PostMapping("/sendSmsOnCrm")
+	public int sendSmsOnCrm(@RequestBody String smsData) {
+		return smsService.sendSmsOnCrm(smsData);
+	}
+	
+	@ResponseBody
+	@PostMapping("/sendSmsOnTarget")
+	public int sendSmsOnTarget(@RequestBody String smsData) {
+		return smsService.sendSmsOnTarget(smsData);
+	}
+	
+	@ResponseBody
+	@GetMapping("/searchPtOnCrmList")
+	public List<CrmVO> searchPtOnCrmList(@RequestParam String keyword){
+		return smsService.searchPtOnCrmList(keyword);
+	}
+	
+	@ResponseBody
+	@GetMapping("/searchPtOnTargetList")
+	public List<PatientVO> searchPtOnTargetList(@RequestParam String keyword){
+		return smsService.searchPtOnTargetList(keyword);
+	}
+	
+	@ResponseBody
+	@PostMapping("/uncompleteCrm")
+	public int uncompleteCrm(@RequestBody List<String> crmNumList) {
+		return smsService.uncompleteCrm(crmNumList);
+	}
+	
+	@ResponseBody
+	@PostMapping("/completeCrm")
+	public int completeCrm(@RequestBody List<String> crmNumList) {
+		return smsService.completeCrm(crmNumList);
+	}
+	
+	@ResponseBody
+	@PostMapping("/deleteCrm")
+	public int deleteCrm(@RequestBody List<String> crmNumList) {
+		return smsService.deleteCrm(crmNumList);
+	}
+	
+	@ResponseBody
+	@GetMapping("/listSmsHist")
+	public List<SmsVO> listSmsHist(){
+		return smsService.listSmsHist();
+	}
+	
+}

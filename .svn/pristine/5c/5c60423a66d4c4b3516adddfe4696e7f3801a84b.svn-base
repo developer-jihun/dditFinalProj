@@ -1,0 +1,20 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class SmsVO {
+	
+	private int smsSndngNum;
+	private int crmNum;
+	private String ptNum;
+	private String ptNm;
+	private String ptPhone;
+	private Date smsDt;
+	private String smsContent;
+	
+	private String crmReason;
+	
+}

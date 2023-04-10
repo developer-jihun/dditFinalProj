@@ -1,0 +1,25 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+
+import com.web.ddentist.vo.CommonCodeVO;
+import com.web.ddentist.vo.EmployeeVO;
+
+public interface EmpInfoMapper {
+	// 직원 등록
+	// <insert id="createEmp" parameterType="employeeVO">
+	public int createEmp(EmployeeVO employeeVO);
+
+	// 직원 조회
+	// <select id="getList" resultType="employeeVO">
+	public List<EmployeeVO> getList();
+
+	// 직원 정보 조회
+	public EmployeeVO getEmpInfo(EmployeeVO empVO);
+
+	// 직원 정보 수정
+	public int updateEmp(EmployeeVO employeeVO);
+
+	// 공통코드- 직급리스트 가져오기
+	public List<CommonCodeVO> getCommon(String commGrCd);
+}

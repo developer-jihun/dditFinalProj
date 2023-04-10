@@ -1,0 +1,14 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+
+import com.web.ddentist.vo.CommunityVO;
+public interface CommunityMapper {
+	
+	/**
+	 * 커뮤니티 게시글 조회
+	 * 
+	 * @return 커뮤니티 게시글 목록
+	 */
+	public List<CommunityVO> selectList();
+}

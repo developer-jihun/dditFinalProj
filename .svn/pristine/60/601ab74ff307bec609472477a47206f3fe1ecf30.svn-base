@@ -1,0 +1,17 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+
+import com.web.ddentist.vo.PatientVO;
+
+public interface SmsMapper {
+	
+	/**
+	 * 환자들의 이름과 연락처를 가져옴
+	 * 
+	 * @param ptNumList 환자 번호 목록
+	 * @return 환자 명과 환자 연락처가 담긴 VO 목록
+	 */
+	public List<PatientVO> listPtPhone(List<String> ptNumList);
+	
+}

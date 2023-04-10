@@ -1,0 +1,126 @@
+package com.web.ddentist.hospital.rcvmt.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.rcvmt.service.IRcvmtService;
+import com.web.ddentist.vo.CheckupVO;
+import com.web.ddentist.vo.RcvmtVO;
+import com.web.ddentist.vo.ReceiptVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/rcvmt")
+public class RcvmtController {
+	
+	@Autowired
+	private IRcvmtService rcvmtService;
+	
+	@GetMapping("")
+	public String home() {
+		return "hospital/rcvmt";
+	}
+	
+	@GetMapping("/rcvmtWindow")
+	public String rcvmtCanvas(Model model,
+			@ModelAttribute ReceiptVO rctVO) {
+		ReceiptVO data = rcvmtService.selectRctHist(rctVO);
+		
+		model.addAttribute("rctVO", data);
+		
+		return "/hospital/rcvmtWindow";
+	}
+	
+	@ResponseBody
+	@GetMapping("/listWaitingRcvmt")
+	public List<RcvmtVO> listWaitingRcvmt (){
+		return rcvmtService.listWaitingRcvmt();
+	}
+	
+	@ResponseBody
+	@GetMapping("/listCompletedRcvmt")
+	public List<RcvmtVO> listCompletedRcvmt (){
+		return rcvmtService.listCompletedRcvmt();
+	}
+	
+	@ResponseBody
+	@GetMapping("/selectRcvmt")
+	public RcvmtVO selectRcvmt (@RequestParam String rcvmtNum) {
+		return rcvmtService.selectRcvmt(rcvmtNum);
+	}
+	
+	@ResponseBody
+	@GetMapping("/listPtRcvmtHist")
+	public List<RcvmtVO> listPtRcvmtHist(@RequestParam String ptNum){
+		return rcvmtService.listPtRcvmtHist(ptNum);
+	}
+	
+	@ResponseBody
+	@GetMapping("/listPtChkupHist")
+	public List<CheckupVO> listPtChkupHist(@RequestParam String ptNum){
+		return rcvmtService.listPtChkupHist(ptNum);
+	}
+	
+	@ResponseBody
+	@PostMapping("/payInCash")
+	public String payInCash(@RequestBody ReceiptVO rctVO) {
+		return rcvmtService.payInCash(rctVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/payInCard")
+	public String payInCard(@RequestBody ReceiptVO rctVO) {
+		log.info("여기임");
+		return rcvmtService.payInCard(rctVO);
+	}
+	
+	@ResponseBody
+	@GetMapping("/searchRcvmtHistList")
+	public List<RcvmtVO> searchRcvmtHistList(@RequestParam Map<String, String> searchMap){
+		return rcvmtService.searchRcvmtHistList(searchMap);
+	}
+	
+	@ResponseBody
+	@GetMapping("/searchRctHistList")
+	public List<ReceiptVO> searchRctHistList(@RequestParam Map<String, String> searchMap){
+		return rcvmtService.searchRctHistList(searchMap);
+	}
+	
+	@ResponseBody
+	@PostMapping("/payInCashOnRcvmtHist")
+	public String payInCashOnRcvmtHist(@RequestBody ReceiptVO rctVO) {
+		return rcvmtService.payInCashOnRcvmtHist(rctVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/payInCardOnRcvmtHist")
+	public String payInCardOnRcvmtHist(@RequestBody ReceiptVO rctVO) {
+		return rcvmtService.payInCardOnRcvmtHist(rctVO);
+	}
+	
+	@ResponseBody
+	@GetMapping("/selectRctHist")
+	public ReceiptVO selectRctHist(@ModelAttribute ReceiptVO rctVO) {
+		return rcvmtService.selectRctHist(rctVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/refundRct")
+	public String refundRct(@ModelAttribute ReceiptVO rctVO) {
+		return rcvmtService.refundRct(rctVO);
+	}
+	
+}

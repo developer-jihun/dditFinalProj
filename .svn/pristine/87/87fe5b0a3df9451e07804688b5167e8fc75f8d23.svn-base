@@ -1,0 +1,20 @@
+package com.web.ddentist.ddit.pdocument.service;
+
+import java.util.List;
+
+import com.web.ddentist.vo.DocumentVO;
+
+public interface IPdocument {
+
+	List<DocumentVO> getDList(DocumentVO documentVO);
+
+	List<DocumentVO> checkBox(DocumentVO documentVO);
+
+	DocumentVO getReissuance(DocumentVO documentVO);
+
+	int getLockerUpdate(DocumentVO documentVO);
+
+	List<DocumentVO> getLockerList(DocumentVO documentVO);
+
+
+}

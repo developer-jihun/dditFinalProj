@@ -1,0 +1,22 @@
+package com.web.ddentist.ddit.home.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class HomeController {
+	
+	@GetMapping(value= {"", "/ddit"})
+	public String home() {
+		System.out.println("----------------------------------------------------------");
+		System.out.println(System.getProperty("user.dir").replace("\\eclipse", ""));
+		System.out.println("----------------------------------------------------------");
+		return "ddit/home";
+	}
+	
+	@GetMapping("/login")
+	public String login() {
+		return "login/selectLogin";
+	}
+	
+}

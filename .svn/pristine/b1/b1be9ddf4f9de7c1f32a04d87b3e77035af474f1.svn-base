@@ -1,0 +1,108 @@
+//오른쪽 input Date 생성 및 날짜 변환
+var i = 0;
+function changeDate(){
+	// console.log('날짜 변경 실행' + i);
+	var todayH2 = $('.fc-listWeek-button').parent().parent().find('h2').eq(0).text();
+	var chooseDay = todayH2.split(" ");
+	
+	var changeDay = chooseDay[0].substr(0,4) + '-';
+	if(chooseDay[1].length == 2){ changeDay += '0' + chooseDay[1].substr(0,1) + '-'; } 
+	else { changeDay += chooseDay[1].substr(0,2) + '-'; }
+	
+	if(chooseDay[2].length == 2){ changeDay += '0' + chooseDay[2].substr(0,1); } 
+	else { changeDay += chooseDay[2].substr(0,2); }
+
+	if(i++ == 0){
+		$('.fc-right') //.parent()
+			.append("<input type='date' class='fc-state-default fc-corner-left fc-corner-right selectDate'" +
+					" id='selectDate' value='" + changeDay + "' style='height:30px;' />");
+	}
+	$('.calendar .selectDate').val(changeDay);
+};
+
+
+// 휴식 시간 색상 변경
+function breakTime(openTime, closeTime, sbreak ,ebreak){
+	// 점심시간 체크
+	var openDate = openTime + ":00";
+	var closeDate = closeTime + ":00";
+	
+	$('#calendarDay').find('tr').each(function(i ,v){
+		var dataTime = $(this).data('time');
+		if(dataTime < openTime || (dataTime >= sbreak && dataTime < ebreak) || dataTime >= closeTime){
+			$(this).children().eq(1).css('background-color','#C0C0C0');
+		}
+	});
+}
+
+//=====================================================================================
+	// 입력된 날짜로 화면 변환 시키기
+	function screenChange(date){
+		$('.calendar .selectDate').val(date);
+		$('.calendar').fullCalendar('gotoDate', new Date(date));
+	    $('.calendar').fullCalendar('refetchEvents');
+	}
+	// 날짜 선택 버튼 생성 및 날짜 변경
+	$(document).on('change', '.selectDate',function(){	// chageDate() 밑에 생성되어야 한다.
+		var choose = $(this).val();
+		if(choose == null || choose.length == 0){ return; }
+		screenChange(choose);
+		breakTime(openTime, closeTime, sbreak ,ebreak);
+	});
+	//오늘 날짜 클릭시
+	$(document).on('click', ".fc-left" ,function(){ 
+		screenChange(today());
+		breakTime(openTime, closeTime, sbreak ,ebreak);
+	});
+	// 다음 버튼 클릭
+	$(document).on('click', '#calendarDay .fc-next-button' , function(){ 
+		changeDate();
+		
+		var selectday = $('.selectDate').val()
+	    screenChange(selectday);
+		breakTime(openTime, closeTime, sbreak ,ebreak);
+	})
+	// 이전 버튼 클릭
+	$(document).on('click', '#calendarDay .fc-prev-button' , function(){ 
+		changeDate();
+		
+		var selectday = $('.selectDate').val();
+		screenChange(selectday);
+		breakTime(openTime, closeTime, sbreak ,ebreak);
+	})
+	
+	function today() {	// 오늘 날짜 포멧 2022-12-12
+    var d = new Date();
+    return d.getFullYear() + "-" 
+		+ ((d.getMonth() + 1) > 9 ? (d.getMonth() + 1).toString() : "0" + (d.getMonth() + 1)) + "-" 
+		+ (d.getDate() > 9 ? d.getDate().toString() : "0" + d.getDate().toString());
+	}
+	
+//=====================================================================================
+
+	
+// 전체 선택 체크박스 선택 시
+$(document).on('click', '#allCheck' ,function(){
+	if($('#allCheck').is(':checked')){ $('input:checkbox.filter').prop('checked',true); } 
+	else { 							   $('input:checkbox.filter').prop('checked', false); }
+	$('.calendar').fullCalendar('refetchEvents');
+});
+//체크박스 클릭시
+$(document).on('click', 'input:checkbox.filter', function(){
+	var checkFilter = 0; // 전체 수
+	var countCheckFIlter = 0; // 체크 된 수
+	$("input:checkbox.filter").each(function(i, v){
+		if($(this).is(':checked')){ countCheckFIlter++; }
+		checkFilter++;
+	});
+	
+	if(checkFilter == countCheckFIlter){ $('#allCheck').prop('checked',true); } 
+	else { $('#allCheck').prop('checked', false); }
+	$('.calendar').fullCalendar('refetchEvents');
+});
+//SELECT FILTER 변경시
+$(document).on('change', '#type_filter', function(){
+	$('.calendar').fullCalendar('refetchEvents');
+});
+
+

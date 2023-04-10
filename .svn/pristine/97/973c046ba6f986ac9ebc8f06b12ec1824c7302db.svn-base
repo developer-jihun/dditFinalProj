@@ -1,0 +1,500 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+
+<style>
+.card-body::-webkit-scrollbar{
+	width: 10px;
+	height: 10px;
+}
+.card-body::-webkit-scrollbar-thumb{
+    background-color: #404b57;
+    border-radius: 5px;
+}
+.card-body::-webkit-scrollbar-track{
+    background-color: rgba(0,0,0,0);
+}
+#chartCardBody::-webkit-scrollbar{
+	display: none;
+}
+#teethChart td{
+	padding: 0px;
+	border: 0px;
+}
+#upperTeeth td{
+	vertical-align: bottom;
+	text-align: center;
+	cursor: pointer;
+}
+#lowerTeeth td{
+	vertical-align: top;
+	text-align: center;
+	cursor: pointer;
+}
+#upperTeeth{
+	 background: linear-gradient(180deg, #FFE5E5 75%, #FFFFFF 80%);
+}
+#lowerTeeth{
+	 background: linear-gradient(180deg, #FFFFFF 20%, #FFE5E5 25%);
+}
+#teethChart img{
+	width: 85%;
+}
+#piTxTabContent h5{
+	cursor: pointer;
+}
+.dropdown-item{
+	cursor: pointer;
+}
+.regRow{
+	cursor: pointer;
+}
+.teethNum{
+	cursor: pointer;
+}
+</style>
+<div class="content-wrapper" style="background-color: #657D96;">
+	<!-- main 검색창을 포함한 navbar 시작-->
+	<nav class="navbar navbar-expand navbar-white navbar-light" style="background-color: #404b57;">
+		<div class="dropdown">
+			<input type="text" class="form-control" id="ptSearch" placeholder="환자 검색" onkeyup="searchPatient(this);" style="width: 400px;" />
+			<ul id="ptSearchDropdown" class="dropdown-menu">
+			</ul>
+		</div>
+		<img src="/resources/images/layout/memo_icon.png" alt="메모" id="memo" class="brand-image elevation-1" style="margin-left: 15px;">
+		<ul class="navbar-nav ml-auto">
+		</ul>
+	</nav>
+	
+	<section class="content" style="margin-top: 1%;">
+		<div class="row" style="height: 900px;">
+			<!-- 진료차트 카드 시작 -->
+			<div class="col-md-4" style="height: 100%;">
+				<div class="card card-info m-0" style="height: 97.76%;">
+					<div class="card-header" style="background-color: #404b57;">
+						<div class="d-flex justify-content-between align-items-center">
+							<div>
+								<h3 class="card-title">진료 차트</h3><br />
+								<p class="m-0">환자명 : <span id="selectedPtNm"></span></p>
+							</div>
+<!-- 							<div> -->
+<!-- 								<button type="button" class="btn btn-primary btnCss" onclick="completeCheckup();" -->
+<!-- 										style="background-color: #904aff; border: #904aff;">진료완료</button> -->
+<!-- 								<button type="button" class="btn btn-danger btn-sm" onclick="stopCheckup();">진료중단</button> -->
+<!-- 							</div> -->
+						</div>
+					</div>
+					<div id="chartCardBody" class="card-body overflow-auto table-responsive pt-0 px-2">
+						<table class="table table-fixed">
+							<thead class="text-center sticky-top" style="background-color: whitesmoke;">
+								<tr>
+									<th style="width: 20%;">진료일</th>
+									<th style="width: 15%;">구분</th>
+									<th style="width: 45%;">내용</th>
+									<th style="width: 20%;">의사</th>
+								</tr>
+							</thead>
+							<tbody id="chartListBody" class="text-center">
+							
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<!-- 진료차트 카드 끝 -->
+			<div class="col-md-4">
+				<!-- 치아차트 카드 시작 -->
+				<div class="card card-info" style="height: 42%;">
+					<div class="card-header" style="background-color: #404b57;">
+						<h3 class="card-title">치아 선택</h3>
+					</div>
+					<div class="card-body p-2 d-flex justify-content-center align-items-center">
+						<table class="table border-2" style="width: 100%; height: 100%;">
+							<tbody id="teethChart">
+								<tr id="upperTeeth" class="border-bottom-0">
+									<td data-value="18">
+										<img src="/resources/images/teeth/default/tooth_18.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_18.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="17">
+										<img src="/resources/images/teeth/default/tooth_17.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_17.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="16">
+										<img src="/resources/images/teeth/default/tooth_16.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_16.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="15">
+										<img src="/resources/images/teeth/default/tooth_15.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_15.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="14">
+										<img src="/resources/images/teeth/default/tooth_14.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_14.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="13">
+										<img src="/resources/images/teeth/default/tooth_13.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_13.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="12">
+										<img src="/resources/images/teeth/default/tooth_12.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_12.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="11" style="border-right: 2px solid black;">
+										<img src="/resources/images/teeth/default/tooth_11.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_11.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="21" style="border-left: 2px solid black;">
+										<img src="/resources/images/teeth/default/tooth_21.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_21.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="22">
+										<img src="/resources/images/teeth/default/tooth_22.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_22.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="23">
+										<img src="/resources/images/teeth/default/tooth_23.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_23.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="24">
+										<img src="/resources/images/teeth/default/tooth_24.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_24.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="25">
+										<img src="/resources/images/teeth/default/tooth_25.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_25.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="26">
+										<img src="/resources/images/teeth/default/tooth_26.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_26.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="27">
+										<img src="/resources/images/teeth/default/tooth_27.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_27.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="28">
+										<img src="/resources/images/teeth/default/tooth_28.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_28.png" class="selectedImg d-none" />
+									</td>
+								</tr>
+								<tr class="text-center" style="border-bottom: 2px solid black;">
+									<td>18</td>
+									<td>17</td>
+									<td>16</td>
+									<td>15</td>
+									<td>14</td>
+									<td>13</td>
+									<td>12</td>
+									<td style="border-right: 2px solid black;">11</td>
+									<td style="border-left: 2px solid black;">21</td>
+									<td>22</td>
+									<td>23</td>
+									<td>24</td>
+									<td>25</td>
+									<td>26</td>
+									<td>27</td>
+									<td>28</td>
+								</tr>
+								<tr class="text-center" style="border-top: 2px solid black;">
+									<td>48</td>
+									<td>47</td>
+									<td>46</td>
+									<td>45</td>
+									<td>44</td>
+									<td>43</td>
+									<td>42</td>
+									<td style="border-right: 2px solid black;">41</td>
+									<td style="border-left: 2px solid black;">31</td>
+									<td>32</td>
+									<td>33</td>
+									<td>34</td>
+									<td>35</td>
+									<td>36</td>
+									<td>37</td>
+									<td>38</td>
+								</tr>
+								<tr id="lowerTeeth">
+									<td data-value="48">
+										<img src="/resources/images/teeth/default/tooth_48.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_48.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="47">
+										<img src="/resources/images/teeth/default/tooth_47.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_47.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="46">
+										<img src="/resources/images/teeth/default/tooth_46.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_46.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="45">
+										<img src="/resources/images/teeth/default/tooth_45.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_45.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="44">
+										<img src="/resources/images/teeth/default/tooth_44.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_44.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="43">
+										<img src="/resources/images/teeth/default/tooth_43.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_43.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="42">
+										<img src="/resources/images/teeth/default/tooth_42.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_42.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="41" style="border-right: 2px solid black;">
+										<img src="/resources/images/teeth/default/tooth_41.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_41.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="31" style="border-left: 2px solid black;">
+										<img src="/resources/images/teeth/default/tooth_31.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_31.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="32">
+										<img src="/resources/images/teeth/default/tooth_32.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_32.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="33">
+										<img src="/resources/images/teeth/default/tooth_33.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_33.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="34">
+										<img src="/resources/images/teeth/default/tooth_34.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_34.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="35">
+										<img src="/resources/images/teeth/default/tooth_35.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_35.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="36">
+										<img src="/resources/images/teeth/default/tooth_36.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_36.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="37">
+										<img src="/resources/images/teeth/default/tooth_37.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_37.png" class="selectedImg d-none" />
+									</td>
+									<td data-value="38">
+										<img src="/resources/images/teeth/default/tooth_38.png" class="defaultImg" />
+										<img src="/resources/images/teeth/selected/selected_tooth_38.png" class="selectedImg d-none" />
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- 치아차트 카드 끝 -->
+				<!-- 증상/처치 카드 시작 -->
+				<div class="card card-primary card-tabs" style="height: 54%;">
+					<div class="card-header p-0 pt-1" style="background-color: #404b57;">
+						<ul class="nav nav-tabs" role="tablist" id="piTxTabList">
+							<li class="nav-item">
+								<a class="nav-link active" data-toggle="pill" href="#pi" role="tab" data-event="insertPi" onclick="changeCheckupType(this);">PI</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-toggle="pill" href="#txPlan" role="tab" data-event="insertTxPlan" onclick="changeCheckupType(this);">TX.PLAN</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-toggle="pill" href="#tx" role="tab" data-event="insertTx" onclick="changeCheckupType(this);">TX</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-toggle="pill" href="#txNext" role="tab" data-event="insertTxNext" onclick="changeCheckupType(this);">TX.NEXT</a>
+							</li>
+						</ul>
+					</div>
+					<div class="card-body p-0">
+						<div class="tab-content w-100" id="piTxTabContent">
+							<div class="tab-pane fade show active" id="pi" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<div id="piList" class="m-2">
+											<c:set var="disList" value="${requestScope.dataMap.disList}" />
+											<c:forEach var="dis" items="${disList}">
+												<h5 class="d-inline">
+													<a class="badge badge-primary align-middle" data-cd="${dis.disCd}">${dis.disKorNm}</a>
+												</h5>
+											</c:forEach>
+<!-- 											<h5 class="d-inline"> -->
+<!-- 												<a class="badge badge-primary align-middle" data-cd="c1">c1</a> -->
+<!-- 											</h5> -->
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade" id="txPlan" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<div id="txpList" class="m-2">
+											<c:set var="txcList" value="${requestScope.dataMap.txcList}" />
+											<c:forEach var="txc" items="${txcList}">
+												<h5 class="d-inline">
+													<a class="badge badge-primary align-middle" data-cd="${txc.txcCd}">${txc.txcNm}</a>
+												</h5>
+											</c:forEach>
+<!-- 											<h5 class="d-inline"> -->
+<!-- 												<a class="badge badge-primary align-middle" data-cd="a001">충치치료</a> -->
+<!-- 											</h5> -->
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade" id="tx" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<div id="txList" class="m-2">
+											<c:forEach var="txc" items="${txcList}">
+												<h5 class="d-inline">
+													<a class="badge badge-primary align-middle" data-cd="${txc.txcCd}">${txc.txcNm}</a>
+												</h5>
+											</c:forEach>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade" id="txNext" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<div id="txnList" class="m-2">
+											<c:forEach var="txc" items="${txcList}">
+												<h5 class="d-inline">
+													<a class="badge badge-primary align-middle" data-cd="${txc.txcCd}">${txc.txcNm}</a>
+												</h5>
+											</c:forEach>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer p-2 rounded-bottom" style="background-color: white;">
+						<div class="row">
+							<div class="form-group m-0 col-sm-9">
+								<textarea id="checkupMemo" rows="4" style="width: 100%;"></textarea>
+							</div>
+							<div class="col-sm-3">
+								<button type="button" id="checkupSaveBtn" class="btn btn-primary btn-block btnCss" onclick="insertPi();">저장</button>
+								<button type="button" class="btn btn-secondary btn-block btnCss" onclick="resetAll();">취소</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- 증상/처치 카드 끝 -->
+			</div>
+			<div class="col-md-4">
+				<!-- 접수/예약 카드 시작 -->
+				<div class="card card-primary card-tabs" style="height: 42%;">
+					<div class="card-header p-0 pt-1" style="background-color: #404b57;">
+						<ul class="nav nav-tabs" role="tablist" id="regResvTabList">
+							<li class="nav-item">
+								<a class="nav-link active" data-toggle="pill" href="#regList" role="tab">접수</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-toggle="pill" href="#resvList" role="tab">예약</a>
+							</li>
+						</ul>
+					</div>
+					<div class="card-body table-responsive p-0">
+						<div class="tab-content w-100">
+							<div class="tab-pane fade show active" id="regList" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<table class="table table-bordered table-hover text-center" style="width: 600px;">
+											<thead class="tableHead" style="z-index: 20;">
+												<tr>
+													<th style="width: 15%;">순번</th>
+													<th style="width: 15%;">이름</th>
+													<th style="width: 25%;">차트번호</th>
+													<th style="width: 15%;">상태</th>
+													<th style="width: 15%;">체어</th>
+													<th style="width: 15%;">의사</th>
+												</tr>
+											</thead>
+											<tbody id="regListBody">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade" id="resvList" role="tabpanel">
+								<div class="row w-100 m-0">
+									<div class="col-sm-12 p-0">
+										<table class="table table-bordered table-hover">
+											<thead class="tableHead">
+												<tr>
+													<th style="width: 15%;">순번</th>
+													<th style="width: 15%;">이름</th>
+													<th style="width: 30%;">차트번호</th>
+													<th style="width: 20%;">예약시간</th>
+													<th style="width: 20%;">의사</th>
+												</tr>
+											</thead>
+											<tbody id="resvListBody">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- 접수/예약 카드 끝 -->
+				<!-- 수납 카드 시작 -->
+				<div class="card card-info m-0" style="height: 54%;">
+					<div class="card-header" style="background-color: #404b57;">
+						<h3 class="card-title">수납 정보</h3>
+					</div>
+					<div class="card-body p-0">
+						<table class="table table-bordered text-center">
+							<thead class="tableHead" style="z-index: 20;">
+								<tr>
+									<th style="width: 15%;"></th>
+									<th style="width: 65%;">내용</th>
+									<th style="width: 20%;">횟수</th>
+								</tr>
+							</thead>
+							<tbody id="rcvmtListBody">
+<!-- 								<tr> -->
+<!-- 									<td><input type="checkbox" /></td> -->
+<!-- 									<td></td> -->
+<!-- 									<td></td> -->
+<!-- 								</tr> -->
+							</tbody>
+						</table>
+					</div>
+					<div class="card-footer">
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<div>
+								<h5 class="m-0">총 진료비 : </h5>
+							</div>
+							<div>
+								<h5><span id="totalCheckupCost"></span>원</h5>
+							</div>
+						</div>
+						<div class="text-right">
+							<button type="button" class="btn btn-primary btnCss" onclick="completeCheckup();">수납</button>
+						</div>
+					</div>
+				</div>
+				<!-- 수납 카드 끝 -->
+			</div>
+		</div>
+	</section>
+</div>
+
+<div id="regDropdownMenu" class="dropdown clearfix position-absolute d-none">
+	<ul class="dropdown-menu" style="display: block; position: static;">
+		<li class="ml-1"><a class="dropdown-item" href="#" onclick="insertCheckup();">진료시작</a></li>
+	</ul>
+</div>
+
+<div id="chartDropdownMenu" class="dropdown clearfix position-absolute d-none">
+	<ul class="dropdown-menu" style="display: block; position: static;">
+		<li class="ml-1"><a class="dropdown-item" href="#" onclick="deleteChartContentAlert();">삭제</a></li>
+	</ul>
+</div>
+
+<script src="/resources/js/searchModule.js"></script>
+<script src="/resources/js/chartChartTable.js"></script>
+<script src="/resources/js/chartCheckup.js"></script>
+<script src="/resources/js/alertModule.js"></script>

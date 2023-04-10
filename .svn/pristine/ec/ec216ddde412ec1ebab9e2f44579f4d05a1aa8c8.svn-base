@@ -1,0 +1,5 @@
+package com.web.ddentist.vo;
+
+public class PageVO {
+
+}

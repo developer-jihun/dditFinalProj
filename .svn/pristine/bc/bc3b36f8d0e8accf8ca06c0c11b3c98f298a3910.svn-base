@@ -1,0 +1,11 @@
+package com.web.ddentist.mapper;
+
+import com.web.ddentist.vo.BannerVO;
+
+public interface BannerMapper {
+	
+//	<!-- 배너 등록하기 -->
+//	<insert id="uploadFormAction" parameterType="bannerVO">
+	public int uploadFormAction(BannerVO bannerVO);
+
+}

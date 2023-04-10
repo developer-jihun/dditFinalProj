@@ -1,0 +1,38 @@
+package com.web.ddentist.hospital.manage.hospitalInfo.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.web.ddentist.hospital.manage.hospitalInfo.service.IBasicInfoService;
+
+import lombok.extern.slf4j.Slf4j;
+
+
+/**
+ * 병원관리 메뉴 - 병원기초정보 관리 페이지
+ * 
+ * @author 박지은
+ *
+ */
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/manage/hosInfo")
+public class HospitalInfoController {
+	
+	@Autowired
+	IBasicInfoService basicInfoService;
+	
+	// 병원기초 정보관리페이지 이동
+	@GetMapping("")
+	public String detail() {
+		log.info("병원기초정보 관리 페이지에 왔다. ");
+		
+		return "hospital/hosInfo";
+		
+		
+	}
+	
+}

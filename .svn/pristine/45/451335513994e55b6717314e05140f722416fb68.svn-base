@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.CheckupMapper">
+	
+	<select id="searchPt" parameterType="String" resultType="ptVO">
+		SELECT PT_NUM, PT_NM
+		  FROM PATIENT
+		 WHERE 1 = 1 
+		<if test="keyword != null and keyword != ''">
+			AND (
+				PT_NUM LIKE '%' || #{keyword} || '%'
+				OR PT_NM LIKE '%' || #{keyword} || '%'
+				OR PT_RRNO LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+	</select>
+	
+	<select id="listPtPi" parameterType="Map" resultType="piVO">
+		SELECT P.PI_SN, P.CHK_NUM, P.DIS_CD, P.PI_TOOTH_NUM, P.PI_CONTENT,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+		       (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM,
+		       (SELECT DIS_KOR_NM
+		          FROM DISEASE
+		         WHERE DIS_CD = P.DIS_CD) DIS_KOR_NM
+		  FROM PI P, CHECKUP C
+		 WHERE P.CHK_NUM = C.CHK_NUM
+		   AND P.CHK_NUM IN (SELECT CHK_NUM
+		                     FROM CHECKUP
+		                    WHERE PT_NUM = #{ptNum})
+		<if test="chartSDate != null and chartSDate != ''">
+		<![CDATA[
+			AND C.CHK_DT >= TO_DATE(#{chartSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="chartEDate != null and chartEDate != ''">
+		<![CDATA[
+			AND C.CHK_DT <= TO_DATE(#{chartEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		 ORDER BY P.CHK_NUM DESC, P.PI_SN DESC
+	</select>
+	
+	<select id="listPtTxPlan" parameterType="Map" resultType="txpVO">
+		SELECT TXP.TXP_SN, TXP.CHK_NUM, TXP.TXC_CD, TXP.TXP_TOOTH_NUM, TXP.TXP_CONTENT, TXP.TXP_COST,
+		       TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXP.TXC_CD) TXC_NM,
+		       (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX_PLAN TXP, CHECKUP C
+		 WHERE TXP.CHK_NUM = C.CHK_NUM
+		   AND TXP.CHK_NUM IN (SELECT CHK_NUM
+		                         FROM CHECKUP
+		                        WHERE PT_NUM = #{ptNum})
+		<if test="chartSDate != null and chartSDate != ''">
+		<![CDATA[
+			AND C.CHK_DT >= TO_DATE(#{chartSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="chartEDate != null and chartEDate != ''">
+		<![CDATA[
+			AND C.CHK_DT <= TO_DATE(#{chartEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		 ORDER BY TXP.CHK_NUM DESC, TXP.TXP_SN DESC
+	</select>
+	
+	<select id="listPtTx" parameterType="Map" resultType="txVO">
+		SELECT TX.TX_SN, TX.CHK_NUM, TX.TXC_CD, TX.TX_TOOTH_NUM, TX.TX_CONTENT, TX.TX_COST,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+			   (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TX.TXC_CD) TXC_NM,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX TX, CHECKUP C
+		 WHERE TX.CHK_NUM = C.CHK_NUM
+		   AND TX.CHK_NUM IN (SELECT CHK_NUM
+		                       FROM CHECKUP
+		                      WHERE PT_NUM = #{ptNum})
+		<if test="chartSDate != null and chartSDate != ''">
+		<![CDATA[
+			AND C.CHK_DT >= TO_DATE(#{chartSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="chartEDate != null and chartEDate != ''">
+		<![CDATA[
+			AND C.CHK_DT <= TO_DATE(#{chartEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		 ORDER BY TX.CHK_NUM DESC, TX.TX_SN DESC
+	</select>
+	
+	<select id="listPtTxNext" parameterType="Map" resultType="txnVO">
+		SELECT TXN.TXN_SN, TXN.CHK_NUM, TXN.TXC_CD, TXN.TXN_TOOTH_NUM, TXN.TXN_CONTENT, TXN.TXN_COST,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT,
+			   (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXN.TXC_CD) TXC_NM,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM
+		  FROM TX_NEXT TXN, CHECKUP C
+		 WHERE TXN.CHK_NUM = C.CHK_NUM
+		   AND TXN.CHK_NUM IN (SELECT CHK_NUM
+		                         FROM CHECKUP
+		                        WHERE PT_NUM = #{ptNum})
+		<if test="chartSDate != null and chartSDate != ''">
+		<![CDATA[
+			AND C.CHK_DT >= TO_DATE(#{chartSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="chartEDate != null and chartEDate != ''">
+		<![CDATA[
+			AND C.CHK_DT <= TO_DATE(#{chartEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		 ORDER BY TXN.CHK_NUM DESC, TXN.TXN_SN DESC
+	</select>
+	
+	
+	
+	
+	
+	<resultMap id="chkupMap" type="chkupVO">
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="empNum" column="EMP_NUM" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<collection property="piList" resultMap="piMap" />
+		<collection property="txpList" resultMap="txPlanMap" />
+		<collection property="txList" resultMap="txMap" />
+		<collection property="txnList" resultMap="txNextMap" />
+	</resultMap>
+	<resultMap id="piMap" type="piVO">
+		<result property="piSn" column="PI_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="disCd" column="DIS_CD" />
+		<result property="piToothNum" column="PI_TOOTH_NUM" />
+		<result property="piContent" column="PI_CONTENT" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="disKorNm" column="DIS_KOR_NM" />
+	</resultMap>
+	<resultMap id="txPlanMap" type="txpVO">
+		<result property="txpSn" column="TXP_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TXP_TXC_CD" />
+		<result property="txpToothNum" column="TXP_TOOTH_NUM" />
+		<result property="txpContent" column="TXP_CONTENT" />
+		<result property="txpCost" column="TXP_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TXP_TXC_NM" />
+	</resultMap>
+	<resultMap id="txMap" type="txVO">
+		<result property="txSn" column="TX_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TX_TXC_CD" />
+		<result property="txToothNum" column="TX_TOOTH_NUM" />
+		<result property="txContent" column="TX_CONTENT" />
+		<result property="txCost" column="TX_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TX_TXC_NM" />
+	</resultMap>
+	<resultMap id="txNextMap" type="txnVO">
+		<result property="txnSn" column="TXN_SN" />
+		<result property="chkNum" column="CHK_NUM" />
+		<result property="txcCd" column="TXN_TXC_CD" />
+		<result property="txnToothNum" column="TXN_TOOTH_NUM" />
+		<result property="txnContent" column="TXN_CONTENT" />
+		<result property="txnCost" column="TXN_COST" />
+		<result property="chkDtStr" column="CHK_DT_STR" />
+		<result property="empNm" column="EMP_NM" />
+		<result property="txcNm" column="TXN_TXC_NM" />
+	</resultMap>
+	
+	<select id="listChart" parameterType="Map" resultMap="chkupMap">
+		SELECT C.CHK_NUM, C.PT_NUM, C.PT_NM, C.EMP_NUM,
+			   TO_CHAR(C.CHK_DT, 'YYYY-MM-DD') CHK_DT_STR,
+			   (SELECT E.EMP_NM
+		          FROM EMPLOYEE E
+		         WHERE E.EMP_NUM = C.EMP_NUM) EMP_NM,
+			   P.PI_SN, P.CHK_NUM, P.DIS_CD, P.PI_TOOTH_NUM, P.PI_CONTENT,
+		       (SELECT DIS_KOR_NM
+		          FROM DISEASE
+		         WHERE DIS_CD = P.DIS_CD) DIS_KOR_NM,
+		       TXP.TXP_SN, TXP.CHK_NUM, TXP.TXC_CD TXP_TXC_CD, TXP.TXP_TOOTH_NUM, TXP.TXP_CONTENT, TXP.TXP_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXP.TXC_CD) TXP_TXC_NM,
+		       TX.TX_SN, TX.CHK_NUM, TX.TXC_CD TX_TXC_CD, TX.TX_TOOTH_NUM, TX.TX_CONTENT, TX.TX_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TX.TXC_CD) TX_TXC_NM,
+		       TXN.TXN_SN, TXN.CHK_NUM, TXN.TXC_CD TXN_TXC_CD, TXN.TXN_TOOTH_NUM, TXN.TXN_CONTENT, TXN.TXN_COST,
+		       (SELECT TXC_NM
+		          FROM TX_CODE
+		         WHERE TXC_CD = TXN.TXC_CD) TXN_TXC_NM
+		  FROM CHECKUP C LEFT OUTER JOIN PI P ON(C.CHK_NUM = P.CHK_NUM)
+		                 LEFT OUTER JOIN TX_PLAN TXP ON(C.CHK_NUM = TXP.CHK_NUM)
+		                 LEFT OUTER JOIN TX ON(C.CHK_NUM = TX.CHK_NUM)
+		                 LEFT OUTER JOIN TX_NEXT TXN ON(C.CHK_NUM = TXN.CHK_NUM)
+		 WHERE C.PT_NUM = #{ptNum}
+		 <if test="chartSDate != null and chartSDate != ''">
+		<![CDATA[
+			AND C.CHK_DT >= TO_DATE(#{chartSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="chartEDate != null and chartEDate != ''">
+		<![CDATA[
+			AND C.CHK_DT <= TO_DATE(#{chartEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		 ORDER BY C.CHK_DT DESC
+	</select>
+	
+</mapper>

@@ -1,0 +1,24 @@
+package com.web.ddentist.hospital.reservation.service;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.ReservationVO;
+
+public interface ReservationService {
+
+	public int create(ReservationVO vo);
+
+	public List<ReservationVO> getAllList(Map<String, String> dateMap);
+	
+	public int changeStat(Map<String, String> map);
+
+	public List<String> selectOption(Map<String, Date> map);
+
+	public List<Map<String, String>> empInfo();
+
+	public int previousRes();
+
+	
+}

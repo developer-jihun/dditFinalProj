@@ -1,0 +1,69 @@
+package com.web.ddentist.ddit.faq.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.web.ddentist.ddit.faq.service.IPFaqService;
+import com.web.ddentist.vo.FaqVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/ddit/faq")
+@Controller
+public class faqController {
+	
+	@Autowired
+	IPFaqService iPFaqService;
+	
+	//요청URL : localhost/ddit/faq
+	@GetMapping("")
+	public String faq(Model model) {
+		
+		//전체 리스트 받아서 담기
+		List<FaqVO> faqList = this.iPFaqService.getFaqList();
+		
+		model.addAttribute("faqList", faqList);
+		
+		return "ddit/pfaq";
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

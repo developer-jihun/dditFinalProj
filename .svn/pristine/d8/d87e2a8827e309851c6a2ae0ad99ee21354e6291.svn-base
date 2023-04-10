@@ -1,0 +1,162 @@
+/* ****************
+ *  일정 편집
+ * ************** */
+
+function fullToday(){ //년월일시분초 문자열 생성 2022-12-12
+    var d = new Date();
+    return d.getFullYear() + "-" 
+			+ ((d.getMonth() + 1) > 9 ? (d.getMonth() + 1).toString() : "0" + (d.getMonth() + 1)) + "-" 
+			+ (d.getDate() > 9 ? d.getDate().toString() : "0" + d.getDate().toString()) + " " 
+			+ (d.getHours() > 9 ? d.getHours().toString() : "0" + d.getHours().toString()) + ":" 
+			+ (d.getMinutes() > 9 ? d.getMinutes().toString() : "0" + d.getMinutes().toString());
+}
+
+var editEvent = function (event, element, view) {	
+    $('#cancel').data('id', event._id); //클릭한 이벤트 ID
+	$('inputModalinput').attr('readonly','true');
+	$('.inputModal select').attr('disabled','disabled');
+	$('textarea').attr('readonly','true');
+
+    $('.popover.fade.top').remove();
+    $(element).popover("hide");
+
+    if (event.allDay === true) {
+        editAllDay.prop('checked', true);
+    } else {
+        editAllDay.prop('checked', false);
+    }
+
+    if (event.end === null) {
+        event.end = event.start;
+    }
+
+    if (event.allDay === true && event.end !== event.start) {
+        editEnd.val(moment(event.end).subtract(1, 'days').format('YYYY-MM-DD HH:mm'))
+    } else {
+        editEnd.val(event.end.format('YYYY-MM-DD HH:mm'));
+    }
+
+    modalTitle.html('예약 정보');
+    _id.val(event._id);
+    ptNm.val(event.title);
+    ptPhone.val(event.phone);
+    //editStart.val(event.start.format('YYYY-MM-DD'));
+	
+	var date = event.start.format('YYYY-MM-DD HH:mm').split(' '); // 년월일, 시간 분리
+	var endD = event.end.format('YYYY-MM-DD HH:mm').split(' ');
+	editDate.val(date[0]);
+    editStart.val(date[1]);
+    editEnd.val(endD[1]);
+
+    empNum.val(event.username);
+    resvCc.val(event.description);
+    
+    stat.val(event.statNm);
+    editColor.val(event.backgroundColor).css('color', event.backgroundColor);
+
+    addBtnContainer.hide();
+    modifyBtnContainer.show();
+    eventModal.modal('show');
+	
+	$('.modalBtnContainer-resvEvent button').css('display','none');
+	$('#modalClose').css('display','block');
+	if(event.end.format('YYYY-MM-DD HH:mm') > fullToday()){
+		if(event.status == 'IN_RESV'){
+			$('#implResv').css('display','block');
+			$('#cancelResv').css('display','block');
+		} else if(event.status == 'IMPL_RESV'){
+			$('#inResv').css('display','block');
+		}
+	}
+	
+    //업데이트 버튼 클릭시
+    $('#updateEvent').unbind();
+    $('#updateEvent').on('click', function () {
+
+        if (editStart.val() > editEnd.val()) {
+            alert('끝나는 날짜가 앞설 수 없습니다.');
+            return false;
+        }
+
+        if (ptNm.val() === '') {
+            alert('일정명은 필수입니다.')
+            return false;
+        }
+
+        var statusAllDay;
+        var startDate;
+        var endDate;
+        var displayDate;
+
+        if (editAllDay.is(':checked')) {
+            statusAllDay = true;
+            startDate = moment(editStart.val()).format('YYYY-MM-DD');
+            endDate = moment(editEnd.val()).format('YYYY-MM-DD');
+            displayDate = moment(editEnd.val()).add(1, 'days').format('YYYY-MM-DD');
+        } else {
+            statusAllDay = false;
+            startDate = editStart.val();
+            endDate = editEnd.val();
+            displayDate = endDate;
+        }
+
+        eventModal.modal('hide');
+
+        event.allDay = statusAllDay;
+        event.title = ptNm.val();
+        event.phone = ptPhone.val();
+        event.start = startDate;
+        event.end = displayDate;
+        event.type = empNum.val();
+        event.backgroundColor = editColor.val();
+        event.description = resvCc.val();
+
+        $("#calendar").fullCalendar('updateEvent', event);
+
+        //일정 업데이트
+        $.ajax({
+            type: "get",
+            url: "",
+            data: {
+                //...
+            },
+            success: function (response) {
+                alert('수정되었습니다.')
+            }
+        });
+
+    });
+};
+
+
+
+// 삭제버튼
+/*
+$('#deleteEvent').on('click', function () {
+    
+    $('#deleteEvent').unbind();
+    $("#calendar").fullCalendar('removeEvents', $(this).data('id'));
+    eventModal.modal('hide');
+	
+	var resvId = $('#resvId').val();
+	
+	console.log(resvId);
+	
+    //삭제시
+    $.ajax({
+        type: "post",
+        url: "/cal/delete",
+        data: JSON.stringify({
+            'resvId': resvId
+        }),
+        dataType: 'json',
+        success: function (response) {
+            console.log(response)
+            if(response == 1){
+            	alert('삭제되었습니다.');
+            };
+        }
+    });
+
+});
+*/

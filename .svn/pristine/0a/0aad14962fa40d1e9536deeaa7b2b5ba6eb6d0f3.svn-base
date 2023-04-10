@@ -1,0 +1,124 @@
+package com.web.ddentist.ddit.preservation.service;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.web.ddentist.vo.EmployeeVO;
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.ReservationVO;
+
+public interface IPreservationService {
+	
+	/**
+	 * 회원 : 휴대폰 본인 인증을 위해 입력받은 연락처로 인증번호를 발송<br>
+	 * 회원 예약의 경우 주민등록번호가 일치하는 환자 정보가 없을 경우 인증 실패 ("NONE")
+	 * 
+	 * @param ptVO 입력받은 이름, 주민등록번호, 연락처가 담긴 VO
+	 * @param session 인증번호를 저장할 세션
+	 * @return 성공 : "SUCCESS", 실패 : "FAILED", 불일치 : "NONE"
+	 */
+	public String sendMAuthNum(PatientVO ptVO, HttpSession session);
+	
+	/**
+	 * 비회원 : 휴대폰 본인 인증을 위해 입력받은 연락처로 인증번호를 발송
+	 * 
+	 * @param ptVO 입력받은 이름, 주민등록번호, 연락처가 담긴 VO
+	 * @param session 인증번호를 저장할 세션
+	 * @return 성공 : "SUCCESS", 실패 : "FAILED"
+	 */
+	public String sendNmAuthNum(PatientVO ptVO, HttpSession session);
+	
+	/**
+	 * 입력받은 인증번호를 전송된 인증번호와 비교해서 결과를 반환
+	 * 
+	 * @param paramMap 인증 번호 ("authNum")
+	 * @param session 전송된 인증번호가 저장된 세션
+	 * @return 일치 : "SUCCESS", 불일치 : "FAILED"
+	 */
+	public String checkAuthNum(@RequestBody Map<String, String> paramMap, HttpSession session);
+	
+	/**
+	 * 입력받은 회원정보와 일치하는 회원이 있는지 확인한 후 예약이력을 반환
+	 * 
+	 * @param paramMap 회원 명, 회원 주민등록번호, 회원 연락처가 담긴 Map<br>("ptNm", "ptRrno1", "ptRrno2", "ptPhone1", "ptPhone2", "ptPhone3")
+	 * @return 입력받은 회원정보와 일치하는 회원의 예약이력<br>
+	 * 일치하는 회원이 없을 경우 null 반환
+	 */
+	public List<ReservationVO> listPresv(Map<String, String> paramMap);
+	
+	/**
+	 * 입력받은 회원정보와 일치하는 예약이력을 반환
+	 * 
+	 * @param paramMap 회원 명, 회원 주민등록번호, 회원 연락처가 담긴 Map<br>("ptNm", "ptRrno1", "ptRrno2", "ptPhone1", "ptPhone2", "ptPhone3")
+	 * @return 입력받은 회원정보와 일치하는 회원의 예약이력<br>
+	 * 일치하는 정보의 예약 건이 없을 경우 null 반환
+	 */
+	public List<ReservationVO> listNonPresv(Map<String, String> paramMap);
+	
+	/**
+	 * 특정 예약 건의 상세 예약 정보를 가져옴
+	 * 
+	 * @param resvNum 정보를 가져올 예약 건의 예약 번호
+	 * @return 해당 예약 건의 예약 정보 및 담당 의사 정보
+	 */
+	public ReservationVO selectPresv(String resvNum);
+	
+	/**
+	 * 예약 취소
+	 * 
+	 * @param resvVO 취소할 예약 건의 예약 번호
+	 * @return 성공 : "SUCCESS", 실패 : "FAILED"
+	 */
+	public String cancelResv(ReservationVO resvVO);
+	
+	/**
+	 * 병원이 운영하는 시간을 30분 단위로 가져옴<br>
+	 * 예약 가능한 시간을 30분 단위로 선택하기 위해 사용함
+	 * 
+	 * @return 병원 운영 시간에서 휴식 시간을 제외하고 30분 단위로 저장한 목록
+	 */
+	public List<String> selectHiServiceTime();
+	
+	/**
+	 * 예약 시 선택할 의사 목록을 가져옴<br>
+	 * 사용자가 선택한 예약시간에 의사에게 몇 건의 예약이 잡혀있는지 resvCount에 담김 
+	 * 
+	 * @param resvSdt 예약 시간
+	 * @return 의사 목록
+	 */
+	public List<EmployeeVO> listDoc(String resvSdt);
+	
+	/**
+	 * 회원 예약 추가
+	 * 
+	 * @param paramMap 이름, 주민등록번호 ("ptRrno1", "ptRrno2"),<br>
+	 * 				   연락처("ptPhone1", "ptPhone2", "ptPhone3"), 예약일("resvSdt1", "resvSdt2"),<br>
+	 * 				   담당 의사 직원 번호("empNum"), 호소증상("resvCc")
+	 * @return 성공 : 1, 실패 0
+	 */
+	public int insertPresv(Map<String, String> paramMap);
+	
+	/**
+	 * 비 회원 예약 추가
+	 * 
+	 * @param paramMap 이름, 주민등록번호 ("ptRrno1", "ptRrno2"),<br>
+	 * 				   연락처("ptPhone1", "ptPhone2", "ptPhone3"), 예약일("resvSdt1", "resvSdt2"),<br>
+	 * 				   담당 의사 직원 번호("empNum"), 호소증상("resvCc")
+	 * @return 성공 : 1, 실패 0
+	 */
+	public int insertNonPresv(Map<String, String> paramMap);
+	
+	/**
+	 * 
+	 * 현재 로그인 중인 사용자의 principal 반환
+	 * 
+	 * @return 스프링 시큐리티로부터 받는 principal 객체<br>
+	 * 		   로그인하지 않은 사용자일 경우 "anonymousUser"라는 문자열이 반환된다.
+	 */
+	public Object getPatientDetails();
+	
+}

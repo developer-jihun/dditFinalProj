@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.PatientMapper">
+
+	<select id="login" parameterType="ptVO" resultType="ptVO">
+		SELECT PT_NUM, PT_NM, PT_BRDT, PT_RRNO, PT_GEN, PT_PHONE, PT_ZIP, PT_ADDR, PT_ADDR_DET,
+			   PT_MEMO, PRVC_PVSN_AGRE_YN, SMS_RCPTN_AGRE_YN, PT_MRSA_YN, PT_PREG_YN,
+			   PT_REG_DT, PT_ID, PT_PW, PT_ACC_STATUS, PT_AUTHRT
+		  FROM PATIENT
+		 WHERE PT_ID = #{ptId}
+	</select>
+	
+</mapper>

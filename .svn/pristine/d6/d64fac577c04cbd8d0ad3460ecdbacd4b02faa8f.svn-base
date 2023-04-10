@@ -1,0 +1,160 @@
+package com.web.ddentist.ddit.preservation.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.ddit.preservation.service.IPreservationService;
+import com.web.ddentist.patient.service.PatientDetails;
+import com.web.ddentist.vo.EmployeeVO;
+import com.web.ddentist.vo.PatientVO;
+import com.web.ddentist.vo.ReservationVO;
+
+@Controller
+@RequestMapping("/ddit/resv")
+public class PreservationController {
+
+	@Autowired
+	private IPreservationService presvService;
+
+	@GetMapping("/select")
+	public String select() {
+		return "ddit/reservationSelect";
+	}
+
+	@GetMapping("/list")
+	public String list() {
+		return "ddit/reservationAuth";
+	}
+
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@GetMapping("/mOnline")
+	public String memberOnline(Model model) {
+		PatientDetails ptDetails = (PatientDetails) presvService.getPatientDetails();
+		model.addAttribute("ptNm", ptDetails.getPtVO().getPtNm());
+		model.addAttribute("ptRrno", ptDetails.getPtVO().getPtRrno());
+		return "ddit/reservationForm";
+	}
+
+	@GetMapping("/nmOnline")
+	public String nonMemberOnline() {
+		return "ddit/reservationForm";
+	}
+
+	@ResponseBody
+	@GetMapping("/selectHiServiceTime")
+	public List<String> selectHiServiceTime(@RequestParam String resvSdt){
+		return presvService.selectHiServiceTime(resvSdt);
+	}
+
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@ResponseBody
+	@PostMapping("/sendMAuthNum")
+	public String sendMAuthNum(@RequestBody PatientVO ptVO, HttpSession session) {
+		return presvService.sendMAuthNum(ptVO, session);
+	}
+
+	@ResponseBody
+	@PostMapping("/sendNmAuthNum")
+	public String sendNmAuthNum(@RequestBody PatientVO ptVO, HttpSession session) {
+		return presvService.sendNmAuthNum(ptVO, session);
+	}
+
+	@ResponseBody
+	@PostMapping("/checkAuthNum")
+	public String checkAuthNum(@RequestBody Map<String, String> paramMap, HttpSession session) {
+		return presvService.checkAuthNum(paramMap, session);
+	}
+
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@PostMapping("/listPresv")
+	public String listPresv(@RequestParam Map<String, String> paramMap, Model model) {
+		List<ReservationVO> presvList = presvService.listPresv(paramMap);
+		if(presvList == null || presvList.isEmpty()) {
+			model.addAttribute("msg", "예약 내역이 없습니다.");
+			model.addAttribute("loc", "/ddit/resv/list");
+			return "ddit/alert";
+		}
+		model.addAttribute("presvList", presvList);
+		model.addAttribute("ptNm", paramMap.get("ptNm"));
+		return "ddit/reservationList";
+	}
+
+	@PostMapping("/listNonPresv")
+	public String listNonPresv(@RequestParam Map<String, String> paramMap, Model model) {
+		List<ReservationVO> nonPresvList = presvService.listNonPresv(paramMap);
+		if(nonPresvList == null || nonPresvList.isEmpty()) {
+			model.addAttribute("msg", "예약 내역이 없습니다.");
+			model.addAttribute("loc", "/ddit/resv/list");
+			return "ddit/alert";
+		}
+		model.addAttribute("presvList", nonPresvList);
+		model.addAttribute("ptNm", paramMap.get("ptNm"));
+		return "ddit/reservationList";
+	}
+
+	@ResponseBody
+	@GetMapping("/selectPresv")
+	public ReservationVO selectPresv(@RequestParam String resvNum) {
+		return presvService.selectPresv(resvNum);
+	}
+
+	@ResponseBody
+	@PostMapping("/cancelResv")
+	public String cancelResv(@RequestBody ReservationVO resvVO) {
+		return presvService.cancelResv(resvVO);
+	}
+
+	@ResponseBody
+	@GetMapping("/listDoc")
+	public List<EmployeeVO> listDoc(@RequestParam String resvSdt){
+		return presvService.listDoc(resvSdt);
+	}
+
+	@PostMapping("/insertPresv")
+	public String insertPresv(@RequestParam Map<String, String> paramMap, Model model) {
+		int result = presvService.insertPresv(paramMap);
+		if(result == -1) {
+			model.addAttribute("msg", "권한이 없습니다.");
+			return "ddit/alertBack";
+		}
+
+		if(result == 0) {
+			model.addAttribute("msg", "잠시 후 다시 시도해주세요.");
+			return "ddit/alertBack";
+		}
+
+		model.addAttribute("resvSdt", paramMap.get("resvSdt1") + " " + paramMap.get("resvSdt2"));
+		return "ddit/reservationSuccess";
+	}
+
+	@PostMapping("/insertNonPresv")
+	public String insertNonPresv(@RequestParam Map<String, String> paramMap, Model model) {
+		int result = presvService.insertNonPresv(paramMap);
+		if(result == -1) {
+			model.addAttribute("msg", "권한이 없습니다.");
+			return "ddit/alertBack";
+		}
+
+		if(result == 0) {
+			model.addAttribute("msg", "잠시 후 다시 시도해주세요.");
+			return "ddit/alertBack";
+		}
+
+		model.addAttribute("resvSdt", paramMap.get("resvSdt1") + " " + paramMap.get("resvSdt2"));
+		return "ddit/reservationSuccess";
+	}
+
+}

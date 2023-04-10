@@ -1,0 +1,13 @@
+package com.web.ddentist.hospital.crm.sms.service;
+
+public interface ISmsService {
+	
+	/**
+	 * NCloud의 SMS 서비스를 사용해 SMS를 전송
+	 * 
+	 * @param smsData SMS를 전송할 내용과 전송 대상인 환자들의 차트 번호가 담긴 JSON 문자열 데이터
+	 * @return 총 전송 횟수
+	 */
+	public int sendSms(String smsData);
+	
+}

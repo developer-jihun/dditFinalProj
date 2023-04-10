@@ -1,0 +1,716 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<style>
+.btn-upload {
+	width: 150px;
+	height: 30px;
+	background: #fff;
+	border: 1px solid rgb(77, 77, 77);
+	border-radius: 10px;
+	font-weight: 500;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center; &: hover { background : rgb( 77, 77, 77);
+	color: #fff;
+}
+
+}
+.deleteBtn {
+	width: 22px;
+	height: 22px;
+	background-color: #904aff;
+	border: none;
+}
+
+#file {
+	display: none;
+}
+</style>
+<!--  다음 주소api -->
+<script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+
+<script type="text/javascript">
+//다음 주소찾기 API
+function openHomeSearch() {
+    new daum.Postcode({
+        // 선택 완료 시 데이터를 폼에 담아준다.
+        oncomplete : function(data) {
+            document.EmpFrm.empZip.value = data.zonecode; // 우편번호
+            document.EmpFrm.empAddr.value = data.address; // 주소
+            document.EmpFrm.empDaddr.value = data.buildingName; // 건물주소
+        }
+    }).open();
+}
+
+//mode : 전역 변수
+var mode = "";
+
+$(function(){
+	
+		$.ajax({
+			url : '/hospital/manage/empInfo/empList',
+			type : 'get',
+			dataType: 'json',
+			success: function(data){
+				
+				
+				
+						
+// 						console.log("empVO.empNum : " +empVO.empNum);
+// 						console.log("empVO.empNm : " + empVO.empNm);
+// 						console.log("empVO.empImg : " + empVO.empImg);
+						
+				$("#empNm").val(data[0].empNm);
+				$("#empNum").val(data[0].empNum);
+				$("#jbgdCd").val(data[0].jbgdCd);
+				$("#deptCd").val(data[0].deptCd);
+				$("#doctLn").val(data[0].doctLn);
+				$("#empStatus").val(data[0].empStatus);
+				$("#empPhone").val(data[0].empPhone);
+				
+				let empBrdt = data[0].empBrdt;
+				empBrdt = empBrdt.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+				
+				$("#empBrdt").val(empBrdt);
+				$("#empZip").val(data[0].empZip);
+				$("#empAddr").val(data[0].empAddr);
+				$("#empDaddr").val(data[0].empDaddr);
+				
+				let empJncmpYmd = data[0].empJncmpYmd;
+				empJncmpYmd = empJncmpYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+				
+				$("#empJncmpYmd").val(empJncmpYmd);
+				
+				let empRtrmYmd = data[0].empRtrmYmd;
+				empRtrmYmd = empRtrmYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+				
+				$("#empRtrmYmd").val(empRtrmYmd);
+				if(empRtrmYmd != null){
+					document.querySelector('#checkRtrmYn').checked = true;
+				} else {
+					document.querySelector('#checkRtrmYn').checked = false;
+				}
+				$("#empId").val(data[0].empId);
+				$("#empPw").val(data[0].empPw);
+				$("#empImg").attr("src", "/resources/images/employee" + data[0].empImg);
+				
+				let str = "";
+				
+				$.each(data, function(i, empVO){
+					str += "<tr class= 'trSelect'><td><input class='deleteBtn' type='button' value='x' style='display:none;' /></td><td class= 'empNum'>" + empVO.empNum +  "</td><td>" + empVO.empNm + "</td></tr>";
+				});
+				
+				$("#getInfo .form-control").attr("readonly", false); 
+				$("#trAdd").html(str);
+			}
+		});
+		
+		$(".btnSearch").on("click", function(){
+			//검색키워드를 이용하여 직원 검색
+			const empSearchFrm = document.searchFrm;
+			console.log(empSearchFrm);
+			
+			//form의 name값을 사용해서 value 가져오기
+			const hdofYn = empSearchFrm.hdofYn.value;
+			const jbgdCd = empSearchFrm.jbgdCd.value;
+			const keyword = empSearchFrm.keyword.value;
+			
+			
+			//formData자체가 enctype="multipart/form-data"처리를 하기때문에, 쿼리스트링으로 구성이 된다.
+			//contentType과 processData를 false처리해주어야한다.
+			let str = "";
+			
+			$.ajax({
+				url : '/hospital/manage/empInfo/empList',
+				type : 'get',
+				data : {
+					'hdofYn' : hdofYn,
+					'jbgdCd' : jbgdCd,
+					'keyword' : keyword
+				},
+				success : function(res){
+					
+					$("#empNm").val(res[0].empNm);
+					$("#empNum").val(res[0].empNum);
+					$("#jbgdCd").val(res[0].jbgdCd);
+					$("#deptCd").val(res[0].deptCd);
+					$("#doctLn").val(res[0].doctLn);
+					$("#empStatus").val(res[0].empStatus);
+					$("#empPhone").val(res[0].empPhone);
+					
+					let empBrdt = res[0].empBrdt;
+					empBrdt = empBrdt.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+					
+					$("#empBrdt").val(empBrdt);
+					$("#empZip").val(res[0].empZip);
+					$("#empAddr").val(res[0].empAddr);
+					$("#empDaddr").val(res[0].empDaddr);
+					
+					let empJncmpYmd = res[0].empJncmpYmd;
+					empJncmpYmd = empJncmpYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+					
+					$("#empJncmpYmd").val(empJncmpYmd);
+					
+					let empRtrmYmd = res[0].empRtrmYmd;
+					
+					if(empRtrmYmd != null){
+						empRtrmYmd = empRtrmYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+						$("#empRtrmYmd").val(empRtrmYmd);
+						document.querySelector('#checkRtrmYn').checked = true;
+					}else {
+						document.querySelector('#checkRtrmYn').checked = false;
+					}
+					
+					$("#empId").val(res[0].empId);
+					$("#empPw").val(res[0].empPw);
+					$("#empImg").attr("src", "/resources/images/employee" + res[0].empImg);
+					
+					
+					let str = "";
+					$.each(res, function(i, empVO){
+						
+						console.log("empVO.empNum : " +empVO.empNum);
+						console.log("empVO.empNm : " + empVO.empNm);
+						console.log("empVO.empImg : " + empVO.empImg);
+						
+						str += "<tr class= 'trSelect'><td><input class='deleteBtn' type='button' value='x' style='display:none;' /></td><td class= 'empNum'>" + empVO.empNum +  "</td><td>" + empVO.empNm + "</td></tr>";
+						
+					});
+						
+// 						$("#getInfo .form-control").attr("readonly", false); 
+					$("#trAdd").html(str);
+				},
+				dataType : 'json'
+			});
+		});
+		
+		
+		
+		//저장버튼을 누를때
+		$("#save").on("click", function(){
+// 			const jobSelected = $("#jbgdCd option:selected").val();
+			
+			//폼데이터 가져오기(파일까지 포함하여 가져올 수 있음.)
+			let empFrm = document.querySelector("#Empfrm");
+			let formData = new FormData(empFrm);  //enctype : multipart일때 FormData객체를 생성
+			console.log(empFrm); 
+			console.log(formData);
+			
+//방법1) fetch 이용하여 데이터값 불러오기			
+// 			fetch('/emp/updateEmp', {
+// 				method: 'post',
+// 				header: {
+// 					'${_csrf.parameterName}' : '${_csrf.token}'
+// 				},
+// 				body: formData
+// 			})
+// 				.then(res => res.text())
+// 				.then(text => console.log(text));
+			
+//---------------------------------------------------
+			console.log("mode", mode);
+			let url = '/hospital/manage/empInfo/updateEmp';
+			if(mode=="create"){
+				url = '/hospital/manage/empInfo/createEmp'; 
+			}
+//----------------------------------------------------
+			
+			//enctype : multipart를쓸때 쿼리스트링으로 formData를 보내기때문에,
+			//contentType과 processData를 false처리해주어야한다.
+			$.ajax({
+				url : url,
+				type: 'post',
+				contentType: false,
+				processData: false,
+				beforeSend: function(xhr){
+					xhr.setRequestHeader('X-CSRF-TOKEN', '${_csrf.token}');
+				},
+				data : formData,
+				success : function(result){
+					console.log("result : " + result);
+					location.href= "/hospital/manage/empInfo/";
+				},
+				dataType : 'json'
+			});
+		});
+		
+//  저장버튼 클릭시
+// 		$("#Empfrm").on("submit", function(){
+// 			if(mode=="update"){
+// 				$("#Empfrm").attr("action", "/emp/updateEmp?${_csrf.parameterName}=${_csrf.token}");
+				
+// 			}else if(mode=="create"){
+// 				$("#Empfrm").attr("action", "/emp/createEmp?${_csrf.parameterName}=${_csrf.token}");
+// 			}
+//  			$("#Empfrm").submit;
+// 		});
+		
+		
+		//퇴사에 체크했을때, 퇴사일 선택란 활성화하기
+		const checkRtrmYn = document.getElementById("checkRtrmYn");
+		const empRtrmYmd = document.getElementById("empRtrmYmd");
+		
+		checkRtrmYn.addEventListener("change", (event) => {
+			
+			 if (event.target.checked) {
+				 empRtrmYmd.readOnly = false;
+				 checkRtrmYn.setAttribute('checked', 'true');
+			    } else {
+			    	empRtrmYmd.readOnly = true;
+			    	checkRtrmYn.removeAttribute('checked');
+			    }
+		});
+		
+		
+		
+		//동적으로 생성된 요소의 이벤트 처리
+		$(document).on("click", ".trSelect", function(){
+			//td가 여러개 인데 그 중 클릭한 바로 그 td
+			//클릭하면 그 직원의 사번을 가져와, 그 사번을 넘겨서 그직원의 정보를 가져온다.
+			console.log("tdSelect 눌렸다!");
+			
+			mode = "update";
+			
+			let empNum = $('.empNum', this).text();
+			empNum = empNum.trim();
+			
+			console.log("empNum : " + empNum);
+			
+				$.ajax({
+					url : "/hospital/manage/empInfo/getEmpInfo?empNum=" + empNum,
+					type : "get",
+					dataType : 'json',
+					success: function(data){
+						console.log(data);
+						
+						$("#empNm").val(data.empNm);
+						$("#empNum").val(data.empNum);
+						$("#jbgdCd").val(data.jbgdCd);
+						$("#deptCd").val(data.deptCd);
+						$("#doctLn").val(data.doctLn);
+						$("#empStatus").val(data.empStatus);
+						$("#empPhone").val(data.empPhone);
+						
+						let empBrdt = data.empBrdt;
+						empBrdt = empBrdt.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+						
+						$("#empBrdt").val(empBrdt);
+						$("#empZip").val(data.empZip);
+						$("#empAddr").val(data.empAddr);
+						$("#empDaddr").val(data.empDaddr);
+						
+						let empJncmpYmd = data.empJncmpYmd;
+						empJncmpYmd = empJncmpYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+						
+						$("#empJncmpYmd").val(empJncmpYmd);
+						
+						
+						if(data.hdofYn){
+							document.querySelector('#checkRtrmYn').checked = false;
+							document.querySelector('#empRtrmYmd').disabled = true;
+						} else {
+							document.querySelector('#checkRtrmYn').checked = true;
+							document.querySelector('#empRtrmYmd').disabled = false;
+						}
+						
+						let empRtrmYmd = data.empRtrmYmd;
+						console.log(empRtrmYmd);
+						if(empRtrmYmd != null){
+							empRtrmYmd = empRtrmYmd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+							$("#empRtrmYmd").val(empRtrmYmd);
+						} else {
+							$("#empRtrmYmd").val('');
+						}
+						
+						$("#empId").val(data.empId);
+						$("#empPw").val(data.empPw);
+						$("#empImg").attr("src", "/resources/images/employee" + data.empImg)
+						
+					}
+				});
+		});
+		
+		
+		//직원목록에서 직원을 갖다대면 삭제버튼이 나온다.
+		$(document).on("mouseenter", ".trSelect", function(){
+			
+			let deleteBtn = $('.deleteBtn', this).css("display", "block");
+			
+			let empNum = $('.empNum', this).text();
+			empNum = empNum.trim();
+			
+			console.log("삭제하고싶은 empNum : " + empNum);
+			
+			$('.deleteBtn', this).on("click", function(){
+				console.log("내가 선택한 delteBtn이 눌렸다!")
+				
+				Swal.fire({
+					title: '해당직원을 삭제하시겠습니까?',
+					showDenyButton: true,
+					confirmButtonText: '삭제',
+					denyButtonText: '취소',
+				}).then((result) => {
+					if (result.isConfirmed) {
+						 $("form[name='Empfrm']").attr("action", "/hospital/manage/empInfo/deleteEmp");	
+						 $("form[name='Empfrm']").submit();
+					}
+				});
+				
+				$.ajax({
+					url : '/hospital/manage/empInfo/deleteEmp?empNum='+empNum,
+					dataType : 'json',
+					type : 'get',
+					success : function(res){
+						console.log(res);
+					}
+				});
+			});
+			
+		});
+		
+		//사진 삭제
+		$("#deleteFile").on("click", function(){
+			
+			let empNum = document.getElementById("empNum").value;
+			
+			$.ajax({
+				url : '/hospital/manage/empInfo/deleteFile',
+				type : 'post',
+				dataType : 'text',
+				data : JSON.stringify({
+					'empNum' : empNum
+				}),
+				beforeSend: function(xhr){
+					xhr.setRequestHeader('X-CSRF-TOKEN', '${_csrf.token}');
+					xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+				},
+				success : function(res){
+					console.log("삭제 결과 : " + res);
+					
+					const empImg = document.getElementById("empImg");
+// 					empImg.removeAttribute("src");
+					empImg.src = "/resources/images/employee/s_cb8450a3-35e9-44e1-9598-730c60f5cb54_user.png";
+					
+// 					location.href="/hospital/manage/empInfo/";
+				}
+			});
+		});
+		
+		
+		
+		//직원 목록에서 마우스를 떼면 삭제버튼이 사라진다
+		$(document).on("mouseleave", ".trSelect", function(){
+			let deleteBtn = $('.deleteBtn', this).css("display", "none");
+		});
+		
+		
+		//새로입력버튼을 누르면 모든 입력버튼이 초기화 
+		$("#reset").on("click", function(){
+			
+			mode = "create";
+			
+			$("#Empfrm").attr("action", "/hospital/manage/empInfo/createEmp?${_csrf.parameterName}=${_csrf.token}");
+			$("#Empfrm").submit;
+		});
+		
+		
+		$("#deptCd").on("click", function(){
+			let deptCd = $("#deptCd");
+			console.log($("#deptCd option:selected").val());
+			
+		});
+
+		
+		
+		//이미지 미리보기 시작/////////////////////////////////
+		$("#file").on("change", handleImgFileSelect);
+		
+		function handleImgFileSelect(event){  //change된 event가 따라온다.
+			let files = event.target.files; //파일이 1개든 여러개든 파일을 가져온다.
+			let fileArr = Array.prototype.slice.call(files); //배열형태로 저장한다.
+			fileArr.forEach(function(f){
+				if(!f.type.match("image.*")){
+					alert("이미지만 가능합니다.");
+					return;
+				}
+				
+				let reader = new FileReader();
+				reader.onload = function(event){
+					//읽은 결과
+					//<img src = "SFHEHFDG.jpg>"
+					let img_html = "<img src=\"" + event.target.result + "\" style='width:140px;' />";
+					
+					$(".bg-register-image").html(img_html);
+				}
+				
+				reader.readAsDataURL(f);
+			});
+		}
+		//이미지 미리보기 끝/////////////////////////////////
+	});
+
+</script>
+
+
+<div class="content-wrapper"
+	style="background-color: rgb(101, 125, 150); min-height: 873px;">
+	<!-- main 검색창을 포함한 navbar 시작-->
+	<nav class="navbar navbar-expand navbar-white navbar-light"
+		style="background-color: #404b57;">
+		<div class="dropdown">
+			<input type="text" class="form-control" id="ptSearch"
+				placeholder="직원 검색" onkeyup="searchPatient(this);"
+				style="width: 400px;">
+			<ul id="ptSearchDropdown" class="dropdown-menu">
+			</ul>
+		</div>
+		<img src="/resources/images/memo_icon.png" alt="병원 로고" id="memo"
+			class="brand-image elevation-1" style="margin-left: 15px;">
+
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+				aria-controls="navbarTogglerDemo03" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item"><a class="nav-link active"
+						aria-current="page" href="#" data-toggle="tab">직원관리</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">약품 관리</a></li>
+					<li class="nav-item"><a class="nav-link disabled">처치 관리</a></li>
+					<li class="nav-item"><a class="nav-link disabled">병원 기초 정보</a>
+					</li>
+				</ul>
+
+			</div>
+		</div>
+	</nav>
+
+	<!-- main 검색창을 포함한 navbar 끝 -->
+	<section class="content" style="margin-top: 1%;">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="card card-info">
+
+					<div class="card-header"
+						style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">직원 목록</h2>
+						</div>
+					</div>
+
+					<div class="card-body">
+						<div class="card">
+							<div class="card-header">
+								<form name="searchFrm" id="searchFrm" onsubmit="return false;">
+									<input type="hidden" name="currentPage"
+										value="${param.currentPage}" /> <input type="hidden"
+										name="size" value="${param.size}" /> <label>직원 검색</label>&nbsp&nbsp
+									<select id="hdofYn" name="hdofYn">
+										<option value="">전체</option>
+										<c:forEach var="hdofYn" items="${requestScope.hdpfYnList}">
+											<option value="${hdofYn.commCdNm}">${hdofYn.commCdCnt}</option>
+										</c:forEach>
+									</select><br /> <label for="jbgdCd">직급</label>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+									<select id="jbgdCdList" name="jbgdCd">
+										<option value="">전체</option>
+										<c:forEach var="jbgd" items="${requestScope.jbgdList}">
+											<option value="${jbgd.jbgdCd}">${jbgd.jbgdNm}</option>
+										</c:forEach>
+									</select><br /> <label>이름/사번</label>&nbsp&nbsp <input type="text"
+										name="keyword" placeholder="이름/사번을 입력해주세요"
+										value="${param.keyword}" />
+									<!-- 							<input type="button" id="search" value="검색"> -->
+									<button type="button"
+										class="btn btn-success btn-block btnSearch"
+										style="background-color: #904aff; border: none; height: 100%;">검색</button>
+									<!-- onclick="empInfoSearch();" -->
+								</form>
+							</div>
+
+							<div class="card-body"
+								style="max-height: 317px; overflow-y: auto;">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th style="width: 10px">❎</th>
+											<th>사번</th>
+											<th>이름</th>
+										</tr>
+									</thead>
+									<tbody id="trAdd">
+										<!-- 직원 목록 뿌리는 곳 -->
+									</tbody>
+								</table>
+							</div>
+
+							<div class="card-footer clearfix">
+								<ul class="pagination pagination-sm m-0 float-right">
+									<li class="page-item"><a class="page-link" href="#">«</a></li>
+									<li class="page-item"><a class="page-link" href="#">1</a></li>
+									<li class="page-item"><a class="page-link" href="#">2</a></li>
+									<li class="page-item"><a class="page-link" href="#">3</a></li>
+									<li class="page-item"><a class="page-link" href="#">»</a></li>
+								</ul>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+			<!-- 좌측 상단 -->
+			<div class="col-md-4">
+				<div class="card card-info">
+
+					<div class="card-header"
+						style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">직원 정보</h2>
+						</div>
+					</div>
+
+					<form id="Empfrm" name="EmpFrm"
+						action="/hospital/manage/empInfo/updatePost?${_csrf.parameterName}=${_csrf.token}"
+						method="post" enctype="multipart/form-data">
+
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-5">
+									<table border="1px;">
+										<tr height="200px;">
+											<td width="140px;">
+												<div class="col-lg-5 d-none d-lg-block bg-register-image">
+													<img id="empImg" src=""
+														onerror="this.src='/resources/images/employee/s_cb8450a3-35e9-44e1-9598-730c60f5cb54_user.png'" />
+												</div>
+											</td>
+										</tr>
+									</table>
+
+									<!-- 이미지 미리보기 시작-->
+									<div class="imgs_wrap"></div>
+									<input type="file" class="d-none" id="input_imgs" name="file" />
+									<hr />
+									<!-- 이미지 미리보기 끝-->
+								</div>
+								<div class="col-md-7">
+									<label for="productId">직원명</label> <input type="text"
+										name="empNm" class="form-control" id="empNm"
+										placeholder="직원이름을 입력해주세요" value="" required /> <label
+										for=empNum>사번</label> <input type="text" name="empNum"
+										class="form-control" id="empNum" value="" required readonly />
+
+									<label for="unitPrice">면허 번호</label> <input type="text"
+										name="doctLn" class="form-control" id="doctLn"
+										placeholder="면허번호를 입력해주세요" value="" /> <label for="file">
+										<div class="btn-upload" id="input_imgs">사진 선택</div>
+									</label> <input type="file" name="uploadFile" id="file"> <input
+										type="button" class="btn-upload" name="deleteFile"
+										id="deleteFile" value="삭제">
+								</div>
+							</div>
+						</div>
+
+
+
+						<!-- 좌측 하단 -->
+						<div class="">
+
+							<div class="card-body">
+								<label for="deptCd">부서</label> <select id="deptCd" name="deptCd">
+									<option value="">---------</option>
+									<c:forEach var="dept" items="${requestScope.deptList}">
+										<option value="${dept.deptCd}"
+											<c:if test='${deptCd == dept.deptCd}'>selected</c:if>>${dept.deptNm}</option>
+									</c:forEach>
+								</select><br /> <label for="jbgdCd">직급</label> <select id="jbgdCd"
+									name="jbgdCd">
+									<option value="">---------</option>
+									<c:forEach var="jbgd" items="${requestScope.jbgdList}">
+										<option value="${jbgd.jbgdCd}"
+											<c:if test='${jbgdCd == jbgd.jbgdCd}'>selected</c:if>>${jbgd.jbgdNm}</option>
+									</c:forEach>
+								</select><br /> <label for="empJncmpYmd">입사일</label> <input type="date"
+									name="empJncmpYmd" class="form-control" id="empJncmpYmd"
+									value="" /> <label for="empRtrmYmd">퇴사일</label> <input
+									type="date" name="empRtrmYmd" class="form-control"
+									id="empRtrmYmd" value="" />
+								<div class="form-check" style="float: right;">
+									<input type="checkbox" class="form-check-input"
+										id="checkRtrmYn" value="Y" /> <label class="form-check-label">퇴사</label>
+								</div>
+							</div>
+						</div>
+				</div>
+			</div>
+
+			<!-- 오른쪽 상단 -->
+			<div class="col-md-4">
+				<div class="card card-info">
+
+					<div class="card-header"
+						style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">부가 정보</h2>
+						</div>
+					</div>
+
+
+					<div class="card-body">
+						<label for="pname">휴대전화</label> <input type="text" name="empPhone"
+							class="form-control" id="empPhone" placeholder="연락처를 입력해주세요"
+							value="" required /> <label for="pname">생년월일</label> <input
+							type="date" name="empBrdt" class="form-control" id="empBrdt"
+							value="" required />
+						<!--  우편번호 -->
+						<label for=empAddrDet>주소</label><br /> <input type="text"
+							name="empZip" class="form-control" id="empZip" value=""
+							style="width: 60%; display: inline-block;"
+							placeholder="우편번호를 입력해주세요" required />
+						<button type="button" class="btn btn-success btn-block btnCss"
+							style="background-color: #904aff; border: none; height: 100%; width: 30%; float: right;"
+							onclick="openHomeSearch();">주소검색</button>
+						<input type="text" name="empAddr" class="form-control"
+							id="empAddr" placeholder="주소를 입력해주세요" value="" required /> <input
+							type="text" name="empDaddr" class="form-control" id="empDaddr"
+							placeholder="상세 주소를 입력해주세요" value="" required />
+					</div>
+				</div>
+
+				<!-- 우측 하단 -->
+				<div class="card card-info">
+
+					<div class="card-header"
+						style="background-color: #404b57; border: none;">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title">직원 정보</h2>
+						</div>
+					</div>
+
+
+					<div class="card-body" style="height: auto;">
+						<label for="empId">사용자 ID</label> <input type="text" name="empId"
+							class="form-control" id="empId" placeholder="ID를 입력해주세요" value=""
+							required /> <label for="empPw">사용자 PW</label> <input type="text"
+							name="empPw" class="form-control" id="empPw"
+							placeholder="PW를 입력해주세요" value="" required /> <input
+							type="button" id="save" value="저장(S)" /> <input type="reset"
+							id="reset" value="초기화" />
+
+						<!-- Cross Site Request Forgery -->
+					</div>
+				</div>
+				<sec:csrfInput />
+			</div>
+			</form>
+		</div>
+	</section>
+</div>

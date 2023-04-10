@@ -1,0 +1,67 @@
+package com.web.ddentist.hospital.site.commuInfo.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.ddit.community.service.ICommunityService;
+import com.web.ddentist.vo.CommunityReplyVO;
+import com.web.ddentist.vo.CommunityVO;
+import com.web.ddentist.vo.NoticeVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+
+
+@Slf4j
+@Controller
+@RequestMapping("/hospital/site/communityInfo")
+public class CommunityInfoController {
+	
+	@Autowired
+	private ICommunityService communityService;
+	
+	@GetMapping("")
+	public String home(Model model) {
+		
+		return "hospital/commuInfo";
+	}
+	
+	// 검색버튼 눌렀을 때 실행
+	@ResponseBody
+	@GetMapping("/listReview")
+	public List<CommunityVO> listReview(@RequestParam Map<String, String> searchMap){
+		log.info("listReview에 왔다.");
+		log.info("searchMap :::: " + searchMap);
+		List<CommunityVO> list = communityService.listReview(searchMap);
+		log.info("list ::: "+ list);
+		return list;
+	}
+	
+	
+	// 게시글 클릭했을 때 실행
+	@ResponseBody
+	@GetMapping("/selectReview")
+	public CommunityVO selectReview(@RequestParam int comNum) {
+		return communityService.selectReview(comNum);
+	}
+	
+	@ResponseBody
+	@PostMapping("/insertAnswer")
+	public String insertAnswer(@ModelAttribute CommunityReplyVO replyVO) {
+		log.info("insertAnswer에 왔다.");
+		log.info("commVO :::: " + replyVO);
+		return communityService.insertAnswer(replyVO);
+	}
+	
+	
+}

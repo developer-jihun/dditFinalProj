@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.PdocumentMapper">
+
+	<select id="getDList" resultType="docVO" parameterType="docVO">
+		SELECT P.DOC_ISSUE_NUM, P.PT_NUM, P.DOC_NUM, P.DOC_ISSUE_REASON, P.DOC_ISSUE_DT, P.CHK_NUM, P.DOC_ISSUE_NMTM,
+               C.DOC_NAME, C.DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE P LEFT OUTER JOIN DOCUMENT C ON (P.DOC_NUM = C.DOC_NUM)
+		 WHERE PT_NUM='230302001'
+		 ORDER BY DOC_ISSUE_NUM
+	</select>
+
+	<select id="checkBox" resultType="docVO" parameterType="docVO">
+		 SELECT P.DOC_ISSUE_NUM, P.PT_NUM, P.DOC_NUM, P.DOC_ISSUE_REASON, P.DOC_ISSUE_DT, P.CHK_NUM, P.DOC_ISSUE_NMTM,
+                C.DOC_NAME, C.DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE P LEFT OUTER JOIN DOCUMENT C ON (P.DOC_NUM = C.DOC_NUM)
+          WHERE PT_NUM = '230302001'
+        		<if test="docNumList.length > 0">
+	                AND P.DOC_NUM IN
+	                <foreach collection="docNumList" item="item" index="index" separator="," open="(" close=")">
+	                    #{item}
+	                </foreach>
+        		</if>
+                <if test="docStartDt != null">
+                <![CDATA[
+                	AND DOC_ISSUE_DT >= #{docStartDt}
+                ]]>
+                </if>
+                <if test="docFinalDt != null">
+                <![CDATA[
+                	AND DOC_ISSUE_DT <= #{docFinalDt}
+                ]]>
+                </if>
+                ORDER BY DOC_ISSUE_NUM
+	</select>
+	
+	<select id="getReissuance" resultType="docVO" parameterType="docVO">
+		    SELECT P.DOC_ISSUE_NUM, P.PT_NUM, P.DOC_NUM, P.DOC_ISSUE_REASON, P.DOC_ISSUE_DT, P.CHK_NUM, P.DOC_ISSUE_NMTM,
+               C.DOC_NAME, C.DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE P LEFT OUTER JOIN DOCUMENT C ON (P.DOC_NUM = C.DOC_NUM)
+		 WHERE DOC_ISSUE_NUM=#{docIssueNum}
+		 ORDER BY DOC_ISSUE_NUM
+	</select>
+	
+	<update id="getLockerUpdate" parameterType="docVO">
+		  UPDATE DOCUMENT_ISSUE SET DOC_ISSUE_NMTM = DOC_ISSUE_NMTM + #{docIssueNmtm} WHERE DOC_ISSUE_NUM=#{docIssueNum}
+	</update>
+	
+	<select id="getLockerList" parameterType="docVO" resultType="docVO">
+		SELECT P.DOC_ISSUE_NUM, P.PT_NUM, P.DOC_NUM, P.DOC_ISSUE_REASON, P.DOC_ISSUE_DT, P.CHK_NUM, P.DOC_ISSUE_NMTM, P.DOC_SAVE_PATH,
+               C.DOC_NAME, C.DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE P LEFT OUTER JOIN DOCUMENT C ON (P.DOC_NUM = C.DOC_NUM)
+		 WHERE PT_NUM='230302001'
+		 ORDER BY DOC_ISSUE_NUM
+	</select>
+	
+	<update id="getMinusUpdate" parameterType="docVO">
+		UPDATE DOCUMENT_ISSUE SET DOC_ISSUE_NMTM = DOC_ISSUE_NMTM-1 WHERE DOC_ISSUE_NUM = #{docIssueNum}
+	</update>
+	
+	<select id="getList" resultType="docVO" parameterType="docVO">
+		SELECT P.DOC_ISSUE_NUM, P.PT_NUM, P.DOC_NUM, P.DOC_ISSUE_REASON, P.DOC_ISSUE_DT, P.CHK_NUM, P.DOC_ISSUE_NMTM,
+               C.DOC_NAME, C.DOC_ISSUE_PRICE
+		  FROM DOCUMENT_ISSUE P LEFT OUTER JOIN DOCUMENT C ON (P.DOC_NUM = C.DOC_NUM)
+		 WHERE PT_NUM='230302001'
+		 ORDER BY DOC_ISSUE_NUM
+	</select>
+	
+</mapper>

@@ -1,0 +1,84 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+
+import com.web.ddentist.vo.CheckupVO;
+import com.web.ddentist.vo.PiVO;
+import com.web.ddentist.vo.RegistVO;
+import com.web.ddentist.vo.ReservationVO;
+import com.web.ddentist.vo.TxNextVO;
+import com.web.ddentist.vo.TxPlanVO;
+import com.web.ddentist.vo.TxVO;
+
+public interface ChartMapper {
+	
+	/**
+	 * 오늘의 접수 목록을 조회
+	 * 
+	 * @return 오늘 등록된 접수 목록
+	 */
+	public List<RegistVO> listRegist();
+	
+	/**
+	 * 취소된 예약을 제외한 오늘의 예약 목록을 조회
+	 * 
+	 * @return 오늘의 예약 목록
+	 */
+	public List<ReservationVO> listResv();
+	
+	/**
+	 * 접수 목록으로부터 진료를 시작하여 진료 데이터 추가
+	 * 
+	 * @param chkVO 접수 번호와 진료 담당 직원 번호가 담긴 VO 
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int insertCheckup(CheckupVO chkVO);
+	
+	/**
+	 * 진료를 시작한 접수의 상태를 '진료중'으로 변경
+	 * 
+	 * @param regNum 상태를 변경할 접수의 접수 번호
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int updateRegStatusInTreat(String regNum);
+	
+	/**
+	 * 환자의 증상(PI)을 추가
+	 * 
+	 * @param piVO 증상(PI) 정보가 담긴 VO 목록
+	 * @return 성공 : 1, 실패 : 0
+	 */
+	public int insertPi(List<PiVO> piVO);
+	
+	/**
+	 * 환자의 증상(PI) 차트 기록 목록 조회
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 증상(PI) 차트 기록 목록
+	 */
+	public List<PiVO> listPi(String ptNum);
+	
+	/**
+	 * 환자의 처치 계획(TX PLAN) 차트 기록 목록 조회
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 처치 계획(TX PLAN) 차트 기록 목록
+	 */
+	public List<TxPlanVO> listTxPlan(String ptNum);
+	
+	/**
+	 * 환자의 처치(TX) 차트 기록 목록 조회
+	 * 
+	 * @param ptNum 환자 번호
+	 * @return 처치(TX) 차트 기록 목록
+	 */
+	public List<TxVO> listTx(String ptNum);
+	
+	/**
+	 * 환자의 다음 처치 계획(TX NEXT) 차트 기록 목록 조회
+	 * 
+	 * @param ptNum ptNum
+	 * @return 다음 처치 계획(TX NEXT) 차트 기록 목록
+	 */
+	public List<TxNextVO> listTxNext(String ptNum);
+}

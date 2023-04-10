@@ -1,0 +1,66 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+
+public class ChatVO {
+	
+	private int chatNum;
+	private int chatgrpNum;
+	private String empNum;
+	private String empNm;
+	private String chatContent;
+	private Date chatDt;
+	
+	private String empId;
+	
+	
+	public int getChatNum() {
+		return chatNum;
+	}
+	public void setChatNum(int chatNum) {
+		this.chatNum = chatNum;
+	}
+	public int getChatgrpNum() {
+		return chatgrpNum;
+	}
+	public void setChatgrpNum(int chatgrpNum) {
+		this.chatgrpNum = chatgrpNum;
+	}
+	public String getEmpNum() {
+		return empNum;
+	}
+	public void setEmpNum(String empNum) {
+		this.empNum = empNum;
+	}
+	public String getEmpNm() {
+		return empNm;
+	}
+	public void setEmpNm(String empNm) {
+		this.empNm = empNm;
+	}
+	public String getChatContent() {
+		return chatContent;
+	}
+	public void setChatContent(String chatContent) {
+		this.chatContent = chatContent;
+	}
+	public Date getChatDt() {
+		return chatDt;
+	}
+	public void setChatDt(Date chatDt) {
+		this.chatDt = chatDt;
+	}
+	public String getEmpId() {
+		return empId;
+	}
+	public void setEmpId(String empId) {
+		this.empId = empId;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "ChatVO [chatNum=" + chatNum + ", chatgrpNum=" + chatgrpNum + ", empNum=" + empNum + ", empNm=" + empNm
+				+ ", chatContent=" + chatContent + ", chatDt=" + chatDt + ", empId=" + empId + "]";
+	}
+}

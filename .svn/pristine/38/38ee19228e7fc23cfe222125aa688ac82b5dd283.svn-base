@@ -1,0 +1,19 @@
+package com.web.ddentist.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import com.web.ddentist.vo.MediaVO;
+import com.web.ddentist.vo.PatientVO;
+
+public interface MediaMapper {
+	
+	public PatientVO checkUpList(Map<String, String> ptMap);
+
+	public int createMedia(MediaVO mediaVO);
+	
+	public List<MediaVO> mediaInfo(Map<String, String> map);
+
+	public int imgDelete(List<String> medNumList);
+	
+}

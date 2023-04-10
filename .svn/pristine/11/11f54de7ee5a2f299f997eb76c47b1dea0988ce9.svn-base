@@ -1,0 +1,5 @@
+package com.web.ddentist.mapper;
+
+public interface FaqMapper {
+
+}

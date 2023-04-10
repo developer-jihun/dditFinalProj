@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.PreservationMapper">
+	
+	<select id="selectPtNum" parameterType="ptVO" resultType="String">
+		SELECT PT_NUM
+		  FROM PATIENT
+		 WHERE PT_NM = #{ptNm}
+		   AND PT_RRNO = #{ptRrno}
+	</select>
+	
+	<select id="listPresv" parameterType="String" resultType="reservationVO">
+		SELECT R.RESV_NUM, R.RESV_CC,
+			   TO_CHAR(R.RESV_SDT, 'YYYY.MM.DD HH24:MI') RESV_SDT,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_CD_NM = R.RESV_STATUS) RESV_STATUS
+		  FROM RESERVATION R
+		 WHERE R.PT_NUM = #{ptNum}
+		 ORDER BY R.RESV_NUM DESC
+	</select>
+	
+	<select id="listNonPresv" parameterType="ptVO" resultType="reservationVO">
+		SELECT R.RESV_NUM, R.RESV_CC,
+			   TO_CHAR(RESV_SDT, 'YYYY.MM.DD HH24:MI') RESV_SDT,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_CD_NM = R.RESV_STATUS) RESV_STATUS
+		  FROM RESERVATION R
+		 WHERE R.PT_NM = #{ptNm}
+		   AND R.PT_PHONE = #{ptPhone}
+		   AND R.PT_NUM LIKE 'T' || '%'
+		 ORDER BY R.RESV_NUM DESC
+	</select>
+	
+	<select id="selectPresv" parameterType="String" resultType="reservationVO">
+		SELECT R.RESV_NUM, R.PT_NUM, R.EMP_NUM, R.PT_NM, R.RESV_CC,
+			   TO_CHAR(R.RESV_SDT, 'YYYY.MM.DD HH24:MI') RESV_SDT,
+			   (SELECT COMM_CD_CNT
+			      FROM COMMON_CODE
+			     WHERE COMM_CD_NM = R.RESV_STATUS) RESV_STATUS,
+			   E.EMP_NM, E.EMP_IMG,
+			   (SELECT DEPT_NM
+			   	  FROM DEPARTMENT
+			   	 WHERE DEPT_CD = E.DEPT_CD) DEPT_NM
+		  FROM RESERVATION R INNER JOIN EMPLOYEE E ON (R.EMP_NUM = E.EMP_NUM)
+		 WHERE R.RESV_NUM = #{resvNum}
+	</select>
+	
+	<update id="cancelResv" parameterType="reservationVO">
+		UPDATE RESERVATION SET RESV_STATUS = 'CANCEL_RESV'
+						 WHERE RESV_NUM = #{resvNum}
+	</update>
+	
+	<select id="selectHiServiceTime" resultType="hospitalInfoVO">
+		SELECT HI_OPEN_TIME, HI_CLOSE_TIME, HI_LUNCH_STIME, HI_LUNCH_ETIME
+		  FROM HOSPITAL_INFO
+	</select>
+	
+	<select id="listDoc" parameterType="String" resultType="EmpVO">
+	<![CDATA[
+		SELECT E.EMP_NUM, E.EMP_NM, E.EMP_IMG, COUNT(R.RESV_NUM) RESV_COUNT
+		  FROM EMPLOYEE E LEFT OUTER JOIN RESERVATION R
+		       ON (R.RESV_SDT >= TO_DATE(#{resvSdt}, 'YYYY-MM-DD HH24:MI')
+		           AND R.RESV_EDT <= TO_DATE(#{resvSdt}, 'YYYY-MM-DD HH24:MI') + 1/48
+		           AND E.EMP_NUM = R.EMP_NUM)
+		 WHERE E.HDOF_YN = 1
+		   AND E.JBGD_CD IN (1, 2)
+		 GROUP BY E.EMP_NUM, E.EMP_NM, E.EMP_IMG
+	]]>
+	</select>
+	
+	<insert id="insertResv" parameterType="reservationVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="resvNum">
+			SELECT 'R' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || TRIM(TO_CHAR(NVL(TO_NUMBER(SUBSTR(MAX(RESV_NUM), INSTR(MAX(RESV_NUM), '-') + 1)), 0) + 1, '0000'))
+			  FROM RESERVATION
+			 WHERE RESV_NUM LIKE 'R' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '%'
+		</selectKey>
+		INSERT INTO RESERVATION (RESV_NUM, PT_NUM, EMP_NUM, PT_NM, PT_PHONE, RESV_CC, RESV_SDT, RESV_EDT, RESV_ET)
+						 VALUES (#{resvNum}
+						 		<choose>
+						 			<when test="ptNum != null and ptNum != ''">
+						 				,#{ptNum}
+						 			</when>
+						 			<otherwise>
+						 				,(SELECT 'T' || TO_CHAR(SYSDATE, 'YYMMDD')
+						 							 || TRIM(TO_CHAR(NVL(SUBSTR(MAX(PT_NUM), 8), 0) + 1, '000'))
+										    FROM RESERVATION
+										   WHERE PT_NUM LIKE 'T' || TO_CHAR(SYSDATE, 'YYMMDD') || '%')
+						 			</otherwise>
+						 		</choose>
+						 		,#{empNum}
+						 		,#{ptNm}
+						 		,#{ptPhone}
+						 		,#{resvCc}
+						 		,TO_DATE(#{resvSdt}, 'YYYY-MM-DD HH24:MI')
+						 		,TO_DATE(#{resvSdt}, 'YYYY-MM-DD HH24:MI') + 1/48
+						 		,30)
+	</insert>
+	
+</mapper>

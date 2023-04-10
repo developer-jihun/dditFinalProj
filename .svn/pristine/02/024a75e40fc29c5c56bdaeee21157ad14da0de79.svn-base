@@ -1,0 +1,26 @@
+package com.web.ddentist.ddit.community.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.CommunityMapper;
+import com.web.ddentist.vo.CommunityVO;
+
+@Service
+public class CommunityServiceImpl implements ICommunityService {
+	
+	@Autowired
+	CommunityMapper communityMapper;
+	
+	/**
+	 * 커뮤니티 게시글 조회
+	 * 
+	 * @return 커뮤니티 게시글 목록
+	 */
+	@Override
+	public List<CommunityVO> selectList() {
+		return this.communityMapper.selectList();
+	}
+}

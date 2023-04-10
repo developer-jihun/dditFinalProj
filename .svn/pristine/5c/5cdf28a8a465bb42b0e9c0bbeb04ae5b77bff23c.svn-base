@@ -1,0 +1,44 @@
+package com.web.ddentist.ddit.receipt.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.PreceiptMapper;
+import com.web.ddentist.patient.service.PatientDetails;
+import com.web.ddentist.vo.ReceiptVO;
+
+@Service
+public class PreceiptServiceImpl implements IPreceiptService {
+
+	@Autowired
+	private PreceiptMapper receiptMapper;
+
+	@Override
+	public List<ReceiptVO> listReceipt() {
+		Map<String, String> paramMap = new HashMap<>();
+		paramMap.put("ptNum", getCurrentUserPtNum());
+		return receiptMapper.listReceipt(paramMap);
+	}
+
+	private String getCurrentUserPtNum() {
+		PatientDetails ptDetails = (PatientDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return ptDetails.getPtVO().getPtNum();
+	}
+
+	@Override
+	public ReceiptVO selectReceipt(int rctNum) {
+		return receiptMapper.selectReceipt(rctNum);
+	}
+
+	@Override
+	public List<ReceiptVO> searchReceipt(Map<String, String> paramMap) {
+		paramMap.put("ptNum", getCurrentUserPtNum());
+		return receiptMapper.listReceipt(paramMap);
+	}
+
+}

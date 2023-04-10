@@ -1,0 +1,148 @@
+package com.web.ddentist.hospital.manage.empInfo.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.DrugMapper;
+import com.web.ddentist.vo.DrugVO;
+import com.web.ddentist.vo.PurchaseDrugVO;
+import com.web.ddentist.vo.PurchaseVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class DrugServiceImpl implements IDrugService{
+	
+	@Autowired
+	DrugMapper drugMapper;
+	
+	//발주 약품 검색
+	@Override
+	public List<DrugVO> showMd(String keyword){
+		return this.drugMapper.showMd(keyword);
+	};
+	
+	//발주 추가
+	@Override
+	public int purchase(PurchaseVO purchaseVO) {
+		//1 : PURCHASE 테이블에 등록
+		log.info("purchaseVO(serviceImpl) : " + purchaseVO);
+		int result = this.drugMapper.insertPurchase(purchaseVO);
+		log.info("result(1) : " + result);
+		
+		List<PurchaseDrugVO> purchaseDrugVOListTemp = purchaseVO.getPurchaseDrugList();
+		List<PurchaseDrugVO> purchaseDrugVOList = new ArrayList<PurchaseDrugVO>();
+		
+		for(PurchaseDrugVO vo : purchaseDrugVOListTemp) {
+			//발주번호는 purchaseVO에 있음(<selectKey resultType="String" order="BEFORE" keyProperty="purNum">)
+			vo.setPurNum(purchaseVO.getPurNum());
+			
+			purchaseDrugVOList.add(vo);
+		}
+		
+		//N : PURCHASE_DRUG
+		result = result + 
+				this.drugMapper.insertPurchaseDrug(purchaseDrugVOList);
+		log.info("result(2) : " + result);
+		
+		//재고테이블 처리
+		//purchaseDrugVOList 안에는 약품번호와 수량이 들어있다.
+//		result = result + 
+//				this.drugMapper.updateDrugCount(purchaseDrugVOList);
+//		log.info("result(3) : " + result);
+		
+		return result;
+	};
+	
+	/**
+	 * 
+	 * 발주 중인 목록 가져오기(N건)
+	 * 
+	 * @param 
+	 * @return List<PurchaseVO>
+	 */
+	@Override
+	public List<PurchaseVO> showPurchasing(){
+		return this.drugMapper.showPurchasing();
+	}
+	
+	/**
+	 * 
+	 * 발주 완료 목록 초기 데이터 넣어주기(N건)
+	 * 
+	 * @param 
+	 * @return List<PurchaseVO>
+	 */
+	@Override
+	public List<PurchaseVO> showPurchased(){
+		return this.drugMapper.showPurchased();
+	};
+	
+	
+//	<!-- 발주 중인 목록 가져오기 -->
+//	<select id="selectPurchase" parameterType="purchaseVO" resultMap="purchaseMap">
+	@Override
+	public PurchaseVO selectPurchase(PurchaseVO purchaseVO) {
+		return this.drugMapper.selectPurchase(purchaseVO);
+	};
+	
+	
+	
+	/**
+	 * 
+	 * 재고 수량 일괄 변경 및 발주 완료 목록 가져오기
+	 * 
+	 * @param purchaseVO
+	 * @return List<PurchaseVO>
+	 */
+	@Override
+	public List<PurchaseVO> updateCount(PurchaseVO purchaseVO) {
+		log.info("----------purchaseVO : " + purchaseVO);
+		//재고수 변경
+		int result = this.drugMapper.updateCount(purchaseVO);
+		log.info("result : " + result);
+		
+		//발주 상태 변경
+		int statusResult = this.drugMapper.updateStatus(purchaseVO);
+		log.info("statusResult : " + statusResult);
+		
+		//발주 완료 목록 가져오기
+		List<PurchaseVO> purchaseVOList = this.drugMapper.purchaseFinishList(purchaseVO);
+		log.info("purchaseVOList : " + purchaseVOList);
+		
+		return purchaseVOList;
+	}
+		
+	/**
+	 * 
+	 * 재고 수량 일괄 변경 및 발주 중 목록 가져오기
+	 * 
+	 * @param purchaseVO
+	 * @return List<PurchaseVO>
+	 */
+	@Override
+	public List<PurchaseVO> reupdateCount(PurchaseVO purchaseVO) {
+		log.info("---------- reupdateCount purchaseVO : " + purchaseVO);
+		//재고수 변경
+		int result = this.drugMapper.reupdateCount(purchaseVO);
+		log.info(" reupdateCount result : " + result);
+		
+		//발주 상태 변경
+		int statusResult = this.drugMapper.reupdateStatus(purchaseVO);
+		log.info(" reupdateCount statusResult : " + statusResult);
+		
+		//발주 완료 목록 가져오기
+		List<PurchaseVO> purchaseVOList = this.drugMapper.showPurchasing();
+		log.info(" reupdateCount purchaseVOList : " + purchaseVOList);
+		
+		return purchaseVOList;
+	}
+	
+	
+	
+	
+}

@@ -1,0 +1,376 @@
+<%@ page language="java" contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<style>
+    .row .hospitalRow {
+        margin: 20px;
+    }
+    
+    
+body,
+input[type="button"] {
+  font-family: bookman old style;
+  font-size: 12pt;
+}
+
+table {
+  border-collapse: collapse;
+  margin: auto;
+}
+
+th,
+input[type="button"],
+h2 {
+  color: indianred;
+}
+
+th,
+td {
+  border: 1px solid indianred;
+  padding: 6px;
+}
+
+input[type="text"] {
+  border: 1px dashed indianred;
+}
+
+input[type="button"] {
+  border: 2px solid indianred;
+  background: antiquewhite;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+input[type="button"]:hover {
+  background: indianred;
+  color: antiquewhite;
+}
+</style>
+
+<script type="text/javascript">
+function addRow() {
+
+	  // 템플릿 가져오기
+	  const template = document.querySelector('#rowTemplate');
+	  
+	  // 추가할 테이블 가져오기
+	  const tbl = document.querySelector('#myTable');
+	  
+	  // 왼쪽 숫자 표시 설정
+	  const td_slNo = template.content.querySelectorAll("td")[0];
+	  const tr_count = tbl.rows.length;
+	  td_slNo.textContent = tr_count;
+	  
+	  // 템플릿의 content 속성과 그의 자식 모든 요소를 복사
+	  const clone = template.content.cloneNode(true); 
+	  
+	  // 기존 테이블에 복사한 템플릿을 추가
+	  tbl.appendChild(clone);
+
+	}
+
+</script>
+
+<div class="content-wrapper" style="background-color: rgb(101, 125, 150); min-height: 1001px;">
+    <!-- main 검색창을 포함한 navbar 시작-->
+    <nav class="navbar navbar-expand navbar-white navbar-light" style="background-color: #404b57;">
+        <div class="dropdown">
+            <input type="text" class="form-control" id="ptSearch" placeholder="직원 검색"
+                onkeyup="searchPatient(this);" style="width: 400px;">
+            <ul id="ptSearchDropdown" class="dropdown-menu">
+        </div>
+        <img src="/resources/images/memo_icon.png" alt="병원 로고" id="memo" class="brand-image elevation-1"
+            style="margin-left: 15px;">
+
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#"
+                            data-toggle="tab">직원관리</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">약품 관리</a></li>
+                    <li class="nav-item"><a class="nav-link disabled">처치 관리</a></li>
+                    <li class="nav-item"><a class="nav-link disabled">병원 기초 정보</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- main 검색창을 포함한 navbar 끝 -->
+    <section class="content" style="margin-top: 1%;">
+        <div class="row">
+
+            <!-- 좌측 상단 -->
+            <div class="col-md-6">
+                <div class="card card-info">
+
+                    <div class="card-header" style="background-color: #404b57; border: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="card-title">병원기초정보</h2>
+                        </div>
+                    </div>
+
+                    <form id="Basicfrm" name="Basicfrm"
+                        action="/hospital/manage/hosInfo/updatePost?_csrf=c55060cc-7bb5-4cff-abfe-6fb41371409c"
+                        method="post" enctype="multipart/form-data">
+                        <div class="card-body" style="height: auto;">
+                            <p>병원기본정보</p>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="row hospitalRow">
+                                        <div class="col-md-4">
+                                            <label for="phone">병원명</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <!--병원명 입력칸 -->
+                                            <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="row hospitalRow">
+                                        <div class="col-md-4">
+                                            <label for="deptCd">병원 구분</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <select id="deptCd" class="form-control" name="deptCd">
+                                                <option value="">---------</option>
+                                                <option value="1"></option>
+                                                <option value="2"></option>
+                                                <option value="3"></option>
+                                                <option value="4"></option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row hospitalRow">
+                                        <div class="col-md-4">
+                                            <label for="phone">사업자 등록번호</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <!-- 사업자 등록번호 -->
+                                            <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                                pattern="[0-9]{3}-[0-9]{2}-[0-9]{5}" required>
+
+                                            <small>Format: 123-46-6789</small>
+                                        </div>
+                                    </div>
+                                </div><!-- col-md-8 끝 -->
+                                <div class="col-md-4" style="margin-top:15px;">
+                                    <label>병원대표 도장</label>
+                                    <table border="1px;">
+                                        <tbody>
+                                            <tr height="200px;">
+                                                <td width="140px;">
+                                                    <div class="col-lg-5 d-none d-lg-block bg-register-image">
+                                                        <img id="empImg"
+                                                            src="/resources/images/employee/s_cb8450a3-35e9-44e1-9598-730c60f5cb54_user.png"
+                                                            onerror="this.src='/resources/images/employee/s_cb8450a3-35e9-44e1-9598-730c60f5cb54_user.png'">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- 이미지 미리보기 시작-->
+                                            <div class="imgs_wrap"></div>
+                                            <!-- 이미지 미리보기 끝-->
+                                            <input type="file" class="d-none" id="input_imgs" name="file" />
+                                        </tbody>
+                                    </table>
+                                    <input type="file" name="uploadFile" id="file" style="margin-top:10px;">
+
+                                </div>
+                            </div>
+
+                            <p>등록정보</p>
+                            <hr>
+                            <div class="row hospitalRow">
+                                <div class="col-md-6">
+                                    <!-- 전화번호 -->
+                                    <label for="empId">전화번호</label>
+                                    <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{5}" required>
+                                    <small>Format: 02-463-6789</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- 팩스번호 -->
+                                    <label for="empId">팩스번호</label>
+                                    <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{5}" required>
+                                    <small>Format: 02-123-4567</small>
+                                </div>
+                            </div>
+                            <div class="row hospitalRow">
+                                <div class="col-md-6">
+                                    <label for="email">email</label>
+                                    <input type="email" class="form-control" id="email" pattern=".+@globex\.com"
+                                        size="30" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="url">홈페이지</label>
+                                    <input type="url" class="form-control" name="url" id="url"
+                                        placeholder="https://example.com" pattern="https://.*" size="30"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="row hospitalRow">
+                                <div class="col-md-6">
+                                    <!-- 우편번호 -->
+                                    <label for="empId">주소</label>
+                                    <input type="text" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{5}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- 우편번호 검색 -->
+                                    <label>　</label>
+                                    <button type="button" class="btn btn-success btn-block btnCss"
+                                        style="background-color: #904aff; border: none; height: 50%; float:right;"
+                                        onclick="openHomeSearch();">주소검색</button>
+                                </div>
+                            </div>
+                            <div class="row hospitalRow">
+                                <div class="col-md-12">
+                                    <input type="text" name="empAddr" class="form-control" id="empAddr"
+                                        placeholder="상세주소를 입력해주세요" value="" required="">
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <!-- 				<sec:csrfinput> -->
+                <!-- 			</sec:csrfinput> -->
+            </div>
+
+            <!-- 우측 -->
+            <div class="col-md-6">
+                <div class="card card-info">
+
+                    <div class="card-header" style="background-color: #404b57; border: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="card-title">대표자 정보</h2>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row hospitalRow">
+                            <div class="col-md-6">
+                                <!-- 전화번호 -->
+                                <label for="empId">대표자명</label>
+                                <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                    pattern="[0-9]{3}-[0-9]{3}-[0-9]{5}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- 팩스번호 -->
+                                <label for="empId">대표자 주민등록번호</label>
+                                <input type="tel" class="form-control" id="HI_BRNO" name="HI_BRNO"
+                                    pattern="[0-9]{3}-[0-9]{3}-[0-9]{5}" required>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+                <!-- 우측 중앙 -->
+                <div class="card card-info">
+
+                    <div class="card-header" style="background-color: #404b57; border: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="card-title">병원 운영정보</h2>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row hospitalRow">
+                            <div class="col-md-4">
+                                <label for="appt">Office hours</label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="time" class="form-control" id="appt" name="appt" min="09:00"
+                                    max="18:00" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="time" class="form-control" id="appt" name="appt" min="09:00"
+                                    max="18:00" required>
+                            </div>
+                        </div>
+                        <div class="row hospitalRow">
+                            <div class="col-md-4">
+                                <label for="appt">병원 휴식시간</label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="time" class="form-control" id="appt" name="appt" min="09:00"
+                                    max="18:00" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="time" class="form-control" id="appt" name="appt" min="09:00"
+                                    max="18:00" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 우측 하단 -->
+                <div class="card card-info">
+
+                    <div class="card-header" style="background-color: #404b57; border: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="card-title">체어 관리</h2>
+                        </div>
+                    </div>
+					https://inpa.tistory.com/1093#datalist_%ED%83%9C%EA%B7%B8
+                    <div class="card-body">
+  					    <h2>체어 관리</h2>
+                        <div class="card-body" style="max-height:317px; overflow-y:auto;">
+                            <table class="table table-bordered" id="myTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10px">🛠</th>
+                                        <th>No.</th>
+                                        <th>체어명</th>
+                                        <th>부서</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                	<tr>
+                                        <td style="width: 10px"></td>
+                                        <td></td>
+                                        <td style="width: 10px"></td>
+                                   </tr>
+                                </tbody>
+                            </table>
+                                
+                                
+								  
+								  <!-- 버튼 클릭하면 자바스크립트 실행 -->
+								  <input type="button" value="New Row" onclick="addRow()">
+								  
+								  <!-- 테이블에 추가할 테이블 내부 템플릿 -->
+								  <template id="rowTemplate">
+								    <tr>
+								      <td></td>
+								      <td>
+								        <input type="text" />
+								      </td>
+								      <td>
+								        <input type="text" />
+								      </td>
+								      <td>
+								        <input type="text" />
+								      </td>
+								    </tr>
+								  </template>
+								
+								
+								
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </section>
+</div>

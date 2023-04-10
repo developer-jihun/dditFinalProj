@@ -1,0 +1,131 @@
+package com.web.ddentist.ddit.pdocument.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.ddit.pdocument.service.IPdocument;
+import com.web.ddentist.patient.service.PatientDetails;
+import com.web.ddentist.vo.DocumentVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/ddit/document")
+public class PdocumentController {
+
+//	세션 정보 불러오기
+	
+	@Autowired
+	private IPdocument dService;
+	
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@GetMapping("")
+	public String getDocument(DocumentVO documentVO, Model model) {
+		
+		PatientDetails ptInfo = (PatientDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String ptNum = ptInfo.getPtVO().getPtNum();
+		
+		log.info("!!!!!!!!!!!!!ptNum:"+ptNum);
+		
+		List<DocumentVO> docList = this.dService.getDList(ptNum);
+		
+		model.addAttribute("docList",docList);
+		
+		log.info("docList:"+docList);
+		
+		return "ddit/pdocument";
+	}
+	
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@ResponseBody
+	@PostMapping("/checkbox")
+	public List<DocumentVO> checkBox(@RequestBody DocumentVO documentVO) {
+		
+		PatientDetails ptInfo = (PatientDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String ptNum = ptInfo.getPtVO().getPtNum();
+		documentVO.setPtNum(ptNum);
+		
+		log.info("documentVO : " + documentVO);
+		
+		List<DocumentVO> checkBox = this.dService.checkBox(documentVO);
+		
+		return checkBox;
+		
+	}
+	
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@GetMapping("/reissuance")
+	public String getReissuance(DocumentVO documentVO, Model model) {
+		
+		log.info("reissue에 왔다");
+		
+		documentVO=this.dService.getReissuance(documentVO);
+		log.info("documentVO reissuance : "  + documentVO);
+		
+		model.addAttribute("documentVO",documentVO);
+		
+		return "ddit/pdocumentReissuance";
+	}
+	
+	@ResponseBody
+	@PostMapping("/pdocUpdate")
+	public int pdocUpdate(@RequestBody DocumentVO documentVO) {
+		
+		int result=this.dService.getLockerUpdate(documentVO); //리스트 update
+		
+		log.info("result: " + result);
+		
+		return result;
+	}
+	
+	@PreAuthorize("hasRole('ROLE_PT')")
+	@GetMapping("/pdocumentLocker")
+	public String pdocumentLocker(DocumentVO documentVO, Model model) {
+		
+		PatientDetails ptInfo = (PatientDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String ptNum = ptInfo.getPtVO().getPtNum();
+		
+		log.info("!!!!!!!!ptNum:"+ptNum);
+		log.info("!!!!!!!!pdocumentLocker documentVO:"+documentVO);
+		
+		List<DocumentVO> LockerList = this.dService.getLockerList(ptNum); //서류보관함 리스트
+		
+		model.addAttribute("LockerList",LockerList);
+		
+		log.info("---------LockerList:"+LockerList);
+		
+		return "ddit/pdocumentLocker";
+		
+	}
+	
+	@ResponseBody
+	@PostMapping("/pdocumentUpdate")
+	public List<DocumentVO> pdocumentUpdate(@RequestBody DocumentVO documentVO) {
+		
+		log.info("---------------DocumentVO:"+documentVO);
+		
+		int result=this.dService.getMinusUpdate(documentVO); //발급횟수 -1
+		
+		log.info("-----------------------result:"+result);
+		
+		List<DocumentVO> getList=this.dService.getList(documentVO); //발급횟수 후 다시 리스트 띄우기
+		
+		log.info("------------getList:"+getList);
+		
+		return getList;
+		
+	}
+	
+}
+

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.InquiryMapper">
+	<!-- <select id="getAllList" resultType="inqVO">
+		SELECT INQ_NUM, PT_NUM, INQ_TITLE, INQ_CONTENT, INQ_WRTR_NM, INQ_DT, INQ_PW, INQ_DEL_YN
+		FROM INQUIRY
+		ORDER BY INQ_NUM DESC
+	</select> -->
+	<resultMap type="inqVO" id="inqMap">
+		<result property="inqNum" column="INQ_NUM" />
+		<result property="ptNum" column="PT_NUM" />
+		<result property="inqTitle" column="INQ_TITLE" />
+		<result property="inqContent" column="INQ_CONTENT" />
+		<result property="inqWrtrNm" column="INQ_WRTR_NM" />
+		<result property="inqDt" column="INQ_DT" />
+		<result property="inqPw" column="INQ_PW" />
+		
+		<collection property="ansVO" resultMap="ansMap"></collection>
+	</resultMap>
+	
+	<resultMap type="ansVO" id="ansMap">
+		<result property="inqNum" column="INQ_NUM"/>
+		<result property="empNum" column="EMP_NUM"/>
+		<result property="ansContent" column="ANS_CONTENT"/>
+		<result property="ansDt" column="ANS_DT"/>
+		
+		<result property="empNum" column="EMP_NM"/>
+	</resultMap>
+	
+	<select id="getAllList" parameterType="inqPageVO" resultMap="inqMap">
+		SELECT 
+ 			B.*
+ 		FROM (
+ 			SELECT
+ 				A.*, ROW_NUMBER() OVER (ORDER BY A.INQ_NUM DESC) RNUM
+ 			FROM (
+ 				SELECT A.INQ_NUM, A.PT_NUM, A.INQ_TITLE, A.INQ_CONTENT, A.INQ_WRTR_NM, A.INQ_DT, A.INQ_PW, A.INQ_DEL_YN,
+			        B.EMP_NUM, B.ANS_CONTENT, B.ANS_DT
+				FROM INQUIRY A
+				LEFT JOIN ANSWER B ON A.INQ_NUM = B.INQ_NUM
+				WHERE 1=1
+				AND (INQ_TITLE LIKE '%'|| #{searchWord} ||'%')
+				 OR (INQ_WRTR_NM LIKE '%'|| #{searchWord} ||'%')
+				ORDER BY A.INQ_NUM DESC
+ 			) A
+ 		) B
+ 		<![CDATA[
+ 			WHERE B.RNUM >= #{startRow} AND B.RNUM <= #{endRow}
+ 		]]>
+	</select>
+	
+	
+	<select id="selectInq" parameterType="inqVO" resultMap="inqMap">
+		SELECT A.INQ_NUM, A.PT_NUM, A.INQ_TITLE, A.INQ_CONTENT, A.INQ_WRTR_NM, A.INQ_DT, A.INQ_PW, A.INQ_DEL_YN,
+        B.EMP_NUM, B.ANS_CONTENT, B.ANS_DT
+		FROM INQUIRY A
+		LEFT JOIN ANSWER B ON A.INQ_NUM = B.INQ_NUM
+		WHERE A.INQ_NUM = #{inqNum}
+	</select>
+	
+	<delete id="deleteInq" parameterType="inqVO">
+		DELETE FROM INQUIRY WHERE INQ_NUM=#{inqNum}
+	</delete>
+	
+	<select id="modifyInq" parameterType="inqVO" resultType="inqVO">
+		SELECT INQ_NUM, PT_NUM, INQ_TITLE, INQ_CONTENT, INQ_WRTR_NM, INQ_DT, INQ_PW, INQ_DEL_YN
+		FROM INQUIRY
+		WHERE INQ_NUM=#{inqNum}
+	</select>
+	
+	
+	<insert id="createInq" parameterType="inqVO">
+	<selectKey resultType="int" order="BEFORE" keyProperty="inqNum">
+ 		SELECT TO_NUMBER(NVL(MAX(INQ_NUM)+1,1)) FROM INQUIRY
+ 	</selectKey>
+ 	
+      MERGE INTO INQUIRY inq
+      USING DUAL
+      ON (inq.INQ_NUM = #{inqNum})
+      WHEN MATCHED THEN
+      UPDATE SET
+      inq.PT_NUM=#{ptNum},
+      inq.INQ_TITLE=#{inqTitle},
+      inq.INQ_CONTENT=#{inqContent},
+      inq.INQ_WRTR_NM=#{inqWrtrNm},
+      inq.INQ_DT=SYSDATE,
+      inq.INQ_PW=#{inqPw},
+      inq.INQ_DEL_YN=DEFAULT
+      WHEN NOT MATCHED THEN
+      INSERT (
+      inq.INQ_NUM,
+      inq.PT_NUM,
+      inq.INQ_TITLE,
+      inq.INQ_CONTENT,
+      inq.INQ_WRTR_NM,
+      inq.INQ_DT,
+      inq.INQ_PW,
+      inq.INQ_DEL_YN
+      ) VALUES (
+      #{inqNum},
+      (SELECT NVL((
+                SELECT  PT_NUM
+                  FROM  PATIENT
+                 WHERE  1=1
+                   AND	PT_NM = #{inqWrtrNm}
+                    ),
+                 (
+                SELECT 'T'||TO_CHAR(SYSDATE, 'yyMMdd')||
+                        NVL(LPAD(SUBSTR(MAX(PT_NUM),8)+1,3,0),'001')
+                  FROM INQUIRY
+                 WHERE REGEXP_LIKE(PT_NUM, TO_CHAR(SYSDATE, 'yyMMdd'))
+                    ))
+          FROM DUAL
+				),
+      #{inqTitle},
+      #{inqContent},
+      #{inqWrtrNm},
+      SYSDATE,
+      #{inqPw},
+      DEFAULT
+      )
+	</insert>
+		
+	<select id="getPassword" parameterType="inqVO" resultType="int">
+		SELECT COUNT(*) FROM INQUIRY 
+		WHERE INQ_PW = #{inqPw}
+		  AND INQ_NUM = #{inqNum}
+	</select>
+	
+	<select id="getTotal" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM INQUIRY A
+		LEFT JOIN ANSWER B ON A.INQ_NUM = B.INQ_NUM
+		WHERE 1=1
+		AND (INQ_TITLE LIKE '%'|| #{searchWord} ||'%')
+		 OR (INQ_WRTR_NM LIKE '%'|| #{searchWord} ||'%')
+	</select>
+
+</mapper>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.CheckupGuideMapper">
+
+	<select id="selectHiServiceTime" resultType="hospitalInfoVO">
+		SELECT HI_OPEN_TIME, HI_CLOSE_TIME, HI_LUNCH_STIME, HI_LUNCH_ETIME
+		  FROM HOSPITAL_INFO
+	</select>
+	
+</mapper>

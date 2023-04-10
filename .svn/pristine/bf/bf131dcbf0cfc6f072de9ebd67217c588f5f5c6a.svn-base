@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.ddentist.mapper.CommunityMapper">
+
+	<!--  검색 -->
+	<sql id="where">
+	  	<if test="keyword!=null and keyword != ''">
+		AND (		
+				COM_TITLE LIKE '%' || #{keyword} ||'%'
+		      OR COM_CONTENT LIKE '%' || #{keyword} ||'%'
+		      OR B.PT_ID LIKE '%' || #{keyword} || '%'
+		    )
+    	</if>
+    	<if test="comType !=null and comType != ''">
+    	AND (
+	    		COM_TYPE LIKE '%' || #{comType} || '%'
+    		)
+    	</if>
+	</sql>
+	
+	
+	<!-- 커뮤니티 게시글 목록 가져오기 -->
+	<select id="selectList" parameterType="hashMap" resultType="commVO" >
+	  WITH U AS(
+			SELECT ROW_NUMBER() OVER(ORDER BY T.COM_NUM DESC) RNUM
+			       ,T.* 
+			FROM 
+			(
+			  SELECT   A.COM_NUM, A.PT_NUM, B.PT_ID, A.COM_TITLE, A.COM_CONTENT, A.COM_DT, A.COM_INQ_CNT, A.COM_TYPE
+			    FROM COMMUNITY A, PATIENT B
+			   WHERE 1=1
+			   AND A.PT_NUM = B.PT_NUM
+			   AND A.COM_DEL_YN = 0
+			  <include refid="where"></include>
+			) T
+		)
+			SELECT U.*
+			FROM U
+			WHERE U.RNUM BETWEEN (#{currentPage}*#{size}) - (#{size}-1) 
+			                        AND (#{currentPage}*#{size})
+	</select>
+
+
+	<!--  커뮤니티 게시글 상세보기 -->
+	<select id="detail" parameterType="commVO" resultType="commVO">
+		SELECT A.COM_NUM, A.PT_NUM, B.PT_NM, B.PT_ID, A.COM_TITLE, A.COM_CONTENT, A.COM_DT, A.COM_INQ_CNT, A.COM_UPDATED_DT, A.COM_TYPE
+		  FROM COMMUNITY A, PATIENT B
+		  WHERE A.PT_NUM = B.PT_NUM
+		    AND A.COM_NUM = #{comNum}
+	</select>
+	
+	<!--  조회수 증가시키기 -->
+	<update id="viewCount" parameterType="commVO">
+		UPDATE COMMUNITY
+		   SET COM_INQ_CNT  = COM_INQ_CNT + 1
+		 WHERE COM_NUM = #{comNum}
+	</update>
+	
+	<!-- 게시글 등록 -->
+	<insert id="insertPost" parameterType="commVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="comNum">
+			SELECT NVL(MAX(COM_NUM),0)+1 FROM COMMUNITY
+		</selectKey>
+		INSERT INTO COMMUNITY(COM_NUM, PT_NUM, COM_TITLE, COM_CONTENT, COM_DT, COM_INQ_CNT, COM_UPDATED_DT,COM_TYPE)
+			 VALUES( 
+			         #{comNum}
+			         , #{ptNum}
+			         , #{comTitle}
+			         , #{comContent}
+			         , SYSDATE
+			         , 0
+			         , SYSDATE
+		         	 , #{comType}
+			         )
+	</insert>
+
+
+	<!--  댓글 리스트 출력 -->
+	<select id="getReplyList" parameterType="int" resultType="commReplyVO">
+			SELECT  A.LVL, A.COM_NUM, LPAD(' ',2*(LEVEL-1))||A.REPLY_CONTENT AS REPLYCONTENT,  A.PT_NUM, TO_CHAR(A.REPLY_DT, 'YYYY-MM-DD HH24:MI') AS REPLY_DT_STR, A.REPLY_NUM, A.TARGET_REPLY_NUM
+				      , A.EMP_NUM, (SELECT PT_ID FROM PATIENT  WHERE PT_NUM=A.PT_NUM) PT_ID, (SELECT PT_NM FROM PATIENT  WHERE PT_NUM=A.PT_NUM) PT_NM
+				      , (SELECT EMP_ID FROM EMPLOYEE  WHERE EMP_NUM=A.EMP_NUM) EMP_ID , (SELECT EMP_NM FROM EMPLOYEE  WHERE EMP_NUM=A.EMP_NUM) EMP_NM
+              FROM COMMUNITY_REPLY A, COMMUNITY D
+             WHERE  A.COM_NUM = D.COM_NUM
+               AND A.COM_NUM = #{comNum}
+        START WITH TARGET_REPLY_NUM = 0
+  CONNECT BY PRIOR REPLY_NUM = TARGET_REPLY_NUM
+            ORDER SIBLINGS BY TARGET_REPLY_NUM ASC, REPLY_NUM DESC
+	</select>
+
+
+	<!--  게시글 수정 -->
+	<update id="updatePost" parameterType="commVO">
+		UPDATE COMMUNITY
+		   SET COM_TITLE = #{comTitle}, COM_CONTENT = #{comContent} , COM_TYPE = #{comType}
+		 WHERE COM_NUM = #{comNum}
+	</update>
+	
+	
+	<!-- 전체 행의 수 구하기 -->
+	<select id="getTotal" parameterType="String" resultType="int">
+		SELECT COUNT(DISTINCT(COM_NUM))
+		  FROM COMMUNITY A, PATIENT B
+		WHERE 1=1
+		 AND A.PT_NUM = B.PT_NUM
+		<include refid="where"></include>
+	</select>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="deletePost" parameterType="int">
+		DELETE FROM COMMUNITY WHERE COM_NUM = #{comNum}
+	</delete>
+	
+	<!-- 댓글 등록 -->
+	<insert id="insertReply" parameterType="commReplyVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="replyNum">
+			SELECT NVL(MAX(REPLY_NUM),0)+1 FROM COMMUNITY_REPLY
+		</selectKey>
+	
+		INSERT INTO COMMUNITY_REPLY(
+									REPLY_NUM
+									, COM_NUM
+									, PT_NUM
+									, REPLY_DT
+									, LVL
+									, REPLY_CONTENT
+									)
+			 VALUES(   #{replyNum}
+			 	       , #{comNum}
+			 	       , #{ptNum}
+			 	       , SYSDATE
+			 	       , #{lvl}
+			 	       , #{replyContent}
+			 	      )
+	</insert>
+	
+	<!-- 대댓글 등록 -->
+	<insert id="insertReReply" parameterType="commReplyVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="replyNum">
+			 SELECT NVL(MAX(REPLY_NUM),0)+1 FROM COMMUNITY_REPLY
+		</selectKey>
+	
+		INSERT INTO COMMUNITY_REPLY(
+									REPLY_NUM
+									, COM_NUM
+									, PT_NUM
+									, REPLY_DT
+									, TARGET_REPLY_NUM
+									, LVL
+									, REPLY_CONTENT
+									)
+							VALUES( 
+									  #{replyNum}
+									, #{comNum}
+									,  #{ptNum}
+									, SYSDATE
+									, #{targetReplyNum}
+									, #{lvl}
+									, #{replyContent}
+								  )
+	</insert>
+	
+	<!--  회원이 댓글 삭제할 때 -->
+	<delete id="deleteReply" parameterType="commReplyVO">
+		DELETE FROM COMMUNITY_REPLY
+		      WHERE REPLY_NUM = #{replyNum}
+		        AND COM_NUM = #{comNum} 
+		        AND PT_NUM = #{ptNum}
+	</delete>
+	
+	
+	<!-- 직원페이지 : 커뮤니티 게시글 조회 (날짜검색, 키워드 검색) -->
+	<select id="listReview" parameterType="hashMap" resultType="commVO">
+		SELECT 
+				A.COM_NUM
+			  , A.PT_NUM
+			  , B.PT_ID
+			  , A.COM_TITLE
+			  , A.COM_CONTENT
+			  , TO_CHAR(A.COM_DT, 'YYYY.MM.DD') AS COM_DT_STR
+			  , COM_INQ_CNT
+			  , TO_CHAR(A.COM_UPDATED_DT, 'YYYY.MM.DD') AS UPDATE_DT_STR
+			  ,  (SELECT COUNT(*)
+				    FROM COMMUNITY_REPLY 
+				   WHERE COM_NUM = A.COM_NUM AND EMP_NUM IS NOT NULL ) AS ANS_COUNT
+		      , A.COM_DEL_YN
+		 FROM COMMUNITY A, PATIENT B
+		WHERE 1=1 
+		  AND A.PT_NUM = B.PT_NUM
+		<if test="boardSDate != null and boardSDate != ''">
+		<![CDATA[
+			AND A.COM_DT >= TO_DATE(#{boardSDate}, 'YYYY-MM-DD')
+		]]>
+		</if>
+		<if test="boardEDate != null and boardEDate != ''">
+		<![CDATA[
+			AND A.COM_DT <= TO_DATE(#{boardEDate}, 'YYYY-MM-DD') + 1
+		]]>
+		</if>
+		<if test="keyword != null and keyword != ''">
+		    AND 
+		    (
+		        A.COM_TITLE LIKE '%' ||  #{keyword} || '%'
+				OR A.COM_CONTENT LIKE '%' ||  #{keyword} || '%'
+				OR B.PT_ID LIKE '%' || #{keyword} || '%'
+		    )
+		</if>           
+		ORDER BY COM_DEL_YN, COM_NUM DESC        
+	</select>
+	
+	<!-- A -->
+	<resultMap id="commMap" type="commVO">
+		<result property="comNum" column="COM_NUM" />
+		<result property="ptNum" column="PT_NUM" />
+		<result property="comTitle" column="COM_TITLE" />
+		<result property="comContent" column="COM_CONTENT" />
+		<result property="comDt" column="COM_DT" />
+		<result property="comDtStr" column="COM_DT_STR" />
+		<result property="comInqCnt" column="COM_INQ_CNT" />
+		<result property="comUpdatedDtStr" column="COM_UPDATE_DT_STR" />
+		<result property="comDelYn" column="COM_DEL_YN" />
+		<result property="ptId" column="COMM_PT_WRITER_ID" />
+		<result property="ptNm" column="COMM_PT_WRITER_NM" />
+		<collection property="replyList" resultMap="replyMap"></collection>
+		<collection property="patientVO" resultMap="patientMap"></collection>
+	</resultMap>
+	
+	<!-- P -->
+	<resultMap id="patientMap" type="ptVO" >
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptId" column="COMM_PT_WRITER_ID" /> 
+	    <result property="ptNm" column="COMM_PT_WRITER_NM" />  
+	</resultMap>
+	
+	<!-- B -->
+	<resultMap id="replyMap" type="commReplyVO">
+		<result property="replyNum" column="REPLY_NUM" />
+		<result property="ptNum" column="REPLY_WRITER_PT_NUM" />
+		<result property="replyDt" column="REPLY_DT" />
+		<result property="replyDtStr" column="REPLY_DT_STR" />
+		<result property="targetReplyNum" column="TARGET_REPLY_NUM" />
+		<result property="lvl" column="LVL" />
+		<result property="replyContent" column="REPLY_CONTENT" />
+		<result property="ptId" column="REPLY_PT_WRITER_ID" />
+		<result property="ptNm" column="REPLY_PT_WRITER_NM" />
+		<result property="empNum" column="EMP_NUM" />
+		<result property="empNm" column="REPLY_EMP_WRITER_NM" />
+		<result property="empId" column="REPLY_EMP_WRITER_ID" />
+		<association property="patientVO" resultMap="patientMap2"></association>
+		<association property="employeeVO" resultMap="employeeMap"></association>
+	</resultMap>
+	
+	<!-- P2 -->
+	<resultMap type="ptVO" id="patientMap2">
+		<result property="ptNum" column="REPLY_WRITER_PT_NUM" />
+		<result property="ptId" column="REPLY_PT_WRITER_ID" />
+		<result property="ptNm" column="REPLY_PT_WRITER_NM" />
+	</resultMap>
+	
+	<!-- E -->
+	<resultMap type="empVO" id="employeeMap">
+		<result property="empNum" column="EMP_NUM" />
+		<result property="empNm" column="REPLY_EMP_WRITER_NM" />
+		<result property="empId" column="REPLY_EMP_WRITER_ID" />
+	</resultMap>
+	
+	<!-- 직원페이지 : 커뮤니티 게시글 상세조회 -->
+	<select id="selectReview" parameterType="int" resultMap="commMap">
+		SELECT 
+			  A.COM_NUM
+			  , A.PT_NUM
+			  , A.COM_TITLE
+			  , A.COM_CONTENT
+			  , A.COM_DT
+			  , TO_CHAR(A.COM_DT, 'YYYY.MM.DD HH24:MI') AS COM_DT_STR
+			  , A.COM_INQ_CNT
+			  , TO_CHAR(A.COM_UPDATED_DT, 'YYYY.MM.DD HH24:MI') AS COM_UPDATE_DT_STR
+			  , A.COM_DEL_YN
+		      , B.REPLY_NUM
+		      , B.PT_NUM AS REPLY_WRITER_PT_NUM
+		      , B.REPLY_DT
+		      , TO_CHAR(B.REPLY_DT, 'YYYY.MM.DD HH24:MI') AS REPLY_DT_STR
+		      , B.TARGET_REPLY_NUM
+		      , B.LVL
+		      , B.REPLY_CONTENT
+		      , B.EMP_NUM
+		      , P.PT_ID AS COMM_PT_WRITER_ID
+		      , P.PT_NM AS COMM_PT_WRITER_NM
+		      , P2.PT_ID AS REPLY_PT_WRITER_ID
+		      , P2.PT_NM AS REPLY_PT_WRITER_NM
+		      , E.EMP_NM AS REPLY_EMP_WRITER_NM
+		      , E.EMP_ID AS REPLY_EMP_WRITER_ID
+		FROM COMMUNITY A
+		    LEFT OUTER JOIN COMMUNITY_REPLY B ON (A.COM_NUM = B.COM_NUM)
+		    LEFT OUTER JOIN PATIENT P2 ON(B.PT_NUM = P2.PT_NUM)
+		    LEFT OUTER JOIN EMPLOYEE E ON(B.EMP_NUM = E.EMP_NUM)
+		    JOIN PATIENT P ON(A.PT_NUM = P.PT_NUM)
+		WHERE 1=1
+		AND A.COM_NUM = #{comNum}
+		ORDER BY TARGET_REPLY_NUM ASC, REPLY_NUM DESC
+	</select>
+
+
+	<!-- 직원페이지 : 답변 등록 -->
+	<insert id="insertAnswer" parameterType="commReplyVO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="replyNum">
+			SELECT NVL(MAX(REPLY_NUM),0)+1 FROM COMMUNITY_REPLY
+		</selectKey>
+	
+		INSERT INTO COMMUNITY_REPLY(
+									REPLY_NUM
+									, COM_NUM
+									, PT_NUM
+									, REPLY_DT
+									, LVL
+									, REPLY_CONTENT
+									, EMP_NUM
+									)
+			 VALUES(   #{replyNum}
+			 	       , #{comNum}
+			 	       , #{ptNum}
+			 	       , SYSDATE
+			 	       , #{lvl}
+			 	       , #{replyContent}
+			 	       , #{empNum}
+			 	      )
+	</insert>
+	
+	<!--  직원페이지 : 게시글 삭제 처리 (데이터는 삭제되지않고, 삭제여부만 1로 바뀜) -->
+	<update id="deleteProcessYn" parameterType="int">
+		UPDATE COMMUNITY 
+		   SET COM_DEL_YN = 1, COM_TITLE= '삭제된 게시글입니다.', COM_CONTENT= '삭제된 게시글입니다.'
+		  WHERE COM_NUM = #{comNum}
+	</update>
+	
+	<!--  게시글 삭제 시 모든 댓글리스트 삭제 실행쿼리  -->
+	<delete id="AlldeleteReply" parameterType="int">
+	DELETE FROM COMMUNITY_REPLY
+	      WHERE COM_NUM = #{comNum} 
+	</delete>
+	
+	
+		
+	<!--  직원이 댓글 삭제할 때 -->
+	<delete id="empAuthDeleteReply" parameterType="hashMap">
+		DELETE FROM COMMUNITY_REPLY
+		      WHERE REPLY_NUM = #{replyNum}
+		        AND COM_NUM = #{comNum} 
+	</delete>
+</mapper>

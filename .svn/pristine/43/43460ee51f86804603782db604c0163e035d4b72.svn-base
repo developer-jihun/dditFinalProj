@@ -1,0 +1,51 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+public class QuestionnaireVO {
+	
+	private String ptNum;
+	private String queReason;
+	private String queWant;
+	private String quePharm;
+	
+	private List<UnderlyingConditionVO> uConList;
+	
+	
+	public String getPtNum() {
+		return ptNum;
+	}
+	public void setPtNum(String ptNum) {
+		this.ptNum = ptNum;
+	}
+	public String getQueReason() {
+		return queReason;
+	}
+	public void setQueReason(String queReason) {
+		this.queReason = queReason;
+	}
+	public String getQueWant() {
+		return queWant;
+	}
+	public void setQueWant(String queWant) {
+		this.queWant = queWant;
+	}
+	public String getQuePharm() {
+		return quePharm;
+	}
+	public void setQuePharm(String quePharm) {
+		this.quePharm = quePharm;
+	}
+	public List<UnderlyingConditionVO> getuConList() {
+		return uConList;
+	}
+	public void setuConList(List<UnderlyingConditionVO> uConList) {
+		this.uConList = uConList;
+	}
+	
+	@Override
+	public String toString() {
+		return "QuestionnaireVO [ptNum=" + ptNum + ", queReason=" + queReason + ", queWant=" + queWant + ", quePharm="
+				+ quePharm + ", uConList=" + uConList + "]";
+	}
+}

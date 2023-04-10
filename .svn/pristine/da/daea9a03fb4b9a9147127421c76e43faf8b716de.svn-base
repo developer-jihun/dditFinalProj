@@ -1,0 +1,92 @@
+package com.web.ddentist.vo;
+
+import java.util.List;
+
+//약품
+public class DrugVO {
+	private int drugNum;
+	private String drugNm;
+	private String drugNmEn;
+	private String drugType;
+	private String drugIngre;
+	private String drugComp;
+	private int drugCount;
+	//약품:발주약품 = 1:N
+	private List<PurchaseDrugVO> purchaseDrugList;
+	
+	public DrugVO() {}
+
+	public int getDrugNum() {
+		return drugNum;
+	}
+
+	public void setDrugNum(int drugNum) {
+		this.drugNum = drugNum;
+	}
+
+	public String getDrugNm() {
+		return drugNm;
+	}
+
+	public void setDrugNm(String drugNm) {
+		this.drugNm = drugNm;
+	}
+
+	public String getDrugNmEn() {
+		return drugNmEn;
+	}
+
+	public void setDrugNmEn(String drugNmEn) {
+		this.drugNmEn = drugNmEn;
+	}
+
+	public String getDrugType() {
+		return drugType;
+	}
+
+	public void setDrugType(String drugType) {
+		this.drugType = drugType;
+	}
+
+	public String getDrugIngre() {
+		return drugIngre;
+	}
+
+	public void setDrugIngre(String drugIngre) {
+		this.drugIngre = drugIngre;
+	}
+
+	public String getDrugComp() {
+		return drugComp;
+	}
+
+	public void setDrugComp(String drugComp) {
+		this.drugComp = drugComp;
+	}
+
+	public int getDrugCount() {
+		return drugCount;
+	}
+
+	public void setDrugCount(int drugCount) {
+		this.drugCount = drugCount;
+	}
+
+	public List<PurchaseDrugVO> getPurchaseDrugList() {
+		return purchaseDrugList;
+	}
+
+	public void setPurchaseDrugList(List<PurchaseDrugVO> purchaseDrugList) {
+		this.purchaseDrugList = purchaseDrugList;
+	}
+
+	@Override
+	public String toString() {
+		return "DrugVO [drugNum=" + drugNum + ", drugNm=" + drugNm + ", drugNmEn=" + drugNmEn + ", drugType=" + drugType
+				+ ", drugIngre=" + drugIngre + ", drugComp=" + drugComp + ", drugCount=" + drugCount
+				+ ", purchaseDrugList=" + purchaseDrugList + "]";
+	}
+	
+	
+	
+}

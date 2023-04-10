@@ -1,0 +1,52 @@
+package com.web.ddentist.hospital.crm.sms.service;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.web.ddentist.hospital.crm.sms.util.SmsSendUtil;
+import com.web.ddentist.mapper.SmsMapper;
+import com.web.ddentist.vo.CrmVO;
+import com.web.ddentist.vo.SmsVO;
+
+public class SmsScheduleService {
+	
+	@Autowired
+	private SmsSendUtil smsSendUtil;
+	@Autowired
+	private SmsMapper smsMapper;
+	
+	public void getCrmOnSchedule() {
+		
+		System.out.println("------------------------------------------------------------");
+		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+		System.out.println("------------------------------------------------------------");
+		/*
+		List<CrmVO> scheduledCrmList = smsMapper.listCrmOnSchedule();
+		String smsContentTemplate = "$고객명$님의 다음 예약일은 $예약일$입니다.";
+		
+		for(CrmVO crm : scheduledCrmList) {
+			
+			try {
+				
+				String smsContent = smsSendUtil.parseSmsContent(smsContentTemplate, crm.getPtNm(), crm.getCrmNxResvDtStr());
+				smsSendUtil.sendSms(crm.getPtPhone(), smsContent);
+				
+				SmsVO smsVO = new SmsVO();
+				smsVO.setPtNum(crm.getPtNum());
+				smsVO.setPtNm(crm.getPtNm());
+				smsVO.setPtPhone(crm.getPtPhone());
+				smsVO.setSmsContent(smsContent);
+				
+				smsMapper.insertSms(smsVO);
+				smsMapper.updateCrmStatus(crm.getCrmNum());
+				
+			} catch (Exception e) {}
+		}
+		*/
+		
+	}
+	
+}

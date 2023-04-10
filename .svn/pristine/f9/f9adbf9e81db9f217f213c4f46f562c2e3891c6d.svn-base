@@ -1,0 +1,21 @@
+package com.web.ddentist.hospital.site.bannerInfo.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.web.ddentist.mapper.BannerMapper;
+import com.web.ddentist.vo.BannerVO;
+
+@Service
+public class BannerServiceImpl implements BannerService {
+	
+	@Autowired
+	BannerMapper bannerMapper;
+	
+//	<!-- 배너 등록하기 -->
+//	<insert id="uploadFormAction" parameterType="bannerVO">
+	@Override
+	public int uploadFormAction(BannerVO bannerVO) {
+		return this.bannerMapper.uploadFormAction(bannerVO);
+	};
+}

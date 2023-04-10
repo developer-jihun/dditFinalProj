@@ -1,0 +1,572 @@
+package com.web.ddentist.hospital.document.service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.web.ddentist.mapper.DocumentMapper;
+import com.web.ddentist.vo.DiseaseVO;
+import com.web.ddentist.vo.DocumentVO;
+import com.web.ddentist.vo.DrugVO;
+import com.web.ddentist.vo.HospitalInfoVO;
+import com.web.ddentist.vo.PatientVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service //서비스는 한 번 실행되기 때문에 한 번의 새로고침으로 한 번 서비스 실행-->전역함수(UUID포함)도 한 번
+public class DocumentServiceImpl implements IDocument{
+	
+	@Autowired
+	DocumentMapper documentMapper;
+	
+	Map<String,Object> map = new HashMap<>();
+	
+	private static final String FONT = "C:\\Windows\\Fonts\\malgun.ttf"; // 사용 폰트
+
+
+	//향후 치료비 추정서
+	@Override
+	public String treatmentPlanPost(Map<String,String> map) throws IOException {
+
+		UUID uuid=UUID.randomUUID();
+		
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\향후치료비추정서.pdf"));
+		
+		String uploadBasePath = "C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion";
+		String today = new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBasePath, today);
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+//		File uploadPath = new File(dateBasePath, uuid + "향후치료비추정서.pdf");
+		String fileName = uuid + "treatmentPlan.pdf";
+		File uploadPath = new File(dateBasePath, fileName);
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);
+		
+        // new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+        PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+        
+        Document document = new Document(pdf);
+        
+        // 작성할 내용을 Paragraph에 제공
+        Paragraph num = new Paragraph(this.documentMapper.getNum()); //발급번호
+        // x축, y축, 단락 너비
+        num.setFixedPosition(145, 695, 300);
+        
+        Paragraph addr = new Paragraph(map.get("ptAddr"));
+        addr.setFixedPosition(145, 672, 600);
+        
+        Paragraph name=new Paragraph(map.get("ptNm"));
+        name.setFixedPosition(145, 650, 350);
+        
+        Paragraph citizenNum=new Paragraph(map.get("ptRrno"));
+        citizenNum.setFixedPosition(145, 629, 350);
+        
+        Paragraph DiagnosisNum=new Paragraph(map.get("DiagnosisNum"));
+        DiagnosisNum.setFixedPosition(145, 607, 350);
+        
+        Paragraph therapycon=new Paragraph(map.get("therapycon"));
+        therapycon.setFixedPosition(165, 500, 350);
+        
+        Paragraph therapyDate=new Paragraph(map.get("therapyDate"));
+        therapyDate.setFixedPosition(180, 352, 330);
+                                   
+        Paragraph publishDate=new Paragraph(map.get("publishDate"));
+        publishDate.setFixedPosition(219, 227, 350);
+
+        Paragraph hospitalAddr=new Paragraph(map.get("hiAddr"));
+        hospitalAddr.setFixedPosition(219, 200, 350);
+        
+        Paragraph hospitalName=new Paragraph(map.get("hiNm"));
+        hospitalName.setFixedPosition(219, 171, 350);
+        
+        Paragraph licenseNum=new Paragraph(map.get("licenseNum"));
+        licenseNum.setFixedPosition(219, 130, 350);
+        
+        Paragraph tel=new Paragraph(map.get("hiPhone"));
+        tel.setFixedPosition(470, 171, 350);
+        
+        Paragraph doctorName=new Paragraph(map.get("doctorName"));
+        doctorName.setFixedPosition(470, 130, 350);
+        
+        // 폰트 설정
+        PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+        num.setFont(font);
+        addr.setFont(font);
+        name.setFont(font);
+        citizenNum.setFont(font);
+        DiagnosisNum.setFont(font);
+        
+        therapycon.setFont(font);
+        publishDate.setFont(font);
+        hospitalAddr.setFont(font);
+        hospitalName.setFont(font);
+        licenseNum.setFont(font);
+        tel.setFont(font);
+        doctorName.setFont(font);
+        therapyDate.setFont(font);
+        
+        document.add(num);
+        document.add(addr);
+        document.add(therapyDate);
+        document.add(name);
+        document.add(citizenNum);
+        document.add(DiagnosisNum);
+        document.add(therapycon);
+        document.add(publishDate);
+        document.add(hospitalAddr);
+        document.add(hospitalName);
+        document.add(licenseNum);
+        document.add(tel);
+        document.add(doctorName);
+        
+        document.close();
+        
+        int result = this.documentMapper.treatmentPlanPost(map);
+        if(result == 0) return "FAILED";
+		
+        return today.replace("\\", "/") + "/" + fileName.replace("\\", "/");
+        
+	}
+
+	//진단서
+	@Override
+	public String diagnosisPost(Map<String, String> map) throws IOException {
+		
+		UUID uuid=UUID.randomUUID();
+		
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\진단서.pdf"));
+		
+		String uploadBasePath = "C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion";
+		
+		String today = new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBasePath, today);
+		
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+//		String path = uploadPath.getAbsolutePath();
+		
+		String fileName = uuid + "diagnosis.pdf";
+		
+		File uploadPath = new File(dateBasePath, fileName);
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);
+		
+        // new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+        PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+        
+        Document document = new Document(pdf);
+        
+        // 작성할 내용을 Paragraph에 제공
+        Paragraph num = new Paragraph(this.documentMapper.getNum());//발급번호
+        // x축, y축, 단락 너비
+        num.setFixedPosition(95, 670, 80);
+        num.setFontSize(8);
+        
+        Paragraph name=new Paragraph(map.get("ptNm"));
+        name.setFixedPosition(170, 630, 150);
+
+        Paragraph citizenNum=new Paragraph(map.get("ptRrno"));
+        citizenNum.setFixedPosition(410, 630, 200);
+
+        Paragraph addr = new Paragraph(map.get("ptAddr"));
+        addr.setFixedPosition(170, 600, 800);
+        addr.setFontSize(10);
+        
+        Paragraph disease=new Paragraph(map.get("disease"));
+        disease.setFixedPosition(170, 555, 800);
+        
+        Paragraph occur=new Paragraph(map.get("occur"));
+        occur.setFixedPosition(170, 510, 800);
+        
+        Paragraph diagnosisDate=new Paragraph(map.get("diagnosisDate"));
+        diagnosisDate.setFixedPosition(410, 510, 800);
+                                   
+        Paragraph therapycon=new Paragraph(map.get("therapycon"));
+        therapycon.setFixedPosition(170, 450, 800);
+
+        Paragraph purpose=new Paragraph(map.get("docIssueReason"));
+        purpose.setFixedPosition(170, 383, 800);
+        
+        Paragraph hospitalName=new Paragraph(map.get("hiNm"));
+        hospitalName.setFixedPosition(200, 305, 800);
+        
+        Paragraph hospitalAddr=new Paragraph(map.get("hiAddr"));
+        hospitalAddr.setFixedPosition(200, 282, 800);
+        
+        Paragraph licenseNum=new Paragraph(map.get("licenseNum"));
+        licenseNum.setFixedPosition(370, 260, 800);
+        
+        Paragraph doctorName=new Paragraph(map.get("doctorName"));
+        doctorName.setFixedPosition(300, 236, 800);
+        
+        // 폰트 설정
+        PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+        
+        num.setFont(font);
+        name.setFont(font);
+        citizenNum.setFont(font);
+        addr.setFont(font);
+        disease.setFont(font);
+        occur.setFont(font);
+        
+        diagnosisDate.setFont(font);
+        therapycon.setFont(font);
+        purpose.setFont(font);
+        hospitalName.setFont(font);
+        hospitalAddr.setFont(font);
+        licenseNum.setFont(font);
+        doctorName.setFont(font);
+        
+        document.add(num);
+        document.add(name);
+        document.add(citizenNum);
+        document.add(addr);
+        document.add(disease);
+        document.add(occur);
+        document.add(diagnosisDate);
+        document.add(therapycon);
+        document.add(purpose);
+        document.add(hospitalName);
+        document.add(hospitalAddr);
+        document.add(licenseNum);
+        document.add(doctorName);
+        
+        document.close();
+        
+        int result = this.documentMapper.diagnosisPost(map);
+        
+        if(result == 0) return "FAILED";
+		
+        return today.replace("\\", "/") + "/" + fileName.replace("\\", "/");
+	}
+
+	//치료확인서
+	@Override
+	public String treatconfirmPost(Map<String, String> map) throws IOException {
+		
+		UUID uuid=UUID.randomUUID();
+		
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\치료확인서.pdf"));
+		
+		String uploadBasePath = "C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion";
+		String today = new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBasePath, today);
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+		String fileName = uuid + "treatconfirm.pdf";
+		File uploadPath = new File(dateBasePath, fileName);
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);
+		
+		// new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+		PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+		
+		Document document = new Document(pdf);
+		PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+		
+		// 아래와 같이 작성. 한줄씩 복사해서 입력칸을 맞추면 된다.
+		//													x축  y축  너비
+		document.add(new Paragraph(map.get("ptNm")).setFixedPosition(165, 718, 50).setFont(font));
+		document.add(new Paragraph(map.get("ptAddr")).setFixedPosition(165, 685, 800).setFont(font));
+		document.add(new Paragraph(map.get("ptGen")).setFixedPosition(305, 718, 50).setFont(font));
+		document.add(new Paragraph(map.get("ptRrno")).setFixedPosition(430, 718, 150).setFont(font));
+		
+		document.add(new Paragraph(map.get("ptPhone")).setFixedPosition(165, 655, 350).setFont(font));
+		document.add(new Paragraph(map.get("disease")).setFixedPosition(165, 620, 350).setFont(font));
+		document.add(new Paragraph(map.get("therapycon")).setFixedPosition(165, 500, 350).setFont(font));
+		document.add(new Paragraph(map.get("therapyDate")).setFixedPosition(165, 363, 330).setFont(font));
+		
+		document.add(new Paragraph(map.get("publishDate")).setFixedPosition(185, 261, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiNm")).setFixedPosition(185, 243, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiAddr")).setFixedPosition(185, 224, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiPhone")).setFixedPosition(185, 204, 350).setFont(font));
+		document.add(new Paragraph(map.get("licenseNum")).setFixedPosition(185, 184, 350).setFont(font));
+		document.add(new Paragraph(map.get("doctorName")).setFixedPosition(330, 184, 350).setFont(font));
+		document.close();
+		
+		int result = this.documentMapper.treatconfirmPost(map);
+        if(result == 0) return "FAILED";
+		
+        return today.replace("\\", "/") + "/" + fileName.replace("\\", "/");
+	}
+
+	//CT소견서
+	@Override
+	public String CTPost(Map<String, String> map) throws IOException {
+		
+		UUID uuid=UUID.randomUUID();
+		
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\CT판독소견서.pdf"));
+		
+		String uploadBasePath = "C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion";
+		String today = new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBasePath, today);
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+		String fileName = uuid + "CTPost.pdf";
+		File uploadPath = new File(dateBasePath, fileName);
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);
+		
+		// new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+		PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+		
+		Document document = new Document(pdf);
+		PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+		
+		document.add(new Paragraph(map.get("ptNm")).setFixedPosition(155, 677, 150).setFont(font));//환자명
+		document.add(new Paragraph(map.get("Exdate")).setFixedPosition(155, 640, 150).setFont(font));//검사일자
+		document.add(new Paragraph(map.get("doctorname")).setFixedPosition(155, 603, 200).setFont(font));//판독의사명
+		
+		document.add(new Paragraph(map.get("ptGen")+map.get("ptGen")).setFixedPosition(430, 677, 200).setFont(font));//성별 나이
+		document.add(new Paragraph(map.get("ptNum")).setFixedPosition(430, 640, 200).setFont(font));//차트번호
+		document.add(new Paragraph(map.get("licenseNum")).setFixedPosition(430, 603, 200).setFont(font));//면허번호
+		
+				
+		document.add(new Paragraph(map.get("Readingfind")).setFixedPosition(70, 455, 800).setFont(font));
+								
+		document.add(new Paragraph(map.get("conclusion")).setFixedPosition(70, 305, 800).setFont(font));
+		
+		document.add(new Paragraph(map.get("readingdate")).setFixedPosition(70, 200, 200).setFont(font));
+
+		document.add(new Paragraph(map.get("hiNm")).setFixedPosition(70, 100, 200).setFont(font));
+		
+		document.close();
+		
+		int result = this.documentMapper.CTPost(map);
+        if(result == 0) return "FAILED";
+		
+        return today.replace("\\", "/") + "/" + fileName.replace("\\", "/");
+	}
+
+	//소견서
+	@Override
+	public String opinionPost(Map<String, String> map) throws IOException {
+		
+		UUID uuid=UUID.randomUUID();
+		
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\소견서.pdf"));
+		
+		String uploadBosePath="C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion\\";
+		String today=new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBosePath,today);
+		
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+		String fileName=uuid+"opinion.pdf";
+		
+		File uploadPath=new File(dateBasePath,fileName);
+		
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);		
+		// new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+		PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+		
+		Document document = new Document(pdf);
+		PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+		
+		document.add(new Paragraph(map.get("ptNm")).setFixedPosition(165, 683, 50).setFont(font));
+		document.add(new Paragraph(map.get("ptGen")).setFixedPosition(293, 683, 50).setFont(font));
+		document.add(new Paragraph(map.get("ptRrno")).setFixedPosition(420, 683, 150).setFont(font));
+		document.add(new Paragraph(map.get("ptAddr")).setFixedPosition(165, 640, 350).setFont(font).setFontSize(10));
+		document.add(new Paragraph(map.get("Clinicopinion")).setFixedPosition(165, 553, 350).setFont(font));
+		document.add(new Paragraph(map.get("docIssueReason")).setFixedPosition(165, 380, 350).setFont(font));
+		document.add(new Paragraph(map.get("publishDate")).setFixedPosition(185, 279, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiNm")).setFixedPosition(185, 260, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiAddr")).setFixedPosition(185, 240, 350).setFont(font));
+		document.add(new Paragraph(map.get("hiBrno")).setFixedPosition(185, 220, 350).setFont(font));
+		document.add(new Paragraph(map.get("licenseNum")).setFixedPosition(185, 200, 350).setFont(font));
+		document.add(new Paragraph(map.get("doctorName")).setFixedPosition(360, 200, 350).setFont(font));
+		document.close();
+		
+		int result = this.documentMapper.opinionPost(map);
+		
+		if(result==0) return "FAILED";
+		
+		return today.replace("\\", "/") + "/" + fileName.replace("\\", "/"); //url 주소처럼 바꿈
+	}
+
+	//서류 리스트
+	@Override
+	public List<DocumentVO> docList(DocumentVO documentVO) {
+		return this.documentMapper.docList(documentVO);
+	}
+
+	//버튼 클릭하면 검색되는건데 환자 정보 뜨는건데 안 씀
+//	@Override
+//	public Map<String, String> patientInfo(String keyword) {
+//		return this.documentMapper.patientInfo(keyword);
+//	}
+	
+	//클릭하면 환자 정보
+	@Override
+	public PatientVO patientInfo(String ptNum) {
+		return this.documentMapper.patientInfo(ptNum);
+	}
+
+	//클릭하면 병원 정보
+	@Override
+	public HospitalInfoVO hospitalInfo() {
+		return this.documentMapper.hospitalInfo();
+	}
+
+	//체크박스 및 달력 체크
+	@Override
+	public List<DocumentVO> checkBox(DocumentVO documentVO) {
+		return this.documentMapper.checkBox(documentVO);
+	}
+
+	//달력인데 안 씀
+	@Override
+	public List<DocumentVO> getDate(DocumentVO documentVO) {
+		return this.documentMapper.getDate(documentVO);
+	}
+
+	//병명 모달 리스트
+	@Override
+	public List<DiseaseVO> disList(DiseaseVO diseaseVO) {
+		return this.documentMapper.disList(diseaseVO);
+	}
+
+	//병명 모달 검색
+	@Override
+	public List<DiseaseVO> disModalSelect(String keyword) {
+		return this.documentMapper.disModalSelect(keyword);
+	}
+
+	//병명 모달 하나 선택하면 값이 입력됨
+	@Override
+	public DiseaseVO showCdNm(DiseaseVO diseaseVO) {
+		return this.documentMapper.showCdNm(diseaseVO);
+	}
+
+	//원외처방전
+	@Override
+	public String outsidePost(Map<String, String> map) throws IOException {
+		
+		UUID uuid=UUID.randomUUID();
+		
+		//map : {year=2023-03-10, ptNm=이상혁, ptRrno=9604011234567, ptAddr=대전 대덕구 대덕대로1585번길 44, 금강센트럴파크 서희스타힐스 112동 302호, disease=질병명, doctorName=개똥이, licenseNum=132-12345, deliver=7, date=8, docIssueReason=용도, ptNum=230228003, hiBrno=306-82-05291, hiNm=대덕치과, hiAddr=대전광역시 중구 계룡로 846, 3-4층, hiPhone=042-222-8202, hiEml=gmail@naver, chkNum=null
+		//, drugVOList=[{"drugNm":"미그펜400연질캡슐(이부프로펜)","dosage":"1","doses":"2","dosesdate":"3"},{"drugNm":"이부로엔연질캡슐(이부프로펜)","dosage":"4","doses":"5","dosesdate":"6"}]}
+		FileInputStream fis = new FileInputStream(new File("C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\form\\원외처방전.pdf"));
+		
+		String uploadBasePath="C:\\eGovFrameDev-3.10.0-64bit\\workspace\\DDentistProj\\src\\main\\webapp\\resources\\document\\Completion";
+		String today = new SimpleDateFormat("yyyy\\MM\\dd").format(new Date());
+		File dateBasePath = new File(uploadBasePath, today);
+		if(!dateBasePath.exists()) dateBasePath.mkdirs();
+		
+		String fileName = uuid + "outside.pdf";
+		File uploadPath = new File(dateBasePath, fileName);
+		
+		FileOutputStream fos = new FileOutputStream(uploadPath);
+		
+		String path = uploadPath.getAbsolutePath();
+		
+		map.put("path", path);
+		
+		// new PdfDocument(InputStream, OutputStream) -> 스탬프 모드
+		PdfDocument pdf = new PdfDocument(new PdfReader(fis), new PdfWriter(fos));
+		
+		Document document = new Document(pdf);
+		PdfFont font = PdfFontFactory.createFont(FONT, "Identity-H");
+		
+		document.add(new Paragraph(map.get("year")).setFixedPosition(155, 680, 150).setFont(font));//교부년월일
+		document.add(new Paragraph(map.get("ptNm")).setFixedPosition(155, 650, 150).setFont(font));//환자 성명
+		document.add(new Paragraph(map.get("ptRrno")).setFixedPosition(155, 622, 200).setFont(font));//환자주민번호
+		document.add(new Paragraph(map.get("hiNm")).setFixedPosition(390, 680, 200).setFont(font));//기관명칭
+		document.add(new Paragraph(map.get("hiBrno")).setFixedPosition(390, 638, 200).setFont(font));//기관전화번호
+		
+		Paragraph disease = new Paragraph(map.get("disease"));
+		disease.setFixedPosition(80, 570, 70);
+		disease.setFontSize(10);
+		disease.setFont(font);
+	    document.add(disease);
+		
+		document.add(new Paragraph(map.get("doctorName")).setFixedPosition(230, 585, 200).setFont(font));//의료인 성명
+		document.add(new Paragraph(map.get("licenseNum")).setFixedPosition(440, 585, 200).setFont(font));//면허번호
+		
+		//처방약제 List
+		String json = map.get("drugVOList").toString();
+	    ObjectMapper mapper = new ObjectMapper();
+	    List<DrugVO> drugVOList = mapper.readValue(json, new TypeReference<ArrayList<DrugVO>>(){});
+	    
+	    //{"drugNm":"미그펜400연질캡슐(이부프로펜)","dosage":"1","doses":"2","dosesdate":"3"}
+	    int count = 0;
+	    for(DrugVO drugVO : drugVOList) {
+	    	int y = 480 - (25 * count);
+			document.add(new Paragraph(drugVO.getDrugNm()).setFixedPosition(70, y, 150).setFont(font).setFontSize(10));
+			document.add(new Paragraph(drugVO.getDosage()+"").setFixedPosition(275, y, 150).setFont(font));//1회 투약량
+			document.add(new Paragraph(drugVO.getDoses()+"").setFixedPosition(350, y, 30).setFont(font));//1일 투약횟수
+			document.add(new Paragraph(drugVO.getDosesdate()+"").setFixedPosition(450, y, 30).setFont(font));//총투약일수
+			
+			count++;
+	    }
+
+	    document.add(new Paragraph(map.get("deliver")).setFixedPosition(98, 212, 30).setFont(font));
+		document.add(new Paragraph(map.get("date")).setFixedPosition(180, 212, 30).setFont(font));
+		
+		document.close();
+		
+		int result = this.documentMapper.outsidePost(map);
+        if(result == 0) return "FAILED";
+    	
+        return today.replace("\\", "/") + "/" + fileName.replace("\\", "/");
+	}
+
+	//약품 모달 리스트
+	@Override
+	public List<DrugVO> druList(DrugVO drugVO) {
+		return this.documentMapper.druList(drugVO);
+	}
+
+	//약품 모달 검색
+	@Override
+	public List<DiseaseVO> druModalSelect(String keyword) {
+		return this.documentMapper.druModalSelect(keyword);
+	}
+
+	//약품 모달 하나 선택하면 값이 입력됨
+	@Override
+	public DrugVO showDrug(DrugVO drugVO) {
+		return this.documentMapper.showDrug(drugVO);
+	}
+
+	
+}

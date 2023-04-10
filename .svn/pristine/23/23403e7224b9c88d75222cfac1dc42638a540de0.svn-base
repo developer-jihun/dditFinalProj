@@ -1,0 +1,281 @@
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<head>
+<meta charset="UTF-8" />
+
+<!-- bootstrap 5 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- icon setting = font awesome -->
+<script src="https://kit.fontawesome.com/5f4aa574e8.js" crossorigin="anonymous"></script>
+
+<!-- google font + Gothic font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500&family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+
+
+<!-- Swiper Demo Css, JS setting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="C:/Users/PC-23/Desktop/images/logo/favicon.ico/favicon-16x16.png">
+
+<title>재증명발급</title>
+
+<style>
+     /* Top navbar dropdown css효과 */
+
+     .dropdown:hover .dropdown-menu{
+        display:block;
+        margin-top:0;
+        border:none;
+        opacity: 0.85;
+    }
+
+    .dropdown{
+        margin-left: 3.5rem;
+        font-size: 1.05rem;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-weight: 700;
+    }
+
+    /* button css */
+
+    .reIssueBtn{
+        background-color: #9d59f0;
+        border:none;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-weight: 700;
+    }
+
+    .reIssueBtn[disabled]{
+        background-color: #c2c2c2;
+        color:#404b57;
+    }
+    /* 태그 자체에 css */
+    span{
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    th{
+        font-family: 'Noto Sans KR', sans-serif;
+        text-align: center;
+    }
+    td{
+        font-family: 'Gothic A1', sans-serif;
+        text-align: center;
+    }
+
+    .nav-link:hover{
+        color:#404b57 !important;
+    }
+    .listScroll::-webkit-scrollbar{
+		 display: none;
+	}
+</style>
+
+</head>
+<body style="overflow-x: hidden;">
+
+<div class="boardHeadImage">
+     <div class="wrapper">
+         <div class="slide">
+             <img src="/resources/images/layout/ptmyDocPageHeadImg.png" alt="headImage">
+         </div>
+     </div>
+</div>
+
+
+    <!-- main section 시작 -->
+    <section class="container">
+        <!-- 발급내역 조회 nav 시작 -->
+        <div class="row" style="margin-left:7%; margin-top:50px; width:85%; height: 100px; border-top:1px solid gray; border-bottom:1px solid gray;">
+            <div class="col-12">
+                <h4 style="margin-left:50px; margin-top: 20px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">내 서류 보관함</h4>
+            </div>
+            <div class="col-6">
+                <h6 style="margin-left:50px;  font-family: 'Noto Sans KR', sans-serif; opacity: 0.5; font-size:14px;">home   >   재증명발급   >   발급내역 조회</h6>
+            </div>
+        </div>
+        <!-- 발급내역 조회 nav 끝 -->
+        <div class="table-responsive">
+            <div class="table-wrapper" style="margin-left:7%; width:85%;">
+                <div class="row" style="margin:20px;">
+                    <div class="col-sm-6"></div>
+                </div>
+  				<table class="table table-hover" style="margin-bottom:0px;">
+		            <colgroup>
+						<col width="13%">
+						<col width="13%">
+						<col width="13%">
+						<col width="13%">
+						<col width="13%">
+						<col width="13%">
+					</colgroup>
+	            	<thead style="border-top:1px solid #c2c2c2;">
+	              	  <tr>
+		                 <th class="p-3">발급번호</th>
+		                 <th class="p-3">차트번호</th>
+		                 <th class="p-3">발급서류</th>
+		                 <th class="p-3">남은 횟수</th>
+		                 <th class="p-3">발급일시</th>
+		                 <th class="p-3">재발급</th>
+	                 </tr>
+	               </thead>
+         	  </table>
+         	  
+           <div style="overflow: scroll;overflow-x: hidden; height: 600px;" class="listScroll">
+				<table class="table table" style="margin:0px;">
+					<col width="13%">
+					<col width="13%">
+					<col width="13%">
+					<col width="13%">
+					<col width="13%">
+					<col width="13%">
+	             <tbody id="docSearchlist" style= "font-family: 'Noto Sans KR', sans-serif; font-weight:500; text-align:center;">
+	               <c:if test="${fn:length(LockerList)==0}">
+	             	<tr>
+	             		<td colspan="6">
+	             			<h2 style="text-align: center; font-family: 'Noto Sans KR', sans-serif; font-weight:500;">발급받은 서류내역이 없습니다</h2>
+	             		</td>
+	               </tr>
+	             </c:if>
+	                <c:forEach var="documentVO" items="${LockerList}" varStatus="stat">
+	                  <tr>
+	                     <th class="p-3">${documentVO.docIssueNum}</th>
+	                     <th class="p-3">${documentVO.ptNum}</th>
+	                     <th class="p-3">${documentVO.docName}</th>
+	                     <th class="p-3">${documentVO.docIssueNmtm}</th>
+	                     <th class="p-3 "><fmt:formatDate value="${documentVO.docIssueDt}" pattern="yyyy/MM/dd"/></th>
+	                     
+	                     <c:choose>
+	                     	<c:when test="${documentVO.docIssueNmtm > 0}">
+			                     <th class="p-3">
+			                     <button class="btn btn-primary reIssueBtn" type="button" style="border-radius:30px;" data-path="">발급하기</button>
+			                     <input class="docSavePath" name="docSavePath" type="hidden" value="${documentVO.docSavePath}">
+			                     <input class="docIssueNmtm" name="docIssueNmtm" type="hidden" value="${documentVO.docIssueNmtm}">
+			                     <input class="docIssueNum" name="docIssueNum" type="hidden" value="${documentVO.docIssueNum}">
+			                     <input class="ptNum" name="ptNum" type="hidden" value="${documentVO.ptNum}">
+			                     </th>
+	                     	</c:when>
+	              		    <c:when test="${documentVO.docIssueNmtm == 0}">
+	                     		 <th class="p-3"><input class="btn btn-primary reIssueBtn" type="button" value="발급완료" style="border-radius:30px;" disabled/></th>
+		                  	</c:when>
+	                  </c:choose>
+	                  
+	                  </tr>
+	               </c:forEach>
+	             </tbody>
+	           </table>
+             </div>  
+            </div>
+        </div>
+    </section>
+    <!-- main section 끝 -->
+    
+    
+<script>
+
+$(function(){
+	//만약 한 줄이면 \\, 두줄이면 \\\\
+	
+	let url = "";
+	
+	$(".reIssueBtn").on("click",function(){
+		
+		//$(this).attr("data-path",$(this).next().val());
+		
+		let url2 = $(this).next().val(); //내가 클릭한 버튼의 다음 요소의 value을 불러온다, 즉 button의 다음 요소인 input value값을  url2에 넣어줌
+		
+		console.log(url2);
+		
+		//$(this).attr('data-path',url);  //위의 변수로 정의한 url값을 data-path에 넣어줌 this는 내가 선택한 값-->attr이 필요없는 이유 이미 내가 선택한 버튼(this)의 next값을 불러오기 때문에 attr을 쓸 필요가 없다
+		
+		//let targetUrl = $(this).data('path'); //해당 버튼을 누른 곳의 data('path')를 연다
+		
+		open(url2); //pdf를 url주소로 바꿔서 연다
+		
+		let docIssueNmtm=$(".docIssueNmtm", $(this).parent()).val();
+		let docIssueNum=$(".docIssueNum", $(this).parent()).val();
+		let ptNum=$(".ptNum", $(this).parent()).val();
+
+		let data={
+				"docIssueNmtm":docIssueNmtm,
+				"docIssueNum":docIssueNum,
+				"ptNum":ptNum
+		};
+		
+		console.log(docIssueNmtm);
+		
+		console.log(data);
+		
+		$.ajax({
+			url: '/ddit/document/pdocumentUpdate',
+			contentType:"application/json;charset:utf-8",
+			data:JSON.stringify(data),
+			type:'post',
+			dataType:'json',
+			beforeSend : function(xhr) { // 데이터 전송 전 헤더에 csrf값 설정
+				xhr.setRequestHeader("${_csrf.headerName}", "${_csrf.token}");
+			},
+			success: function(result){
+				window.location.reload(true);
+				console.log("result : " + JSON.stringify(result));
+				
+				let str="";
+				
+				let docIssueNmtm=$(".docIssueNmtm", $(this).parent()).val();
+				let docIssueNum=$(".docIssueNum", $(this).parent()).val();
+				
+				if (docIssueNmtm> 0) {
+					$.each(result,function(index,docVO) {
+						str += " <tr> ";
+						str += " <th class='p-3'> " + docVO.docIssueNum + " </th> ";
+						str += " <th class='p-3'> " + docVO.ptNum + " </th> ";
+						str += " <th class='p-3'> " + docVO.docName + " </th> ";
+						str += " <th class='p-3' class='docIssueNmtm'> " + docVO.docIssueNmtm + " </th> ";
+						str += " <th class='p-3'> " + dateFormat(new Date(docVO.docIssueDt)) + " </th> ";
+						str += " <th class='p-3'><button class='btn btn-primary reIssueBtn' type='button' style='border-radius:30px;' >발급하기</button>";
+					});
+					$("#docSearchlist").html(str);
+					
+				} else if (docIssueNmtm<=0) {
+					$.each(result,function(index,docVO) {
+						str += " <tr> ";
+						str += " <th class='p-3'> " + docVO.docIssueNum + " </th> ";
+						str += " <th class='p-3'> " + docVO.ptNum + " </th> ";
+						str += " <th class='p-3'> " + docVO.docName + " </th> ";
+						str += " <th class='p-3'> " + docVO.docIssueNmtm + " </th> ";
+						str += " <th class='p-3'> " + dateFormat(new Date(docVO.docIssueDt)) + " </th> ";
+						str += " <th class='p-3'><input class='btn btn-primary reIssueBtn' type='button' value='발급완료' style='border-radius:30px;' disabled/></th>";
+					});
+
+					$("#docSearchlist").html(str);
+					}
+				},
+				error:function(xhr){
+					alert("xhr:"+xhr.status);
+				}
+		});
+	});
+});
+
+//위에 new Date 함수
+function dateFormat(mydate){
+	   let month = (mydate.getMonth()+1);
+	   month = month < 10 ? "0" + month : month;
+	   let day = mydate.getDate();
+	   day = day < 10 ? "0" + day : day;
+	   
+	   return mydate.getFullYear() + "/" + month + "/" + day;
+}
+</script>
+    
+</body>
+</html>

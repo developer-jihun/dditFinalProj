@@ -1,0 +1,38 @@
+package com.web.ddentist.hospital.checkup.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.web.ddentist.mapper.CheckupMapper;
+import com.web.ddentist.vo.PatientVO;
+
+@Service
+public class CheckupServiceImpl implements ICheckupService {
+	
+	@Autowired
+	private CheckupMapper checkupMapper;
+	
+	@Override
+	public List<PatientVO> searchPt(String keyword) {
+		return checkupMapper.searchPt(keyword);
+	}
+	
+	@Transactional
+	@Override
+	public Map<String, Object> listChart(Map<String, String> searchMap) {
+		
+		Map<String, Object> chartMap = new HashMap<>();
+		chartMap.put("piList", checkupMapper.listPtPi(searchMap));
+		chartMap.put("txpList", checkupMapper.listPtTxPlan(searchMap));
+		chartMap.put("txList", checkupMapper.listPtTx(searchMap));
+		chartMap.put("txnList", checkupMapper.listPtTxNext(searchMap));
+		
+		return chartMap;
+	}
+	
+}

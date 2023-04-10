@@ -1,0 +1,292 @@
+package com.web.ddentist.hospital.reservation.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.reservation.service.ReservationService;
+import com.web.ddentist.vo.ReservationVO;
+
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/hospital/resv")
+@Controller
+public class ReservationController {
+	
+	@Autowired
+	ReservationService service;
+	
+	@GetMapping("")
+	public String cal() {
+		return "hospital/reservation";
+	}
+	
+	@GetMapping("/6")
+	public String cal6() {
+		return "hospital/reservation2";
+	}
+	
+	@ResponseBody
+	@GetMapping("/list")
+	public List<Map<String, Object>> getAllList(
+			@RequestParam Map<String, String> dateMap
+			) {
+		log.info("getAllList");
+		log.info("Mapasdfasdfasdf : " + dateMap);
+		
+		List<ReservationVO> resvList = this.service.getAllList(dateMap);
+		log.info("list : " + resvList);
+		
+		List<Map<String, Object>> resvMap = new ArrayList<>();
+		
+		for(ReservationVO vo : resvList) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("resvNum", vo.getResvNum());	// 예약번호	
+			map.put("phone", vo.getPtPhone() );		// 휴대폰 번호
+			map.put("start", vo.getResvSdt() );		// 시작 시간
+			map.put("end", vo.getResvEdt() );		// 종료 시
+			map.put("title", vo.getPtNm());			// 환자 이름
+			map.put("description", vo.getResvCc());	// 호소 증상
+			map.put("username", vo.getEmpNum());	// 직원 번호
+			map.put("empName", vo.getEmpNm());		// 직원 이름
+					
+			map.put("status", vo.getResvStatus());	// 예약 상태
+			map.put("statNm", vo.getStatNm());		// 예약 상태 한글명
+			
+			if(vo.getStatNm().equals("예약이행")) {
+				map.put("backgroundColor", "#4169E1");		// 파랑
+			} else if(vo.getStatNm().equals("예약미이행")) {
+				map.put("backgroundColor", "#DC143C");		// 빨강
+			} else {	
+				map.put("backgroundColor", "#32CD32");		// 초록
+			}
+			// 타입과 일치해야 가능한가...?
+			map.put("type", vo.getResvStatus());
+			
+			resvMap.add(map);
+		}
+		
+		log.info("resvMap : " + resvMap);
+		
+		return resvMap;
+	}
+	@ResponseBody
+	@GetMapping("/list2")
+	public List<Map<String, Object>> getAllList2(
+			@RequestParam Map<String, String> dateMap
+			) {
+		log.info("getAllList");
+		log.info("DateMap : " + dateMap);
+		
+		List<ReservationVO> resvList = this.service.getAllList(dateMap);
+		log.info("resvationlist : " + resvList);
+		
+		List<Map<String, Object>> resvMap = new ArrayList<>();
+		
+		for(ReservationVO vo : resvList) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			// 기본
+			map.put("title", vo.getPtNm());			// 환자 이름
+			map.put("start", vo.getResvSdt() );		// 시작 시간
+			map.put("end", vo.getResvEdt() );		// 종료 시간
+			// 커스텀
+			map.put("resvNum", vo.getResvNum());	// 예약번호	
+			map.put("ptPhone", vo.getPtPhone() );	// 환자 번호
+			map.put("ptNm", vo.getPtNm());			// 환자 이름
+			map.put("resvCc", vo.getResvCc());		// 호소 증상
+			map.put("empNum", vo.getEmpNum());		// 직원 번호
+			map.put("empNm", vo.getEmpNm());		// 직원 이름
+			map.put("status", vo.getResvStatus());	// 예약 상태
+			map.put("statNm", vo.getStatNm());		// 예약 상태 한글명
+			
+			if(vo.getStatNm().equals("예약이행")) {
+				map.put("backgroundColor", "#4169E1");		// 파랑
+			} else if(vo.getStatNm().equals("예약미이행")) {
+				map.put("backgroundColor", "#DC143C");		// 빨강
+			} else {	
+				map.put("backgroundColor", "#32CD32");		// 초록
+			}
+
+			// 타입 아직 없음
+			map.put("type", vo.getResvStatus());
+			
+			resvMap.add(map);
+		}
+		
+		log.info("resvMap : " + resvMap);
+		
+		return resvMap;
+	}
+	
+	// 예약 정보 추가
+	@ResponseBody
+	@PostMapping("/create")
+//	@RequestMapping(value="/create", method = RequestMethod.POST, produces = "application/json;charset=utf-8")
+//	public int create(@RequestBody Map<String, String> param) {
+	public int create(@RequestBody ReservationVO vo) {
+//		log.info("create");
+		log.info("ReservationVO : " + vo);
+		
+		// 노가다 시작...
+		// 시간
+		String eHour = vo.getResvEdt().substring(11, 13);
+		String sHour = vo.getResvSdt().substring(11, 13);
+		// 분
+		String eMiniute = vo.getResvEdt().substring(14);
+		String sMiniute = vo.getResvSdt().substring(14);
+		// 노가다 끝...
+		
+		// 경과 시간
+		int etHour = Integer.parseInt(eHour) - Integer.parseInt(sHour);
+		// 경과 분
+		int etMiniute = Integer.parseInt(eMiniute) - Integer.parseInt(sMiniute);
+		
+		// 총 경과 분
+		int resvEt = etHour * 60 + etMiniute;
+		vo.setResvEt(resvEt);
+		log.info("총경과시간 : " + resvEt + "분");
+		
+		int result = this.service.create(vo);
+		
+		log.info("일정 추가 result : " + result);
+		
+		return result;
+	}
+	
+	// 예약 상태 변경
+	@ResponseBody
+	@PostMapping("/changeStat")
+	public int changeStat(@RequestBody Map<String, String> param) {
+		log.info("changeStat : " + param);
+		
+		int result = this.service.changeStat(param);
+		
+		log.info("예약 취소 result : " + result);
+		
+		return result;
+	}
+	
+	// 병원 오픈 시간 마감 시간 점심시간 구분
+	@ResponseBody
+	@GetMapping("/openTime")
+	public Map<String, List<String>> OpenTime(){
+		List<String> openTime = new ArrayList<String>();
+		
+		Map<String, String> openInfo = new HashMap<String, String>();
+		openInfo = this.service.openTime();
+		List<String> breakTime = new ArrayList<String>();
+		
+//		openInfo.put("start", "0830");
+//		openInfo.put("end", "2100");
+//		openInfo.put("smiddle", "1200");
+//		openInfo.put("emiddle", "1330");
+		
+//		breakTime.add("1200");
+//		breakTime.add("1330");
+		
+//		int start = Integer.parseInt(openInfo.get("start"));
+//		int smiddle = Integer.parseInt(openInfo.get("smiddle"));
+//		int emiddle = Integer.parseInt(openInfo.get("emiddle"));
+//		int end = Integer.parseInt(openInfo.get("end"));
+
+		String[] hi_open_time = openInfo.get("HI_OPEN_TIME").split(":");
+		log.info("HI_OPEN_TIME1 : " + hi_open_time[0]);
+		log.info("HI_OPEN_TIME2 : " + hi_open_time[1]);
+		String[] hi_lunch_stime = openInfo.get("HI_LUNCH_STIME").split(":");
+		String[] hi_lunch_etime = openInfo.get("HI_LUNCH_ETIME").split(":");
+		String[] hi_close_time = openInfo.get("HI_CLOSE_TIME").split(":");
+		
+		breakTime.add(openInfo.get("HI_LUNCH_STIME"));
+		breakTime.add(openInfo.get("HI_LUNCH_ETIME"));
+		
+		int start = Integer.parseInt(hi_open_time[0] + hi_open_time[1]);
+		int smiddle = Integer.parseInt(hi_lunch_stime[0] + hi_lunch_stime[1]);
+		int emiddle = Integer.parseInt(hi_lunch_etime[0] + hi_lunch_etime[1]);
+		int end = Integer.parseInt(hi_close_time[0] + hi_close_time[1]);
+		log.info("start : " + start);
+		
+		int idx = 0;
+		for(int i = start; i <= end; i += 30) {
+			String min = i % 100 + "";
+			min = min.equals("0") ? "00" : min; 
+			if(i % 100 >= 60) {
+				i += 100;
+				i /= 100;
+				i *= 100;
+				min = "00";
+			}
+			int hour = i / 100;
+			
+			if(i > smiddle && i < emiddle) {
+				continue;
+			}
+			if(i < 1000) {
+				openTime.add(idx++,"0" + hour + ":" + min);
+			} else {
+				openTime.add(idx++,hour + ":" + min);
+			}
+		}
+		log.info("openTime : " + openTime);
+		
+		Map<String, List<String>> hospitalInfo = new HashMap<String, List<String>>();
+		hospitalInfo.put("breakTime", breakTime);
+		hospitalInfo.put("openTime", openTime);
+		
+		return hospitalInfo;
+	}
+	
+	// 현재 날짜보다 이전 날짜의 데이터들중 
+	// 상태가 예약 이행, 예약 취소가 아닌 항목은 예약 미이행으로 상태 변경
+	@ResponseBody
+	@GetMapping("/previousRes")
+	public int previousRes() {
+		return this.service.previousRes();
+	}
+	
+	// 의사 목록 가져오기
+	@ResponseBody
+	@GetMapping("/empInfo")
+	public Map<String ,List<Map<String, String>>> empInfo(){
+		List<Map<String, String>> empList = this.service.empInfo();
+		List<Map<String, String>> resvStatList = this.service.resvState();
+		Map<String ,List<Map<String, String>>> empRev = new HashMap<String ,List<Map<String, String>>>();
+		empRev.put("empList",empList);
+		empRev.put("resvStatList",resvStatList);
+		
+		return empRev;
+	}
+	
+	// 예약 있는 의사 목록 가져오기
+	@ResponseBody
+	@GetMapping("/selectOption")
+	public List<String> selectOption(@RequestParam Map<String, Date> param) {
+		log.info("예약 시간 : " + param);
+		List<String> list = new ArrayList<String>();
+		
+		if(param == null || param.size() == 0) {
+			return list;
+		}
+		
+		list = this.service.selectOption(param);
+		
+		log.info("예약이 있는 의사 목록 : " + list);
+		
+		return list;
+	}
+	
+	
+}

@@ -1,0 +1,34 @@
+package com.web.ddentist.vo;
+
+import java.util.Date;
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class CommunityVO {
+	private int comNum;
+	private String ptNum;
+	private String comTitle;
+	private String comContent;
+	private Date comDt;
+	private int comInqCnt;
+	private Date comUpdatedDt;
+	private String empNum;
+	private int comDelYn;
+	
+	
+	private String ptNm;
+	private String ptId;
+	
+	private String comDtStr;
+	private String comUpdatedDtStr;
+	private int ansCount;
+	
+	// A게시글 1 : B댓글리스트 N
+	List<CommunityReplyVO> replyList;
+	
+	//COMMUNITY(A) : PATIENT(P) = 1 : 1
+	private PatientVO patientVO;
+	
+}

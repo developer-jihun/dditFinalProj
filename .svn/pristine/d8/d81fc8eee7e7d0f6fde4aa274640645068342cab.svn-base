@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+	
+<configuration>
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.web.ddentist.vo.PatientVO" alias="ptVO" />
+		<typeAlias type="com.web.ddentist.vo.EmployeeVO" alias="empVO" />
+		<typeAlias type="com.web.ddentist.vo.EmployeeAuthrtVO" alias="empAuthrtVO" />
+		<typeAlias type="com.web.ddentist.vo.CommonCodeVO" alias="commCdVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.ChatVO" alias="chatVO" />
+		<typeAlias type="com.web.ddentist.vo.ChatMemberVO" alias="chatMemVO" />
+		<typeAlias type="com.web.ddentist.vo.ChatgroupVO" alias="chatgrpVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.QuestionnaireVO" alias="queVO" />
+		<typeAlias type="com.web.ddentist.vo.UnderlyingConditionVO" alias="uConVO" />
+		<typeAlias type="com.web.ddentist.vo.RegistVO" alias="regVO" />
+		<typeAlias type="com.web.ddentist.vo.FamilyVO" alias="famVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.ChairVO" alias="chairVO" />
+		<typeAlias type="com.web.ddentist.vo.CheckupVO" alias="chkupVO" />
+		<typeAlias type="com.web.ddentist.vo.RcvmtVO" alias="rcvmtVO" />
+		<typeAlias type="com.web.ddentist.vo.ReservationVO" alias="reservationVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.DrugVO" alias="drugVO" />
+		<typeAlias type="com.web.ddentist.vo.PurchaseVO" alias="purchaseVO" />
+		<typeAlias type="com.web.ddentist.vo.PurchaseDrugVO" alias="purchaseDrugVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.JbgdVO" alias="jbgdVO" />
+		<typeAlias type="com.web.ddentist.vo.DepartmentVO" alias="deptVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.PiVO" alias="piVO" />
+		<typeAlias type="com.web.ddentist.vo.TxPlanVO" alias="txpVO" />
+		<typeAlias type="com.web.ddentist.vo.TxVO" alias="txVO" />
+		<typeAlias type="com.web.ddentist.vo.TxNextVO" alias="txnVO" />
+		<typeAlias type="com.web.ddentist.vo.DiseaseVO" alias="disVO" />
+		<typeAlias type="com.web.ddentist.vo.TxCodeVO" alias="txcVO" />
+
+		<typeAlias type="com.web.ddentist.vo.DocumentVO" alias="docVO" />
+		<typeAlias type="com.web.ddentist.vo.HospitalInfoVO" alias="hospitalInfoVO" />
+		
+		<typeAlias type="com.web.ddentist.vo.CrmVO" alias="crmVO" />
+		<typeAlias type="com.web.ddentist.vo.SmsVO" alias="smsVO" />
+		
+	</typeAliases>
+	
+</configuration>

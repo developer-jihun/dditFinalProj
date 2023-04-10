@@ -1,0 +1,93 @@
+package com.web.ddentist.hospital.crm.board.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.web.ddentist.hospital.crm.board.service.IBoardService;
+import com.web.ddentist.vo.AnswerVO;
+import com.web.ddentist.vo.InquiryVO;
+import com.web.ddentist.vo.NoticeVO;
+
+@Controller
+@RequestMapping("/hospital/board")
+public class BoardController {
+	
+	@Autowired
+	private IBoardService boardService;
+	
+	@GetMapping("")
+	public String home() {
+		return "hospital/crmBoard";
+	}
+	
+	@ResponseBody
+	@GetMapping("/listNotice")
+	public List<NoticeVO> listNotice(@RequestParam Map<String, String> searchMap){
+		return boardService.listNotice(searchMap);
+	}
+	
+	@ResponseBody
+	@GetMapping("/selectNotice")
+	public NoticeVO selectNotice(@RequestParam String noNum) {
+		return boardService.selectNotice(noNum);
+	}
+	
+	@ResponseBody
+	@PostMapping("/insertNotice")
+	public String insertNotice(@ModelAttribute NoticeVO noVO) {
+		return boardService.insertNotice(noVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/updateNotice")
+	public String updateNotice(@ModelAttribute NoticeVO noVO) {
+		return boardService.updateNotice(noVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/deleteNotice")
+	public String deleteNotice(@RequestBody NoticeVO noVO) {
+		return boardService.deleteNotice(noVO);
+	}
+	
+	@ResponseBody
+	@GetMapping("/listInquiry")
+	public List<InquiryVO> listInquiry(@RequestParam Map<String, String> searchMap){
+		return boardService.listInquiry(searchMap);
+	}
+	
+	@ResponseBody
+	@GetMapping("/selectInquiry")
+	public InquiryVO selectInquiry(@RequestParam String inqNum) {
+		return boardService.selectInquiry(inqNum);
+	}
+	
+	@ResponseBody
+	@PostMapping("/insertAnswer")
+	public String insertAnswer(@ModelAttribute AnswerVO ansVO) {
+		return boardService.insertAnswer(ansVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/updateAnswer")
+	public String updateAnswer(@ModelAttribute AnswerVO ansVO) {
+		return boardService.updateAnswer(ansVO);
+	}
+	
+	@ResponseBody
+	@PostMapping("/deleteInquiryAnswer")
+	public String deleteInquiryAnswer(@RequestBody InquiryVO inqVO) {
+		return boardService.deleteInquiryAnswer(inqVO);
+	}
+	
+}

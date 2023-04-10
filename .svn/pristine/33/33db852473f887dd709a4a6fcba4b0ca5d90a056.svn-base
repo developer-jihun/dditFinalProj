@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.DocumentMapper">
+
+	<!-- 병명 검색 -->
+	<sql id="where">
+		<!-- 조건 검색 -->
+		<if test="keyword!=null and keyword!=''">
+		AND   (DIS_CD LIKE '%' || #{keyword} || '%'
+		OR     DIS_KOR_NM LIKE '%' || #{keyword} || '%')
+		</if>
+	</sql>
+	
+	<!-- 약품 검색 -->
+	<sql id="where2">
+		<!-- 조건 검색 -->
+		<if test="keyword!=null and keyword!=''">
+		AND   (DRUG_NUM LIKE '%' || #{keyword} || '%'
+		OR     DRUG_NM LIKE '%' || #{keyword} || '%')
+		</if>
+	</sql>
+	
+	<!-- 향후 치료비 추정서 -->
+	<insert id="treatmentPlanPost" parameterType="map" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'4',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<!-- 발급번호 -->
+	<select id="getNum" resultType="String">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+	</select>
+	
+	<!-- 진단서 -->
+	<insert id="diagnosisPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'1',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<!-- 치료확인서 -->
+	<insert id="treatconfirmPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'3',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+
+	<!-- CT소견서 -->
+	<insert id="CTPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'5',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<!-- 소견서 -->
+	<insert id="opinionPost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'2',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<!-- 원외처방전 -->
+	<insert id="outsidePost" parameterType="map">
+		<selectKey resultType="String" order="BEFORE" keyProperty="docIssueNum">
+		select 'D' || to_char(sysdate,'YYYYMMDD') || '-' || trim(to_char((nvl(max(substr(DOC_ISSUE_NUM,11,14)),0)+1),'0000')) from DOCUMENT_ISSUE
+		</selectKey>
+		insert into document_issue(DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_SAVE_PATH, DOC_ISSUE_DT,CHK_NUM)
+		values (#{docIssueNum},#{ptNum},'6',#{docIssueReason},#{path},sysdate,#{chkNum})
+	</insert>
+	
+	<!-- 서류 리스트 -->
+	<select id="docList" resultType="docVO" parameterType="docVO">
+		SELECT A.DOC_ISSUE_NUM,A.PT_NUM,A.DOC_NUM,A.DOC_ISSUE_REASON,A.DOC_ISSUE_DT,A.DOC_SAVE_PATH,A.CHK_NUM,
+		B.PT_NM,B.PT_BRDT
+		FROM document_issue A INNER JOIN PATIENT B
+		ON(A.PT_NUM=B.PT_NUM)
+        where A.pt_num=#{ptNum}
+	</select>
+
+	<!-- 진료번호 불러오기위한 작업 -->
+	<resultMap id="ptMap" type="ptVO">
+		<result property="ptNum" column="PT_NUM" />
+		<result property="ptNm" column="PT_NM" />
+		<result property="ptBrdt" column="PT_BRDT" />
+		<result property="ptRrno" column="PT_RRNO" />
+		<result property="ptGen" column="PT_GEN" />
+		<result property="ptPhone" column="PT_PHONE" />
+		<result property="ptZip" column="PT_ZIP" />
+		<result property="ptAddr" column="PT_ADDR" />
+		<result property="ptAddrDet" column="PT_ADDR_DET" />
+		<collection property="chkList" resultMap="chkMap" />
+	</resultMap>
+	
+	<!-- 진료번호 부르기. 위의 resultMap이랑 여기의 resultMap이랑 같아야 함-->
+	<resultMap id="chkMap" type="chkupVO">
+		<result property="chkNum" column="CHK_NUM" />
+	</resultMap>
+	
+	<!-- 진료번호가 포함된 환자 정보 -->
+	<select id="patientInfo" parameterType="String" resultMap="ptMap">
+		SELECT P.PT_NUM, P.PT_NM, P.PT_BRDT, subStr(P.PT_RRNO,1,6) || '-' || subStr(P.PT_RRNO,7,12) as PT_RRNO,
+			   P.PT_PHONE, P.PT_ZIP, P.PT_ADDR, P.PT_ADDR_DET, P.PT_GEN,
+		       C.CHK_NUM
+		  FROM PATIENT P LEFT OUTER JOIN CHECKUP C ON (P.PT_NUM = C.PT_NUM)
+		 WHERE P.PT_NUM = #{ptNum}
+	</select>
+	
+	<!-- 병원 정보(1행) -->
+	<select id="hospitalInfo" resultType="hospitalInfoVO">
+		SELECT * FROM HOSPITAL_INFO
+	</select>
+	
+	<!-- 체크박스 및 달력 체크-->
+	<!-- 반복문:<foreach collection=리스트 형식으로 되어있는 값 item=변수 index="index" separator="," open="(" close=")"> -->
+	<select id="checkBox" resultType="docVO" parameterType="docVO">
+		SELECT DOC_ISSUE_NUM, PT_NUM, DOC_NUM, DOC_ISSUE_REASON, DOC_ISSUE_DT, DOC_SAVE_PATH, CHK_NUM
+		  FROM document_issue
+         where pt_num = #{ptNum}
+        		<if test="docNumList.length > 0">
+	                AND DOC_NUM IN
+	                <foreach collection="docNumList" item="item" index="index" separator="," open="(" close=")">
+	                    #{item}
+	                </foreach>
+        		</if>
+                <if test="docStartDt != null">
+                <![CDATA[
+                	AND DOC_ISSUE_DT >= #{docStartDt}
+                ]]>
+                </if>
+                <if test="docFinalDt != null">
+                <![CDATA[
+                	AND DOC_ISSUE_DT <= #{docFinalDt}
+                ]]>
+                </if>
+	</select>
+	
+<!-- 	Fri Mar 03 09:00:00 KST 2023 날짜 구하는거 -->
+<!-- 	<select id="getDate" resultType="docVO" parameterType="docVO"> -->
+<!-- 		SELECT * -->
+<!--   		FROM DOCUMENT_ISSUE -->
+<!--  		WHERE TO_CHAR(DOC_ISSUE_DT, 'YYYY-MM-DD') BETWEEN TO_CHAR(#{docStartDt}, 'YYYY-MM-DD') AND  TO_CHAR(#{docFinalDt} + 1, 'YYYY-MM-DD') -->
+<!-- 	</select> -->
+	
+	<!-- 병명 모달 리스트 -->
+	<select id="disList" resultType="disVO">
+		select * from disease
+	</select>
+	
+	<!-- 병명 모달 검색 -->
+	<select id="disModalSelect" resultType="disVO" parameterType="disVO">
+		select * from disease where 1=1
+		<include refid="where"></include>
+	</select>
+	
+	<!-- 병명 모달 하나 선택하면 값이 입력됨 -->
+	<select id="showCdNm" resultType="disVO" parameterType="disVO">
+		SELECT * FROM DISEASE WHERE DIS_CD=#{disCd} OR DIS_KOR_NM=#{disKorNm}
+	</select>
+	
+	<!-- 약품 모달 리스트 -->
+	<select id="druList" resultType="drugVO" parameterType="drugVO">
+		select * from Drug
+	</select>
+	
+	<!-- 약품 모달 검색 -->
+	<select id="druModalSelect" resultType="drugVO" parameterType="drugVO">
+		select * from drug where 1=1
+		<include refid="where2"></include>
+	</select>
+
+	<!-- 약품 모달 하나 선택하면 값이 입력됨 -->
+	<select id="showDrug" resultType="drugVO" parameterType="drugVO">
+		SELECT * FROM drug WHERE DRUG_NUM=#{drugNum} OR DRUG_NM=#{drugNm}
+	</select>
+	
+</mapper>

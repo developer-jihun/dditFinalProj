@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.ddentist.mapper.EmpInfoMapper">
+	<!--  직원 등록   -->
+	<insert id="createEmp" parameterType="empVO"> 
+		INSERT INTO EMPLOYEE (
+						 EMP_NUM 
+						, EMP_NM
+					    , JBGD_CD 
+					    , DEPT_CD 
+					    , DOCT_LN 
+					    , HDOF_YN 
+					    , EMP_PHONE 
+					    , EMP_BRDT 
+					    , EMP_ZIP 
+					    , EMP_ADDR 
+					    , EMP_DADDR 
+					    , EMP_JNCMP_YMD 
+					    , EMP_RTRM_YMD 
+					    , EMP_ID 
+					    , EMP_PW 
+					    , EMP_IMG
+				 ) VALUES (
+							 (SELECT DISTINCT(TO_CHAR(SYSDATE, 'YYMMDD')
+                          			   || TRIM(TO_CHAR((SELECT COUNT(EMP_NUM)
+                                               			  FROM EMPLOYEE
+                                              			 WHERE EMP_NUM LIKE TO_CHAR(SYSDATE, 'YYMMDD') || '%') + 1, '000')))
+            				    FROM EMPLOYEE)
+			                  , #{empNm}
+			                  , #{jbgdCd}
+			                  , #{deptCd}
+			                  , #{doctLn}
+			                  , #{hdofYn}
+			                  , #{empPhone}
+							  , #{empBrdt}
+							  , #{empZip}
+							  , #{empAddr}
+							  , #{empDaddr}
+							  , #{empJncmpYmd}
+							  , #{empRtrmYmd}
+							  , #{empId}
+							  , #{empPw}
+							  , #{empImg}
+				 ) 
+	</insert>
+	
+	<!--  직원 조회  -->
+<!-- 	<select id="getList" resultType="empVO"> -->
+<!-- 		 SELECT -->
+<!-- 		 	 EMP_NUM ,EMP_NM ,JBGD_CD ,DEPT_CD ,DOCT_LN ,HDOF_YN ,EMP_PHONE ,EMP_BRDT ,EMP_ZIP ,EMP_ADDR  -->
+<!-- 		 	 ,EMP_DADDR ,EMP_JNCMP_YMD ,EMP_RTRM_YMD ,EMP_ID ,EMP_PW ,EMP_IMG  -->
+<!-- 		  FROM EMPLOYEE  -->
+<!-- 	</select> -->
+	
+	
+	<!--  직원 상세정보 조회  -->
+	<select id="getEmpInfo" parameterType="empVO" resultType="empVO">
+		 SELECT
+		 	 EMP_NUM , EMP_NM , JBGD_CD , DEPT_CD , DOCT_LN , HDOF_YN , EMP_PHONE , EMP_BRDT , EMP_ZIP , EMP_ADDR 
+		 	 , EMP_DADDR , EMP_JNCMP_YMD , EMP_RTRM_YMD , EMP_ID , EMP_PW , EMP_IMG 
+		  FROM EMPLOYEE
+		 WHERE EMP_NUM = #{empNum} 
+	</select>
+	
+	<!--  직원 정보 수정  -->
+	<update id="updateEmp" parameterType="empVO">
+		 UPDATE EMPLOYEE
+		    SET 
+		    	EMP_NUM=#{empNum}, EMP_NM=#{empNm}, JBGD_CD=#{jbgdCd}, DEPT_CD=#{deptCd}, DOCT_LN=#{doctLn}
+		    	, HDOF_YN=#{hdofYn}, EMP_PHONE=#{empPhone}, EMP_BRDT=#{empBrdt}
+		    	, EMP_ZIP=#{empZip}, EMP_ADDR=#{empAddr}, EMP_DADDR=#{empDaddr},EMP_JNCMP_YMD=#{empJncmpYmd}
+		    	, EMP_RTRM_YMD=#{empRtrmYmd}, EMP_ID=#{empId}, EMP_PW=#{empPw}
+		    	<if test="empImg != null and empImg != ''">
+		    	, EMP_IMG=#{empImg}		    	
+		    	</if>
+		  WHERE 
+		  		EMP_NUM= #{empNum} 
+	</update>
+	
+	<!-- 직원 정보 삭제 -->
+	<delete id="deleteEmp" parameterType="empVO">
+		DELETE
+			FROM EMPLOYEE
+		 WHERE EMP_NUM = #{empNum}
+	</delete>
+	
+	<!--  직급리스트 가져오기  -->
+	<select id="getJbgd" resultType="jbgdVO">
+		 SELECT 
+	 		JBGD_CD
+	       ,JBGD_NM
+	       FROM JBGD
+	   ORDER BY TO_NUMBER(JBGD_CD) ASC
+	</select>	
+	
+	<!-- 부서리스트 가져오기 -->
+	<select id="getDept" resultType="deptVO">
+		SELECT 
+			    DEPT_CD
+			  , DEPT_NM
+		  FROM DEPARTMENT
+	  ORDER BY TO_NUMBER(DEPT_CD) ASC
+	</select>
+	
+	<!--  부서 추가 -->
+	<insert id="createDept" parameterType="deptVO">
+		INSERT INTO DEPARTMENT
+   	         VALUES ( 
+   	                  (SELECT NVL(MAX(TO_NUMBER(DEPT_CD)),0)+1
+               			 FROM DEPARTMENT)
+                      , #{deptNm}
+					)
+	</insert>
+	
+	<!-- 부서 삭제 -->
+	<delete id="deleteDept" parameterType="deptVO">
+		DELETE FROM DEPARTMENT
+ 		 WHERE DEPT_CD = #{deptCd}
+	</delete>
+	
+	<!-- 부서 수정 -->
+	<update id="updateDept" parameterType="deptVO">
+		UPDATE DEPARTMENT
+		   SET DEPT_NM = #{deptNm}
+		 WHERE DEPT_CD = #{deptCd}
+	</update>
+	
+	<!-- 직급 추가 -->
+	<insert id="createJbgd" parameterType="jbgdVO">
+		INSERT INTO JBGD
+		     VALUES ( 
+		              (SELECT NVL(MAX(TO_NUMBER(JBGD_CD)),0)+1
+		                 FROM JBGD)
+		              , #{jbgdNm}
+            )
+	</insert>
+	
+	<!-- 직급 수정 -->
+	<update id="updateJbgd" parameterType="jbgdVO">
+		UPDATE JBGD
+		   SET JBGD_NM = #{jbgdNm}
+		 WHERE JBGD_CD = #{jbgdCd}
+	</update>
+	
+	<!--  직급 삭제 -->
+	<delete id="deleteJbgd" parameterType="jbgdVO">
+		DELETE FROM JBGD
+ 		 WHERE JBGD_CD = #{jbgdCd}
+	</delete>
+	
+	<!-- 직원 검색 select option 값 : 재직자, 퇴사자  --> 
+	<select id="getCommon" resultType="commCdVO" parameterType="String">
+		SELECT 
+			COMM_CD_NM
+		  , COMM_CD_CNT	
+	      FROM COMMON_CODE
+	     WHERE COMM_GR_CD = #{HDOF_YN_CD}
+    </select>
+   
+   	<!--  검색 -->
+	<sql id="where">
+	  	<if test="hdofYn!= null and hdofYn!=''">
+	  	AND HDOF_YN = #{hdofYn}
+	  	</if>
+	  	<if test="jbgdCd != null and jbgdCd!=''">
+	  	AND JBGD_CD = #{jbgdCd}
+	  	</if>
+	  	<if test="keyword!=null and keyword!=''">
+		AND (		
+		     EMP_NUM LIKE '%' || #{keyword} ||'%'
+		     OR EMP_NM  LIKE '%' || #{keyword} ||'%'
+		    )
+    	</if>
+	</sql>
+	 
+    <!-- 페이지별 행 출력 -->
+    <!-- controller에서 map에 size, currentPage를 담아서 보낸다. -->
+    <select id="getList" parameterType="hashMap" resultType="empVO">
+		WITH U AS(
+			SELECT ROW_NUMBER() OVER(ORDER BY T.EMP_NUM) RNUM
+			       ,T.* 
+			FROM 
+			(
+			  SELECT  
+			  		 EMP_NUM ,EMP_NM ,JBGD_CD ,DEPT_CD ,DOCT_LN ,HDOF_YN ,EMP_PHONE ,EMP_BRDT ,EMP_ZIP ,EMP_ADDR 
+		 			 ,EMP_DADDR ,EMP_JNCMP_YMD ,EMP_RTRM_YMD ,EMP_ID ,EMP_PW ,EMP_IMG 
+			    FROM EMPLOYEE
+			   WHERE 1=1
+			  <include refid="where"></include>
+			) T
+		)
+			SELECT U.*
+			FROM U
+			WHERE U.RNUM BETWEEN (#{currentPage}*#{size}) - (#{size}-1) 
+			                        AND (#{currentPage}*#{size})
+	</select>
+    
+    <!-- 검색값에 따른 전체 행의 수 -->
+    <select id="getTotal" parameterType="hashMap" resultType="int">
+    	SELECT  COUNT(*)
+		  FROM EMPLOYEE
+         WHERE 1=1	
+         <include refid="where"></include>
+    
+    </select>
+    
+    <!--  직원 사진 삭제 -->
+    <delete id="deleteFile" parameterType="empVO">
+    	UPDATE  EMPLOYEE
+		   SET EMP_IMG = ''
+		 WHERE EMP_NUM = #{empNum}
+    </delete>
+    
+    <!-- 비밀번호 변경 -->
+    <update id="changePassword" parameterType="empVO">
+    	UPDATE EMPLOYEE
+		   SET EMP_PW = #{empPw}
+		 WHERE EMP_NUM = #{empNum}
+    </update>
+</mapper>

@@ -1,0 +1,5 @@
+package com.web.ddentist.ddit.home.service;
+
+public class HomeServiceImpl {
+
+}

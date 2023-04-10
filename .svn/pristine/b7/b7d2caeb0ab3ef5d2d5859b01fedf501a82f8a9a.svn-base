@@ -1,0 +1,135 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<style>
+.btn-group {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50%;
+	margin: auto;
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+
+.categoryBtn {
+	width: 200px;
+	height: 60px;
+	background-color: white;
+	color: gray;
+	border: 1px solid gray;
+	font-family: 'Noto Sans KR', sans-serif;
+	padding-top: 14px;
+}
+
+.categoryBtn:hover {
+	background-color: #ccadff;
+	border: 1px solid #ccadff;
+}
+
+.paginationBtn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+}
+
+span {
+	font-family: 'Noto Sans KR', sans-serif;
+}
+
+th {
+	font-family: 'Noto Sans KR', sans-serif;
+	text-align: center;
+}
+
+td {
+	font-family: 'Gothic A1', sans-serif;
+	text-align: center;
+}
+
+.table-hover { cursor : pointer; }
+
+</style>
+
+
+<!-- Head Image 시작 -->
+<div class="boardHeadImage">
+	<div class="wrapper">
+		<div class="slide">
+			<img src="/resources/images/layout/ddit/noticeHeadImg.png" />
+		</div>
+	</div>
+</div>
+<!-- Head Image 끝 -->
+<!-- button group 공지사항,문의게시판,이용안내 -->
+<div class="btn-group" role="group" aria-label="Basic example">
+	<a type="button" id="categoryBtn1" class="btn btn-primary btn-lg categoryBtn" href="/ddit/notice" style="background-color: #904aff; color: white;">공지사항</a>
+	<a type="button" id="categoryBtn2" class="btn btn-primary btn-lg categoryBtn" href="/ddit/faq">자주 묻는 질문</a>
+	<a type="button" id="categoryBtn2" class="btn btn-primary btn-lg categoryBtn" href="/ddit/inquiry">문의게시판</a>
+	<a type="button" id="categoryBtn3" class="btn btn-primary btn-lg categoryBtn" href="/ddit/community">커뮤니티</a>
+</div>
+<!-- main section 시작 -->
+<section class="container">
+	<!-- 공지사항 nav 시작 -->
+	<div class="row" style="margin-left: 7%; width: 85%; height: 100px; border-top: 1px solid gray; border-bottom: 1px solid gray;">
+		<div class="col-12">
+			<h4 style="margin-left: 50px; margin-top: 20px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;">공지사항</h4>
+		</div>
+		<div class="col-6">
+			<h6 style="margin-left: 50px; font-family: 'Noto Sans KR', sans-serif; opacity: 0.5; font-size: 14px;">home > 고객의 소리 > 공지사항</h6>
+		</div>
+	</div>
+	<!-- 공지사항 nav 끝 -->
+	<div class="table-responsive">
+		<div class="table-wrapper" style="margin-left: 7%; width: 85%;">
+			<div class="row" style="margin: 20px;">
+			  	<c:if test="${data.content==null}">
+			  		<h3 style="text-align:center;">해당 공지사항은 없습니다.</h3>
+			  	</c:if>
+			</div>
+			<table class="table table-hover">
+				<thead style="border-top: 1px solid #c2c2c2;">
+					<tr>
+						<th class="p-3">번호</th>
+						<th class="p-3">작성일시</th>
+						<th class="p-3">제목</th>
+						<th class="p-3">작성자</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach var="noticeVO" items="${data.content}" varStatus="stat">
+						<tr onclick="javascript:location.href='/ddit/notice/detail?noNum=${noticeVO.noNum}&currentPage=${map.currentPage}'">
+							<th class="p-3">${noticeVO.noNum}</th>
+							<td class="p-3"><fmt:formatDate value="${noticeVO.noDt}" pattern="yyyy-MM-dd"/></td>
+							<td class="p-3">${noticeVO.noTitle}</td>
+							<td class="p-3">${noticeVO.noWrtrNm}</td>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+			<nav class="paginationBtn" aria-label="Page navigation example">
+				<ul class="pagination">
+					<li class="page-item
+					 <c:if test='${data.startPage lt 6}'>disabled</c:if>
+					"><a style="border-radius:20px; margin:0px 5px;" class="page-link" href="/ddit/notice?currentPage=${data.startPage-1}">Prev</a></li>
+					<c:forEach var="pNo" begin="${data.startPage}" end="${data.endPage}">
+						<li  class="page-item 
+							<c:if test='${param.currentPage==pNo}'>active</c:if>
+							<c:if test='${map.currentPage==pNo}'>active</c:if>
+							<c:if test='${currentPage==pNo}'>active</c:if>
+							"
+							>
+							<a style="border-radius:50%; margin:0px 5px;" class="page-link" href="/ddit/notice?currentPage=${pNo}">${pNo}</a>
+						</li>
+					</c:forEach>
+					<li class="page-item
+					<c:if test='${data.endPage ge data.totalPages}'>disabled</c:if>">
+					<a style="border-radius:20px; margin:0px 5px;" class="page-link" href="/ddit/notice?currentPage=${data.startPage+5}">Next</a></li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</section>
+<!-- main section 끝 -->
