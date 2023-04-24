@@ -378,18 +378,6 @@ $(function(){
  			console.log("반복문 돌고 나서 numBox : " + numBox);
  			$("#decisionBannerNum").val(numBox);
 
-//  			//class 속성 바꾸기
-//  			$(this).removeClass("click");
-//  			console.log("lineNum : ", lineNum);
-//  			let lineArr = lineNum.split(",");
-//  			console.log("lineArr : ", lineArr);
-//  			$.each(lineArr,function(index,data){
-//  				console.log("data : ", data);
-//  				console.log("no : " + no);
-//  				if(no==data){
-// //  					thisClass.addClass("line");
-//  				}
-//  			})
 
 
  		}

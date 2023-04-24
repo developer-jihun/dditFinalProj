@@ -1,9 +1,0 @@
-package com.web.ddentist.mapper;
-
-import com.web.ddentist.vo.PatientVO;
-
-public interface PatientMapper {
-	
-	public PatientVO login(PatientVO ptVO);
-	
-}

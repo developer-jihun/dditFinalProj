@@ -1,9 +1,0 @@
-package com.web.ddentist.vo;
-
-public class PurchaseDrugVO {
-	private int purDrugSn;
-	private String purNum;
-	private int drugNum;
-	private String drugNm;
-	private int purDrugCount;
-}

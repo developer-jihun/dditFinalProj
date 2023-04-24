@@ -1,5 +1,0 @@
-package com.web.ddentist.hospital.manage.hospitalInfo.service;
-
-public interface IBasicInfoService {
-	
-}

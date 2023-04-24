@@ -1,5 +1,0 @@
-package com.web.ddentist.ddit.faq.service;
-
-public interface IFaqService {
-
-}

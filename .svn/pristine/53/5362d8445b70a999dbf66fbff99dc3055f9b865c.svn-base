@@ -1,8 +1,0 @@
-package com.web.ddentist.hospital.manage.hospitalInfo.service;
-
-import org.springframework.stereotype.Service;
-
-@Service
-public class BasicInfoServiceImpl implements IBasicInfoService {
-
-}
